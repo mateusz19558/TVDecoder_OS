@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dekoder TV - Aurora OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <style>
+        :root {
+            --focus-ring: rgba(255, 255, 255, 0.9);
+            --focus-glow: rgba(139, 92, 246, 0.6); /* Fioletowa poświata */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            user-select: none;
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Klasy bazowe dla efektu oszronionego szkła (Glassmorphism) */
+        .glass-panel {
+            background: rgba(20, 20, 30, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-panel-heavy {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Płynne przejścia dla wszystkich interaktywnych elementów */
+        .focusable {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 2px solid transparent;
+            transform: scale(1);
+        }
+
+        /* Nowy, luksusowy efekt Focusa */
+        .tv-focus {
+            transform: scale(1.08) translateY(-5px);
+            border-color: var(--focus-ring) !important;
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.5), 0 0 25px var(--focus-glow);
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Delikatniejszy focus dla małych przycisków */
+        .tv-focus-sm {
+            transform: scale(1.05);
+            border-color: var(--focus-ring) !important;
+            box-shadow: 0 0 15px var(--focus-glow);
+            z-index: 100;
+        }
+
+        /* Ukrywanie scrollbarów */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Zarządzanie Warstwami (Layers) */
+        .layer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform: scale(1.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .layer.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        /* Tło wideo / animacja gradientu dla symulacji TV */
+        #tv-viewport {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            z-index: 0;
+            transition: filter 0.5s ease;
+        }
+        
+        /* Abstrakcyjne kształty w tle (Aurora) */
+        .aurora-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(10vw, -10vh) scale(1.2); }
+        }
+
+        /* Rozmycie TV gdy jesteśmy w menu */
+        body.blurred-bg #tv-viewport {
+            filter: blur(15px) brightness(0.6) saturate(1.2);
+        }
+
+        /* OSD Pill Animation */
+        .osd-pill {
+            transform: translateY(150%);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .osd-pill.show {
+            transform: translateY(0);
+        }
+        
+        /* Nowe style dla Modal i Toast (Oskryptowany System) */
+        .toast-slide {
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .toast-slide.show {
+            transform: translateX(0);
+        }
+        
+        .modal-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-box {
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Warstwa 0: Odtwarzacz Wideo Live HLS / IPTV -->
+    <div id="tv-viewport">
+        <video id="tv-video" class="absolute inset-0 w-full h-full object-cover z-0" autoplay playsinline></video>
+        <div id="tv-fallback-bg" class="absolute inset-0 hidden z-0">
+            <div class="aurora-blob bg-blue-600 w-[40vw] h-[40vw] top-[-10vw] left-[-10vw]"></div>
+            <div class="aurora-blob bg-purple-600 w-[50vw] h-[50vw] bottom-[-20vw] right-[-10vw]" style="animation-delay: -5s;"></div>
+        </div>
+        
+        <!-- Znak wodny kanału w rogu -->
+        <div class="absolute top-10 right-12 opacity-40 flex items-center gap-3 z-10">
+            <i class="fas fa-circle text-red-500 text-xs animate-pulse"></i>
+            <span id="watermark-ch" class="text-3xl font-bold tracking-widest text-white/50">TVP 1 HD</span>
+        </div>
+    </div>
+
+    <!-- Warstwa Zawsze na wierzchu: Zegar i Status -->
+    <div class="absolute top-10 left-12 z-50 flex items-center gap-4 text-white/80 font-medium">
+        <span id="top-clock" class="text-2xl tracking-wider">00:00</span>
+        <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
+        <i class="fas fa-wifi text-sm"></i>
+        <i class="fas fa-hdd text-sm ml-2"></i>
+    </div>
+
+    <!-- LAYER: Telewizja Na Żywo (OSD) -->
+    <div id="layer-tv" class="layer active z-20">
+        <!-- OSD Pigułka (Pill) na dole ekranu -->
+        <div class="absolute bottom-12 left-0 w-full flex justify-center pointer-events-none">
+            <div id="osd-container" class="osd-pill glass-panel rounded-full px-8 py-4 flex items-center gap-8 min-w-[60%] max-w-[80%]">
+                <!-- Logo/Numer -->
+                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 shrink-0">
+                    <span id="osd-num" class="text-2xl font-bold">1</span>
+                </div>
+                
+                <!-- Info -->
+                <div class="flex-1 flex flex-col justify-center">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <h2 id="osd-title" class="text-2xl font-semibold truncate pr-4">Tytuł Programu</h2>
+                        <span id="osd-time" class="text-purple-300 font-medium text-lg whitespace-nowrap">19:30 - 20:15</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <span id="osd-cat" class="bg-purple-900/50 px-2 py-0.5 rounded text-purple-200">Informacje</span>
+                        <span>Następnie: <strong id="osd-next" class="text-white">Pogoda</strong></span>
+                    </div>
+                    
+                    <!-- Progress bar ukryty w pigułce -->
+                    <div class="w-full h-1 bg-white/10 rounded-full mt-3 overflow-hidden">
+                        <div id="osd-progress" class="h-full bg-gradient-to-r from-purple-400 to-blue-400" style="width: 45%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OSD Menu Szybkich Akcji (Otwierane Enterem) -->
+        <div id="osd-actions-overlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
+            <div class="glass-panel rounded-3xl p-8 flex gap-6 transform scale-95 transition-transform duration-300" id="osd-actions-box">
+                <div id="osd-btn-info" class="focusable tv-focus-sm w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10">
+                    <i class="fas fa-info-circle text-3xl text-blue-400"></i>
+                    <span class="font-medium">O programie</span>
+                </div>
+                <div id="osd-btn-rec" class="focusable tv-focus-sm w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10">
+                    <i class="fas fa-record-vinyl text-3xl text-red-400"></i>
+                    <span class="font-medium">Nagraj</span>
+                </div>
+                <div id="osd-btn-lang" class="focusable tv-focus-sm w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10">
+                    <i class="fas fa-language text-3xl text-green-400"></i>
+                    <span class="font-medium">Język</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wskaźnik głośności -->
+        <div id="vol-indicator" class="absolute top-1/2 right-12 transform -translate-y-1/2 glass-panel rounded-full p-4 flex flex-col items-center gap-4 opacity-0 transition-opacity">
+            <span id="vol-text" class="font-bold">50</span>
+            <div class="w-2 h-48 bg-white/10 rounded-full flex flex-col-reverse overflow-hidden">
+                <div id="vol-bar" class="w-full bg-white transition-all duration-200" style="height: 50%;"></div>
+            </div>
+            <i class="fas fa-volume-up text-white/50"></i>
+        </div>
+    </div>
+
+    <!-- LAYER: Home Dashboard (zastępuje Sidebar) -->
+    <div id="layer-home" class="layer">
+        <div class="absolute inset-0 bg-black/20"></div> <!-- Lekkie przyciemnienie na wierzchu szkła -->
+        
+        <div class="relative w-full h-full flex flex-col justify-end pb-24 px-16 z-10">
+            <!-- Górny rząd: Kontynuuj oglądanie -->
+            <div class="mb-12">
+                <h3 class="text-xl font-medium text-white/70 mb-6 px-2 flex items-center gap-3">
+                    <i class="fas fa-play text-sm"></i> Ostatnio oglądane
+                </h3>
+                <div class="flex gap-6" id="home-recent-row">
+                    <!-- Wygenerowane JS: prostokątne kafelki -->
+                    <div id="home-rec-1" class="focusable glass-panel w-72 h-40 rounded-2xl bg-cover bg-center flex items-end p-4" style="background-image: linear-gradient(to top, rgba(0,0,0,0.9), transparent), url('https://placehold.co/600x400/2e1065/ffffff?text=Wiedźmin');">
+                        <div>
+                            <div class="text-xs text-purple-300 font-bold mb-1">Odcinek 4</div>
+                            <div class="font-semibold text-lg">Wiedźmin</div>
+                        </div>
+                    </div>
+                    <div id="home-rec-2" class="focusable glass-panel w-72 h-40 rounded-2xl bg-cover bg-center flex items-end p-4" style="background-image: linear-gradient(to top, rgba(0,0,0,0.9), transparent), url('https://placehold.co/600x400/064e3b/ffffff?text=Mecz');">
+                        <div>
+                            <div class="text-xs text-green-300 font-bold mb-1">Nagranie</div>
+                            <div class="font-semibold text-lg">Finał Ligi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dolny rząd: Główne Aplikacje -->
+            <div>
+                <h3 class="text-xl font-medium text-white/70 mb-6 px-2">Aplikacje Systemowe</h3>
+                <div class="flex gap-6" id="home-apps-row">
+                    <!-- Aplikacja TV -->
+                    <div id="app-tv" data-target="tv" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-tv text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">Telewizja</span>
+                    </div>
+                    
+                    <!-- Aplikacja EPG -->
+                    <div id="app-epg" data-target="epg" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-calendar-alt text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">Przewodnik</span>
+                    </div>
+
+                    <!-- Aplikacja VOD -->
+                    <div id="app-vod" data-target="vod" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-film text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">Kino VOD</span>
+                    </div>
+
+                    <!-- Aplikacja YouTube Smart TV -->
+                    <div id="app-youtube" data-target="youtube" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fab fa-youtube text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">YouTube TV</span>
+                    </div>
+
+                    <!-- Aplikacja Pilot Apple (HomeKit) -->
+                    <div id="app-apple" data-target="apple" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white/20">
+                            <i class="fab fa-apple text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">Pilot Apple</span>
+                    </div>
+
+                    <!-- Aplikacja Ustawienia -->
+                    <div id="app-settings" data-target="settings" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-gray-600 to-gray-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-cog text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">Ustawienia</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYER: VOD (Z tłem zmieniającym się zależnie od focusa) -->
+    <div id="layer-vod" class="layer bg-black">
+        <!-- VOD Dynamic Background -->
+        <div id="vod-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 opacity-60" style="background-image: url('https://placehold.co/1920x1080/1a1a2e/ffffff?text=VOD');">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"></div>
+        </div>
+
+        <div class="relative w-full h-full flex flex-col z-10 pt-24">
+            <!-- VOD Hero Info -->
+            <div class="px-16 flex-1 flex flex-col justify-center max-w-4xl">
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="bg-white text-black text-xs font-bold px-3 py-1 rounded-full tracking-wider uppercase">Premiera</span>
+                    <span id="vod-hero-year" class="text-gray-300 font-medium">2026</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                    <span id="vod-hero-genre" class="text-gray-300 font-medium">Sci-Fi</span>
+                </div>
+                <h1 id="vod-hero-title" class="text-7xl font-bold mb-6 tracking-tight drop-shadow-xl text-white">Tytuł Filmu</h1>
+                <p id="vod-hero-desc" class="text-xl text-gray-300 leading-relaxed mb-10 line-clamp-3">Wybierz film z listy poniżej, aby zobaczyć opis.</p>
+                
+                <div class="flex gap-5">
+                    <div id="vod-btn-play" class="focusable tv-focus-sm bg-white text-black px-10 py-4 rounded-full font-bold text-lg flex items-center gap-3">
+                        <i class="fas fa-play"></i> Oglądaj
+                    </div>
+                    <div id="vod-btn-add" class="focusable tv-focus-sm glass-panel px-10 py-4 rounded-full font-bold text-lg text-white flex items-center gap-3">
+                        <i class="fas fa-plus"></i> Do listy
+                    </div>
+                </div>
+            </div>
+
+            <!-- VOD Karuzela (Dolny pasek) -->
+            <div class="h-80 pb-12 px-16 flex flex-col justify-end shrink-0">
+                <h3 class="text-xl font-medium mb-6">Polecane Filmy</h3>
+                <div class="flex gap-6 overflow-hidden w-full relative">
+                    <div id="vod-carousel" class="flex gap-6 transition-transform duration-500 will-change-transform">
+                        <!-- JS generuje tutaj plakaty -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYER: EPG (Przewodnik TV) - Glassmorphism Grid -->
+    <div id="layer-epg" class="layer glass-panel-heavy">
+        <div class="px-12 py-8 flex justify-between items-center border-b border-white/10 shrink-0">
+            <h2 class="text-3xl font-light tracking-wide"><i class="fas fa-stream mr-3 text-purple-400"></i> Przewodnik EPG</h2>
+            <div class="bg-white/10 px-6 py-2 rounded-full font-medium text-sm">Dziś, 13 Października</div>
+        </div>
+
+        <div class="flex-1 flex flex-col relative overflow-hidden">
+            <!-- Timeline -->
+            <div class="h-14 flex items-center border-b border-white/5 relative shrink-0 bg-black/20" id="epg-timeline-container">
+                <div id="epg-timeline" class="absolute left-64 h-full flex transition-transform duration-300 text-gray-400 text-sm font-medium items-center">
+                    <!-- Wygenerowane JS -->
+                </div>
+            </div>
+
+            <!-- Main Grid Area -->
+            <div class="flex-1 flex relative overflow-hidden">
+                <!-- Kolumna Kanałów (Stała szerokość, nałożona na scrollujący się grid) -->
+                <div id="epg-channels" class="w-64 h-full flex flex-col border-r border-white/10 bg-black/40 z-20 transition-transform duration-300 absolute left-0 top-0 pt-2 pb-24 shadow-[10px_0_20px_rgba(0,0,0,0.5)]">
+                    <!-- Wygenerowane JS -->
+                </div>
+
+                <!-- Przesuwna siatka programów -->
+                <div class="flex-1 h-full relative overflow-hidden ml-64 bg-black/10">
+                    <div id="epg-grid" class="absolute top-0 left-0 transition-transform duration-300 pt-2 pb-24">
+                        <!-- Wygenerowane JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EPG Detail Panel (Floating na dole) -->
+        <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-10/12 glass-panel rounded-3xl p-6 flex gap-8 shadow-2xl z-30">
+            <div class="w-1/3 border-r border-white/10 pr-6">
+                <h3 id="epg-det-title" class="text-2xl font-bold mb-2 truncate">Wybierz program</h3>
+                <p id="epg-det-time" class="text-purple-300 font-medium">--:--</p>
+            </div>
+            <div class="w-2/3">
+                <p id="epg-det-desc" class="text-gray-300 line-clamp-2">Nawiguj po siatce EPG za pomocą strzałek. Naciśnij OK aby przełączyć kanał na trwający program.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYER: Settings -->
+    <div id="layer-settings" class="layer glass-panel-heavy p-16 flex gap-12">
+        <!-- Lewa kolumna menu -->
+        <div class="w-1/3 flex flex-col shrink-0">
+            <h1 class="text-4xl font-light mb-12 tracking-wide">Ustawienia</h1>
+            <div class="flex flex-col gap-4" id="settings-menu">
+                <div id="set-menu-net" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex items-center gap-5 text-xl">
+                    <i class="fas fa-wifi text-purple-400 w-8 text-center"></i> Sieć i Internet
+                </div>
+                <div id="set-menu-av" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex items-center gap-5 text-xl">
+                    <i class="fas fa-tv text-purple-400 w-8 text-center"></i> Obraz i Dźwięk
+                </div>
+                <div id="set-menu-sys" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex items-center gap-5 text-xl">
+                    <i class="fas fa-info-circle text-purple-400 w-8 text-center"></i> System
+                </div>
+            </div>
+        </div>
+
+        <!-- Prawa kolumna paneli -->
+        <div class="w-2/3 border-l border-white/10 pl-12 pt-4 relative overflow-hidden h-[75vh]">
+            
+            <!-- Panel: Sieć -->
+            <div id="set-panel-net" class="set-panel absolute inset-0 pl-12 pt-4 transition-opacity duration-300 flex flex-col gap-4 w-full pr-12">
+                <h2 class="text-2xl font-semibold mb-2">Stan Sieci</h2>
+                <div class="glass-panel p-6 rounded-3xl mb-4 bg-white/5 border border-white/10">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-lg">Połączenie Wi-Fi</span>
+                        <span class="text-green-400 font-bold"><i class="fas fa-check-circle mr-2"></i>Połączono</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Sieć: Domowy_Router_5G<br>IP: 192.168.1.104<br>Jakość sygnału: Doskonała</p>
+                </div>
+                <h2 class="text-xl font-semibold mt-4 mb-2">Opcje</h2>
+                <div id="set-opt-wifitoggle" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Stan Wi-Fi</span>
+                    <span id="val-wifitoggle" class="text-purple-300 font-bold">Włączone</span>
+                </div>
+                <div id="set-opt-netscan" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Skanuj w poszukiwaniu sieci</span>
+                    <i class="fas fa-chevron-right text-gray-500"></i>
+                </div>
+                <div id="set-opt-nettest" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Test prędkości łącza</span>
+                    <i class="fas fa-chevron-right text-gray-500"></i>
+                </div>
+            </div>
+
+            <!-- Panel: AV -->
+            <div id="set-panel-av" class="set-panel absolute inset-0 pl-12 pt-4 transition-opacity duration-300 flex flex-col gap-4 w-full pr-12" style="display: none; opacity: 0; pointer-events: none;">
+                <h2 class="text-2xl font-semibold mb-2">Obraz</h2>
+                <div id="set-opt-res" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Rozdzielczość</span>
+                    <span id="val-res" class="text-purple-300 font-bold">4K (2160p)</span>
+                </div>
+                <div id="set-opt-hdr" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Tryb HDR</span>
+                    <span id="val-hdr" class="text-purple-300 font-bold">Auto</span>
+                </div>
+                
+                <h2 class="text-2xl font-semibold mt-4 mb-2">Dźwięk</h2>
+                <div id="set-opt-audioout" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Wyjście audio</span>
+                    <span id="val-audioout" class="text-purple-300 font-bold">HDMI ARC</span>
+                </div>
+                <div id="set-opt-soundmode" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Profil dźwięku</span>
+                    <span id="val-soundmode" class="text-purple-300 font-bold">Kino</span>
+                </div>
+            </div>
+
+            <!-- Panel: System -->
+            <div id="set-panel-sys" class="set-panel absolute inset-0 pl-12 pt-4 transition-opacity duration-300 flex flex-col gap-4 w-full pr-12" style="display: none; opacity: 0; pointer-events: none;">
+                <div class="glass-panel p-6 rounded-3xl mb-4 bg-white/5 border border-white/10 flex gap-6 items-center">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center border-4 border-white/10 shrink-0">
+                        <i class="fas fa-satellite-dish text-4xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold">Aurora Box Pro</h3>
+                        <p class="text-gray-400">Wersja OS: 3.1.4 (Build 2026.10)</p>
+                        <p class="text-gray-400">Pamięć: 64 GB / Dostępne: 41 GB</p>
+                    </div>
+                </div>
+                
+                <h2 class="text-xl font-semibold mt-2 mb-2">Zarządzanie</h2>
+                <div id="set-opt-update" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Aktualizacja oprogramowania</span>
+                    <span class="bg-blue-600/30 text-blue-300 px-2 py-0.5 rounded text-sm font-semibold">Aktualne</span>
+                </div>
+                <div id="set-opt-lang" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
+                    <span class="font-medium">Język menu</span>
+                    <span id="val-lang" class="text-purple-300 font-bold">Polski</span>
+                </div>
+                <div id="set-opt-reset" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-red-900/30 border border-red-900/50 mt-4 hover:bg-red-900/50">
+                    <span class="font-medium text-red-400">Przywróć ustawienia fabryczne</span>
+                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer Hints (Globalne podpowiedzi nawigacyjne) -->
+    <div id="global-hints" class="absolute bottom-4 right-12 z-[100] flex gap-6 text-sm font-medium text-white/50 transition-opacity">
+        <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">OK</span> Wybierz</div>
+        <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">M</span> Menu Home</div>
+        <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">Wstecz</span> Cofnij</div>
+    </div>
+
+    <!-- Globalny system powiadomień (Toast) -->
+    <div id="toast-container" class="toast-slide absolute top-12 right-12 z-[200] glass-panel-heavy border-l-4 border-l-purple-500 rounded-xl p-4 flex items-center gap-4 shadow-2xl min-w-[300px]">
+        <div id="toast-icon" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl text-purple-400">
+            <i class="fas fa-info"></i>
+        </div>
+        <div>
+            <h4 id="toast-title" class="font-bold text-white text-lg leading-tight">Powiadomienie</h4>
+            <p id="toast-msg" class="text-gray-400 text-sm">Opis akcji</p>
+        </div>
+    </div>
+
+    <!-- Globalny system okien modalnych -->
+    <div id="modal-container" class="modal-overlay absolute inset-0 bg-black/60 z-[300] flex items-center justify-center">
+        <div id="modal-box" class="modal-box glass-panel-heavy rounded-3xl p-8 max-w-2xl w-full mx-8 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20 pointer-events-none"></div>
+            <div class="relative z-10">
+                <h2 id="modal-title" class="text-3xl font-bold mb-4 flex items-center gap-4">
+                    <i id="modal-icon" class="fas fa-exclamation-circle text-purple-400"></i>
+                    <span>Tytuł Modala</span>
+                </h2>
+                <div id="modal-content" class="text-gray-300 text-lg leading-relaxed mb-10">
+                    Treść modala...
+                </div>
+                <div id="modal-buttons" class="flex gap-4 justify-end">
+                    <!-- Generowane dynamicznie -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ekran bootowania (do symulacji twardego resetu) -->
+    <div id="boot-screen" class="absolute inset-0 bg-black z-[500] flex flex-col items-center justify-center transition-opacity duration-1000 opacity-0 pointer-events-none">
+        <i class="fas fa-satellite-dish text-6xl text-white/20 mb-6 animate-pulse"></i>
+        <h1 class="text-4xl font-light tracking-widest text-white/50 mb-8">AURORA <span class="font-bold text-white">OS</span></h1>
+        <div class="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div id="boot-progress" class="h-full bg-purple-500 w-0"></div>
+        </div>
+        <p id="boot-text" class="mt-4 text-sm text-gray-500">Uruchamianie systemu...</p>
+    </div>
+
+    <script>
+        // --- KANAŁY TELEWIZYJNE LIVE HLS ---
+        const channels = [
+            { id: 1, name: "TVP 1 HD", cat: "Ogólne", url: "https://stream.tvp.pl/live/tvpinfo/master.m3u8" },
+            { id: 2, name: "TVP INFO", cat: "Wiadomości", url: "https://stream.tvp.pl/live/tvpinfo/master.m3u8" },
+            { id: 3, name: "POLSAT HD", cat: "Ogólne", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" },
+            { id: 4, name: "TVN 24", cat: "Wiadomości", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" },
+            { id: 5, name: "CANAL+ SPORT", cat: "Sport", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" },
+            { id: 6, name: "HBO KINO", cat: "Filmy", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" }
+        ];
+
+        function playChannel(idx) {
+            const ch = channels[idx];
+            if (!ch) return;
+            const video = document.getElementById('tv-video');
+            if (!video) return;
+            
+            try {
+                if (ch.url.endsWith('.m3u8') && window.Hls && Hls.isSupported()) {
+                    if (window.hlsInstance) window.hlsInstance.destroy();
+                    window.hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
+                    window.hlsInstance.loadSource(ch.url);
+                    window.hlsInstance.attachMedia(video);
+                    window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+                } else {
+                    if (window.hlsInstance) { window.hlsInstance.destroy(); window.hlsInstance = null; }
+                    video.src = ch.url;
+                    video.play().catch(()=>{});
+                }
+            } catch(e) {
+                console.log("Błąd playChannel:", e);
+            }
+        }
+
+        const movies = [
+            { id: 'm1', title: 'Neonowa Noc', year: '2026', genre: 'Cyberpunk', img: 'https://placehold.co/400x600/1e1b4b/a78bfa?text=Neon', desc: 'Wizjonerska opowieść o mieście przyszłości, gdzie granica między człowiekiem a maszyną zaciera się na zawsze.' },
+            { id: 'm2', title: 'Głębia', year: '2025', genre: 'Thriller', img: 'https://placehold.co/400x600/064e3b/6ee7b7?text=Glebia', desc: 'Załoga łodzi podwodnej odkrywa anomalię na dnie oceanu. To, co tam znajdą, zmieni losy ludzkości.' },
+            { id: 'm3', title: 'Galaktyka', year: '2026', genre: 'Sci-Fi', img: 'https://placehold.co/400x600/000000/ffffff?text=Galaktyka', desc: 'Epicka podróż przez nieznane układy słoneczne w poszukiwaniu nowego domu dla Ziemian.' },
+            { id: 'm4', title: 'Komedia z pomyłek', year: '2024', genre: 'Komedia', img: 'https://placehold.co/400x600/7f1d1d/fca5a5?text=Komedia', desc: 'Dwie rodziny, jeden opłacony dom na wakacje. Recepta na katastrofę i salwy śmiechu.' },
+            { id: 'm5', title: 'W cieniu gór', year: '2025', genre: 'Dramat', img: 'https://placehold.co/400x600/3f3f46/d4d4d8?text=Gory', desc: 'Wzruszająca historia alpinisty, który musi zmierzyć się z przeszłością podczas najtrudniejszej wspinaczki.' },
+        ];
+
+        // Generowanie stałego EPG
+        const generateEPG = () => {
+            const grid = [];
+            for(let c=0; c<channels.length; c++) {
+                let row = [];
+                let start = 18;
+                for(let i=0; i<6; i++) {
+                    let dur = (Math.random() > 0.5) ? 2 : 1;
+                    row.push({
+                        id: `epg-item-${c}-${i}`,
+                        title: c % 2 === 0 ? `Film Hit ${i+1}` : `Wiadomości / Sport ${i+1}`,
+                        start: start, dur: dur,
+                        desc: `Przykładowy opis programu emitowanego o godzinie ${start}:00 na kanale ${channels[c].name}.`
+                    });
+                    start += dur;
+                }
+                grid.push(row);
+            }
+            return grid;
+        };
+        const epgData = generateEPG();
+
+        // --- STAN APLIKACJI ---
+        const state = {
+            activeLayer: 'tv', // tv, home, vod, epg, settings
+            prevLayer: 'tv',
+            modal: {
+                isOpen: false,
+                focusList: [],
+                prevFocus: null,
+                prevFocusList: [],
+                onConfirm: null
+            },
+            toastTimer: null,
+            tv: {
+                chIdx: 0,
+                volume: 30,
+                osdTimer: null,
+                actionsOpen: false
+            },
+            nav: {
+                focusList: [],
+                currentId: null,
+                memory: {
+                    home: 'app-tv',
+                    vod: 'vod-item-0',
+                    settings: 'set-menu-net',
+                    tv: 'osd-btn-info',
+                    epg: {r: 0, c: 0}
+                }
+            }
+        };
+
+        const els = {
+            layers: document.querySelectorAll('.layer'),
+            body: document.body
+        };
+
+        // --- SYSTEM POWIADOMIEŃ I OKIEN (MODALS & TOASTS) ---
+        function showToast(title, msg, iconClass = 'fas fa-info', colorClass = 'text-purple-400', borderClass = 'border-l-purple-500') {
+            const cont = document.getElementById('toast-container');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-msg').textContent = msg;
+            
+            const iconWrap = document.getElementById('toast-icon');
+            iconWrap.className = `w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl ${colorClass}`;
+            iconWrap.innerHTML = `<i class="${iconClass}"></i>`;
+            
+            cont.className = `toast-slide absolute top-12 right-12 z-[200] glass-panel-heavy border-l-4 ${borderClass} rounded-xl p-4 flex items-center gap-4 shadow-2xl min-w-[300px] show`;
+            
+            clearTimeout(state.toastTimer);
+            state.toastTimer = setTimeout(() => {
+                cont.classList.remove('show');
+            }, 4000);
+        }
+
+        function showModal(title, content, icon = 'fas fa-info-circle', buttons = [{id: 'btn-ok', text: 'OK', primary: true}], onConfirm = null) {
+            state.modal.isOpen = true;
+            state.modal.prevFocus = state.nav.currentId;
+            state.modal.prevFocusList = [...state.nav.focusList];
+            state.modal.onConfirm = onConfirm;
+
+            document.getElementById('modal-title').innerHTML = `<i class="${icon}"></i> <span>${title}</span>`;
+            document.getElementById('modal-content').innerHTML = content;
+
+            const btnContainer = document.getElementById('modal-buttons');
+            btnContainer.innerHTML = '';
+            state.modal.focusList = [];
+
+            buttons.forEach((btn, i) => {
+                const btnEl = document.createElement('div');
+                btnEl.id = `modal-btn-${i}`;
+                btnEl.className = `focusable tv-focus-sm px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center ${btn.primary ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.4)]' : 'glass-panel text-white hover:bg-white/10'}`;
+                btnEl.textContent = btn.text;
+                btnEl.dataset.action = btn.id;
+                btnContainer.appendChild(btnEl);
+                state.modal.focusList.push(btnEl.id);
+            });
+
+            document.getElementById('modal-container').classList.add('active');
+            
+            // Przeniesienie focusu na przycisk w modalu
+            setTimeout(() => {
+                state.nav.focusList = state.modal.focusList;
+                setFocus(state.modal.focusList[buttons.length - 1]); // Focus domyślnie na najważniejszy przycisk (zwykle ostatni)
+            }, 50);
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').classList.remove('active');
+            state.modal.isOpen = false;
+            state.nav.focusList = state.modal.prevFocusList;
+            setTimeout(() => {
+                setFocus(state.modal.prevFocus);
+            }, 50);
+        }
+
+        function simulateReboot() {
+            const boot = document.getElementById('boot-screen');
+            const progress = document.getElementById('boot-progress');
+            const text = document.getElementById('boot-text');
+            
+            boot.classList.remove('opacity-0', 'pointer-events-none');
+            
+            // Sekwencja czasowa symulująca wgrywanie OS
+            setTimeout(() => {
+                progress.style.transition = 'width 2s ease-in-out';
+                progress.style.width = '40%';
+                text.textContent = 'Czyszczenie pamięci eMMC użytkownika...';
+                
+                setTimeout(() => {
+                    progress.style.transition = 'width 3s ease-in-out';
+                    progress.style.width = '80%';
+                    text.textContent = 'Przywracanie jądra systemu Aurora OS...';
+                    
+                    setTimeout(() => {
+                        progress.style.transition = 'width 1s ease-in-out';
+                        progress.style.width = '100%';
+                        text.textContent = 'Sukces. Uruchamianie usług...';
+                        
+                        setTimeout(() => {
+                            window.location.reload(); // Całkowity hard reset UI
+                        }, 1000);
+                    }, 3000);
+                }, 2500);
+            }, 1000);
+        }
+
+
+        // Zegar
+        setInterval(() => {
+            document.getElementById('top-clock').textContent = new Date().toLocaleTimeString('pl-PL', {hour:'2-digit', minute:'2-digit'});
+        }, 1000);
+
+        
+        function scanFocusables(layerId) {
+            const container = document.getElementById(`layer-${layerId}`);
+            if (!container) return [];
+            // Znajdź wszystkie .focusable, ignorując schowane overlaye jeśli nie są aktywne
+            const nodes = Array.from(container.querySelectorAll('.focusable')).filter(el => {
+                // Check if element or its parent is physically hidden via opacity 0 pointer-events none
+                const style = window.getComputedStyle(el);
+                if(style.display === 'none' || style.visibility === 'hidden') return false;
+                
+                // Specyficzny przypadek dla overlay w TV
+                if(layerId === 'tv' && !state.tv.actionsOpen && el.id.startsWith('osd-btn')) return false;
+                if(layerId === 'tv' && state.tv.actionsOpen && !el.id.startsWith('osd-btn')) return false;
+                
+                return true;
+            });
+            return nodes.map(n => n.id);
+        }
+
+        function setFocus(newId) {
+            if (!newId) return;
+            
+            if (state.nav.currentId) {
+                const prev = document.getElementById(state.nav.currentId);
+                if (prev) prev.classList.remove('tv-focus', 'tv-focus-sm');
+            }
+
+            const next = document.getElementById(newId);
+            if (next) {
+                // Mniejszy focus dla elementów z małym paddingiem/ikon
+                if (next.id.includes('btn') || next.id.includes('set-')) {
+                    next.classList.add('tv-focus-sm');
+                } else {
+                    next.classList.add('tv-focus');
+                }
+                
+                state.nav.currentId = newId;
+                if(state.activeLayer !== 'tv' && state.activeLayer !== 'epg') {
+                    state.nav.memory[state.activeLayer] = newId;
+                }
+                
+                handleFocusCallback(newId);
+            }
+        }
+
+        // Geometryczny algorytm nawigacji
+        function navigate(dir) {
+            if (!state.nav.currentId) {
+                if (state.nav.focusList.length > 0) setFocus(state.nav.focusList[0]);
+                return;
+            }
+
+            // Obejście (Override) algorytmu dla widoków opartych na listach jednowymiarowych (jak karuzela VOD)
+            const overrideId = checkNavOverrides(dir);
+            if(overrideId) {
+                setFocus(overrideId);
+                return;
+            }
+
+            const curr = document.getElementById(state.nav.currentId);
+            if (!curr) return;
+            const cRect = curr.getBoundingClientRect();
+            const cx = cRect.left + cRect.width / 2;
+            const cy = cRect.top + cRect.height / 2;
+
+            let bestDist = Infinity;
+            let bestId = null;
+
+            state.nav.focusList.forEach(id => {
+                if (id === state.nav.currentId) return;
+                const el = document.getElementById(id);
+                if (!el) return;
+                
+                const rect = el.getBoundingClientRect();
+                const ex = rect.left + rect.width / 2;
+                const ey = rect.top + rect.height / 2;
+
+                const dx = ex - cx;
+                const dy = ey - cy;
+                const absDx = Math.abs(dx);
+                const absDy = Math.abs(dy);
+
+                let valid = false;
+                let primary = 0, secondary = 0;
+
+                // Margines błędu 45 stopni
+                if (dir === 'Right' && dx > 0 && absDx >= absDy * 0.5) { valid = true; primary = dx; secondary = absDy; }
+                if (dir === 'Left' && dx < 0 && absDx >= absDy * 0.5) { valid = true; primary = Math.abs(dx); secondary = absDy; }
+                if (dir === 'Down' && dy > 0 && absDy >= absDx * 0.5) { valid = true; primary = dy; secondary = absDx; }
+                if (dir === 'Up' && dy < 0 && absDy >= absDx * 0.5) { valid = true; primary = Math.abs(dy); secondary = absDx; }
+
+                if (valid) {
+                    const score = primary + (secondary * 1.5); // Kary za odchylenie od osi
+                    if (score < bestDist) {
+                        bestDist = score;
+                        bestId = id;
+                    }
+                }
+            });
+
+            if (bestId) setFocus(bestId);
+        }
+
+        // Twarde ścieżki dla specyficznych układów gdzie BoxModel może zawieść
+        function checkNavOverrides(dir) {
+            if(state.activeLayer === 'vod') {
+                const isBtn = state.nav.currentId.startsWith('vod-btn');
+                const isItem = state.nav.currentId.startsWith('vod-item');
+                
+                if (isBtn && dir === 'Down') return 'vod-item-0'; // Z guzików w dół na karuzelę
+                if (isItem && dir === 'Up') return 'vod-btn-play'; // Z karuzeli w górę na guziki
+                
+                if (isItem) {
+                    const idx = parseInt(state.nav.currentId.split('-')[2]);
+                    if (dir === 'Right' && idx < movies.length - 1) return `vod-item-${idx+1}`;
+                    if (dir === 'Left' && idx > 0) return `vod-item-${idx-1}`;
+                }
+                
+                if (isBtn) {
+                     if(state.nav.currentId === 'vod-btn-play' && dir === 'Right') return 'vod-btn-add';
+                     if(state.nav.currentId === 'vod-btn-add' && dir === 'Left') return 'vod-btn-play';
+                }
+            }
+            return null;
+        }
+
+        
+        function handleFocusCallback(id) {
+            // VOD: aktualizacja hero image i scrollowanie
+            if (state.activeLayer === 'vod' && id.startsWith('vod-item')) {
+                const el = document.getElementById(id);
+                document.getElementById('vod-bg').style.backgroundImage = `url('${el.dataset.img}')`;
+                document.getElementById('vod-hero-title').textContent = el.dataset.title;
+                document.getElementById('vod-hero-desc').textContent = el.dataset.desc;
+                document.getElementById('vod-hero-genre').textContent = el.dataset.genre;
+                
+                // Prosty scroll dla karuzeli (przesunięcie kontenera za pomocą CSS transform)
+                const idx = parseInt(id.split('-')[2]);
+                const carousel = document.getElementById('vod-carousel');
+                // Szerokość elementu (w72 = 18rem = 288px) + gap (6 = 1.5rem = 24px) = ok 312px;
+                // Centrujemy uproszczonym przelicznikiem
+                const offset = Math.max(0, (idx - 1) * 312); 
+                carousel.style.transform = `translateX(-${offset}px)`;
+            }
+
+            // Ustawienia: Zmiana paneli na podstawie menu
+            if (state.activeLayer === 'settings' && id.startsWith('set-menu-')) {
+                const panelMap = {
+                    'set-menu-net': 'set-panel-net',
+                    'set-menu-av': 'set-panel-av',
+                    'set-menu-sys': 'set-panel-sys'
+                };
+                const targetId = panelMap[id];
+                
+                // Ukryj wszystkie panele
+                document.querySelectorAll('.set-panel').forEach(p => {
+                    p.style.display = 'none';
+                    p.classList.remove('opacity-100');
+                    p.classList.add('opacity-0', 'pointer-events-none');
+                });
+                
+                // Pokaż odpowiedni panel
+                const target = document.getElementById(targetId);
+                if(target) {
+                    target.style.display = 'flex';
+                    // Aktualizacja focusList od razu po pokazaniu elementu (aby umożliwić płynną nawigację w prawo)
+                    state.nav.focusList = scanFocusables('settings'); 
+                    
+                    // Trigger reflow i animacja wejścia
+                    void target.offsetWidth; 
+                    target.classList.remove('opacity-0', 'pointer-events-none');
+                    target.classList.add('opacity-100');
+                }
+            }
+        }
+
+        function renderVOD() {
+            const cont = document.getElementById('vod-carousel');
+            movies.forEach((m, i) => {
+                const div = document.createElement('div');
+                div.id = `vod-item-${i}`;
+                div.className = `focusable w-72 h-40 rounded-2xl bg-cover bg-center shrink-0 border border-white/20`;
+                div.style.backgroundImage = `url('${m.img}')`;
+                div.dataset.title = m.title;
+                div.dataset.desc = m.desc;
+                div.dataset.genre = m.genre;
+                div.dataset.img = m.img;
+                cont.appendChild(div);
+            });
+        }
+
+        const epgCellW = 350; // px na godzine
+        const epgRowH = 76; // px
+
+        function renderEPG() {
+            const tl = document.getElementById('epg-timeline');
+            const chPanel = document.getElementById('epg-channels');
+            const grid = document.getElementById('epg-grid');
+            
+            // Oś czasu (18-24)
+            for(let h=18; h<=24; h++) {
+                const div = document.createElement('div');
+                div.className = 'absolute h-full flex items-center px-4 border-l border-white/10';
+                div.style.left = `${(h-18)*epgCellW}px`;
+                div.style.width = `${epgCellW}px`;
+                div.textContent = `${h}:00`;
+                tl.appendChild(div);
+            }
+
+            channels.forEach((ch, r) => {
+                // Kolumna kanałów
+                const chDiv = document.createElement('div');
+                chDiv.className = `h-[${epgRowH}px] border-b border-white/5 flex items-center px-6 gap-4 font-semibold`;
+                chDiv.style.height = `${epgRowH}px`;
+                chDiv.innerHTML = `<span class="w-10 h-10 rounded-full bg-white/10 flex justify-center items-center">${ch.id}</span> ${ch.name}`;
+                chPanel.appendChild(chDiv);
+
+                // Wiersz programów
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'absolute border-b border-white/5 flex w-[3000px]';
+                rowDiv.style.top = `${r * epgRowH}px`;
+                rowDiv.style.height = `${epgRowH}px`;
+
+                let left = 0;
+                epgData[r].forEach((p, c) => {
+                    const w = p.dur * epgCellW;
+                    const pDiv = document.createElement('div');
+                    pDiv.id = p.id;
+                    pDiv.className = 'focusable absolute h-full border-r border-white/5 bg-white/5 p-4 flex flex-col justify-center';
+                    pDiv.style.left = `${left}px`;
+                    pDiv.style.width = `${w}px`;
+                    pDiv.innerHTML = `
+                        <div class="font-bold truncate text-white">${p.title}</div>
+                        <div class="text-xs text-purple-300 mt-1">${p.start}:00 - ${p.start+p.dur}:00</div>
+                    `;
+                    pDiv.dataset.r = r; pDiv.dataset.c = c;
+                    pDiv.dataset.title = p.title; pDiv.dataset.time = `${p.start}:00 - ${p.start+p.dur}:00`;
+                    pDiv.dataset.desc = p.desc;
+                    
+                    rowDiv.appendChild(pDiv);
+                    left += w;
+                });
+                grid.appendChild(rowDiv);
+            });
+        }
+
+        // Custom EPG Navigation (Matrix based)
+        function navigateEPG(key) {
+            let r = state.nav.memory.epg.r;
+            let c = state.nav.memory.epg.c;
+            
+            if(key === 'ArrowDown') r = Math.min(r + 1, channels.length - 1);
+            if(key === 'ArrowUp') r = Math.max(r - 1, 0);
+            if(key === 'ArrowRight') c = Math.min(c + 1, epgData[r].length - 1);
+            if(key === 'ArrowLeft') c = Math.max(c - 1, 0);
+            
+            // Check boundaries for column on row change
+            c = Math.min(c, epgData[r].length - 1);
+
+            focusEPG(r, c);
+        }
+
+        function focusEPG(r, c) {
+            // Remove old custom focus style
+            const oldId = epgData[state.nav.memory.epg.r][state.nav.memory.epg.c].id;
+            const oldEl = document.getElementById(oldId);
+            if(oldEl) {
+                oldEl.style.boxShadow = 'none';
+                oldEl.style.border = 'none';
+                oldEl.style.backgroundColor = '';
+                oldEl.style.zIndex = '1';
+                oldEl.classList.remove('scale-105');
+            }
+
+            state.nav.memory.epg.r = r;
+            state.nav.memory.epg.c = c;
+            
+            const newId = epgData[r][c].id;
+            const newEl = document.getElementById(newId);
+            state.nav.currentId = newId;
+
+            if(newEl) {
+                // Apply Aurora style focus manually to absolute EPG blocks
+                newEl.style.boxShadow = `inset 0 0 0 2px ${getComputedStyle(document.body).getPropertyValue('--focus-ring')}, 0 0 20px rgba(139, 92, 246, 0.5)`;
+                newEl.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                newEl.style.zIndex = '10';
+                
+                // Update detail pane
+                document.getElementById('epg-det-title').textContent = newEl.dataset.title;
+                document.getElementById('epg-det-time').textContent = newEl.dataset.time;
+                document.getElementById('epg-det-desc').textContent = newEl.dataset.desc;
+
+                scrollEPG(newEl, r);
+            }
+        }
+
+        function scrollEPG(el, r) {
+            const grid = document.getElementById('epg-grid');
+            const tl = document.getElementById('epg-timeline');
+            const ch = document.getElementById('epg-channels');
+            
+            const left = parseInt(el.style.left);
+            const w = parseInt(el.style.width);
+            const top = r * epgRowH;
+            
+            const viewW = window.innerWidth - 256; // Minus sidebar kanałów (64rem = 256px)
+            const viewH = window.innerHeight - (120 + 200); // Minus nagłówki i footer
+            
+            // X Scroll
+            let tx = -(left - viewW/2 + w/2);
+            if(tx > 0) tx = 0;
+            
+            // Y Scroll
+            let ty = -(top - viewH/2 + epgRowH/2);
+            if(ty > 0) ty = 0;
+
+            grid.style.transform = `translate(${tx}px, ${ty}px)`;
+            tl.style.transform = `translateX(${tx}px)`;
+            ch.style.transform = `translateY(${ty}px)`;
+        }
+
+        
+        function switchLayer(target) {
+            if (state.activeLayer === target) return;
+            
+            // Jeśli otwieramy Home (Dashboard) z innej warstwy niż TV, przejdź najpierw przez TV
+            if (target === 'home' && state.activeLayer !== 'tv' && state.activeLayer !== 'home') {
+                 // W produkcji to by wyglądało inaczej, w prototypie tak jest czytelniej
+            }
+
+            state.prevLayer = state.activeLayer;
+            state.activeLayer = target;
+
+            // Zmiana UI
+            els.layers.forEach(l => l.classList.remove('active'));
+            document.getElementById(`layer-${target}`).classList.add('active');
+
+            // Blur na obraz wideo jeśli to nie jest czyste TV
+            if (target === 'tv') {
+                els.body.classList.remove('blurred-bg');
+                document.getElementById('global-hints').classList.add('opacity-0');
+            } else {
+                els.body.classList.add('blurred-bg');
+                document.getElementById('global-hints').classList.remove('opacity-0');
+            }
+
+            // Inicjalizacja Focusu
+            setTimeout(() => {
+                if (target === 'tv') {
+                    state.nav.currentId = null;
+                    if(state.tv.actionsOpen) closeOSDActions();
+                    showOSDPill();
+                } else if (target === 'epg') {
+                    focusEPG(state.nav.memory.epg.r, state.nav.memory.epg.c);
+                } else {
+                    state.nav.focusList = scanFocusables(target);
+                    setFocus(state.nav.memory[target]);
+                }
+            }, 50); // Dom render delay
+        }
+
+        // --- Obsługa OSD TV ---
+        function showOSDPill() {
+            if(state.activeLayer !== 'tv') return;
+            const ch = channels[state.tv.chIdx];
+            const prog = epgData[state.tv.chIdx][0]; // uproszczone dane aktualne
+
+            document.getElementById('osd-num').textContent = ch.id;
+            document.getElementById('watermark-ch').textContent = ch.name;
+            document.getElementById('osd-title').textContent = prog.title;
+            document.getElementById('osd-time').textContent = `${prog.start}:00 - ${prog.start+prog.dur}:00`;
+            document.getElementById('osd-cat').textContent = ch.cat;
+
+            playChannel(state.tv.chIdx);
+
+            const pill = document.getElementById('osd-container');
+            pill.classList.add('show');
+            
+            clearTimeout(state.tv.osdTimer);
+            state.tv.osdTimer = setTimeout(() => {
+                if(!state.tv.actionsOpen) pill.classList.remove('show');
+            }, 4000);
+        }
+
+        function toggleOSDActions() {
+            const overlay = document.getElementById('osd-actions-overlay');
+            const box = document.getElementById('osd-actions-box');
+            
+            if (state.tv.actionsOpen) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0');
+                overlay.classList.add('pointer-events-none');
+                box.classList.remove('scale-100');
+                box.classList.add('scale-95');
+                state.tv.actionsOpen = false;
+                state.nav.currentId = null;
+                showOSDPill(); // Zresetuj timer chowania pigułki
+            } else {
+                showOSDPill(); // Pigułka musi być na wierzchu podczas akcji
+                clearTimeout(state.tv.osdTimer); // Zablokuj chowanie
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100');
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+                state.tv.actionsOpen = true;
+                
+                setTimeout(() => {
+                    state.nav.focusList = scanFocusables('tv');
+                    setFocus(state.nav.memory.tv || 'osd-btn-info');
+                }, 50);
+            }
+        }
+
+        function showVolume() {
+            const ind = document.getElementById('vol-indicator');
+            document.getElementById('vol-text').textContent = state.tv.volume;
+            document.getElementById('vol-bar').style.height = `${state.tv.volume}%`;
+            
+            ind.classList.remove('opacity-0');
+            clearTimeout(state.tv.volTimer);
+            state.tv.volTimer = setTimeout(() => ind.classList.add('opacity-0'), 2000);
+        }
+
+
+        // --- Obsługa Zdarzeń Klawiatury ---
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Backspace', 'Escape'].includes(key)) {
+                e.preventDefault();
+            }
+
+            // Obsługa Modala (blokuje resztę interfejsu podczas gdy okno dialogowe jest aktywne)
+            if (state.modal.isOpen) {
+                if (['ArrowLeft', 'ArrowRight'].includes(key)) {
+                    navigate(key.replace('Arrow', ''));
+                }
+                if (key === 'Enter') {
+                    const el = document.getElementById(state.nav.currentId);
+                    if (el) {
+                        el.style.transform = 'scale(0.95)';
+                        setTimeout(() => el.style.transform = '', 150);
+                        
+                        if (el.dataset.action === 'btn-ok' || el.dataset.action === 'btn-confirm') {
+                            if (state.modal.onConfirm) state.modal.onConfirm();
+                            else closeModal();
+                        } else {
+                            closeModal();
+                        }
+                    }
+                }
+                if (key === 'Backspace' || key === 'Escape') {
+                    closeModal();
+                }
+                return; // Przerwij dalszą obsługę klawiszy systemowych
+            }
+
+            // Klawisz M = Przełącznik Home (Dashboard)
+            if (key.toLowerCase() === 'm') {
+                if (state.activeLayer === 'home') switchLayer('tv');
+                else switchLayer('home');
+                return;
+            }
+
+            // Backspace / ESC = Zawsze powrót do poprzedniej warstwy lub do TV
+            if (key === 'Backspace' || key === 'Escape') {
+                if (state.activeLayer === 'tv' && state.tv.actionsOpen) {
+                    toggleOSDActions();
+                } else if (state.activeLayer !== 'tv') {
+                    switchLayer('tv');
+                }
+                return;
+            }
+
+            // Obsługa na podstawie warstwy
+            if (state.activeLayer === 'tv') {
+                if (state.tv.actionsOpen) {
+                     if (key === 'ArrowRight' || key === 'ArrowLeft') navigate(key.replace('Arrow', ''));
+                     if (key === 'ArrowUp' || key === 'ArrowDown') toggleOSDActions();
+                     if (key === 'Enter') {
+                          if (!state.nav.currentId) return; // Null check
+                          
+                          // Ożywienie przycisków na nakładce TV
+                          if (state.nav.currentId === 'osd-btn-info') {
+                              const prog = epgData[state.tv.chIdx][0];
+                              showModal('Informacje o programie: ' + prog.title, prog.desc + '<br><br><strong>Gatunek:</strong> ' + channels[state.tv.chIdx].cat + '<br><strong>Czas trwania:</strong> ' + prog.start + ':00 - ' + (prog.start+prog.dur) + ':00', 'fas fa-info-circle');
+                          } else if (state.nav.currentId === 'osd-btn-rec') {
+                              showToast('Nagrywanie zaplanowane', `Zlecono nagranie: ${epgData[state.tv.chIdx][0].title}`, 'fas fa-record-vinyl', 'text-red-400', 'border-l-red-500');
+                              toggleOSDActions();
+                          } else if (state.nav.currentId === 'osd-btn-lang') {
+                              showToast('Ścieżka dźwiękowa', 'Zmieniono język audycji z POL na ENG', 'fas fa-language', 'text-green-400', 'border-l-green-500');
+                              toggleOSDActions();
+                          }
+                     }
+                } else {
+                     if (key === 'ArrowUp') { state.tv.chIdx = (state.tv.chIdx + 1) % channels.length; showOSDPill(); }
+                     if (key === 'ArrowDown') { state.tv.chIdx = (state.tv.chIdx - 1 + channels.length) % channels.length; showOSDPill(); }
+                     if (key === 'ArrowRight') { state.tv.volume = Math.min(100, state.tv.volume + 5); showVolume(); }
+                     if (key === 'ArrowLeft') { state.tv.volume = Math.max(0, state.tv.volume - 5); showVolume(); }
+                     if (key === 'Enter') { toggleOSDActions(); }
+                }
+            } 
+            else if (state.activeLayer === 'epg') {
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) navigateEPG(key);
+                if (key === 'Enter') {
+                    state.tv.chIdx = state.nav.memory.epg.r;
+                    showToast('Zmieniono kanał', channels[state.tv.chIdx].name, 'fas fa-tv', 'text-blue-400', 'border-l-blue-500');
+                    switchLayer('tv');
+                }
+            } 
+            else {
+                // Generyczna nawigacja przestrzenna dla Home, VOD, Settings
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+                    navigate(key.replace('Arrow', ''));
+                } else if (key === 'Enter') {
+                    if (!state.nav.currentId) return; // Zabezpieczenie przed kliknięciem w nic (Null check z poprzednich wymagań)
+                    const el = document.getElementById(state.nav.currentId);
+                    if (!el) return;
+                    
+                    // FX kliknięcia
+                    el.style.transform = 'scale(0.95)';
+                    setTimeout(() => el.style.transform = '', 150);
+
+                    // Akcje dla Home Apps
+                    if (state.activeLayer === 'home') {
+                        if (el.dataset.target === 'youtube') {
+                            if (window.chrome && window.chrome.webview) {
+                                window.chrome.webview.postMessage({ action: 'open_youtube' });
+                            } else {
+                                window.open('https://www.youtube.com/tv', '_blank');
+                            }
+                        } else if (el.dataset.target === 'apple') {
+                            showModal(
+                                'Pilot Apple TV • Parowanie z iPhone',
+                                '<div class="flex gap-6 items-center text-left">' +
+                                '<div class="flex-1">' +
+                                '<p class="mb-3 font-medium">1. Upewnij się, że iPhone i dekoder są w tej samej sieci Wi-Fi.</p>' +
+                                '<p class="mb-3 font-medium">2. Na iPhone otwórz aplikację <strong>Dom (Apple Home)</strong>.</p>' +
+                                '<p class="mb-3 font-medium">3. Kliknij <strong>+</strong> ➔ <strong>Dodaj akcesorium</strong> i zeskanuj kod z prawej strony.</p>' +
+                                '<p class="mb-2 font-medium">4. Jeśli parujesz ręcznie, wpisz kod poniżej:</p>' +
+                                '<div class="bg-purple-900/40 border border-purple-500/50 rounded-xl p-3 inline-block mt-1"><span class="text-purple-300 font-extrabold text-2xl tracking-widest">111-22-333</span></div>' +
+                                '</div>' +
+                                '<div class="bg-white p-3 rounded-2xl shadow-2xl shrink-0 flex flex-col items-center border-2 border-purple-400">' +
+                                '<img src="apple_remote_qr.png" class="w-44 h-44 object-contain" alt="QR Code HomeKit"/>' +
+                                '<span class="text-black text-xs font-bold mt-2 tracking-wider">APLIKACJA DOM</span>' +
+                                '</div>' +
+                                '</div>',
+                                'fab fa-apple text-white',
+                                [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
+                            );
+                        } else if (el.dataset.target) {
+                            switchLayer(el.dataset.target);
+                        } else if (state.nav.currentId.startsWith('home-rec-')) {
+                            // Symulacja kliknięcia w "Ostatnio Oglądane" na Home Dashboard
+                            showToast('Wznawianie odtwarzania', 'Ładowanie wybranego materiału...', 'fas fa-play', 'text-green-400', 'border-l-green-500');
+                            setTimeout(() => {
+                                switchLayer('tv');
+                                document.getElementById('watermark-ch').textContent = el.querySelector('div.font-semibold').textContent.toUpperCase();
+                                setTimeout(()=> document.getElementById('watermark-ch').textContent = channels[state.tv.chIdx].name, 4000);
+                            }, 1000);
+                        }
+                    }
+                    
+                    // Symulacja akcji VOD
+                    if (state.activeLayer === 'vod') {
+                        if (state.nav.currentId === 'vod-btn-play') {
+                            switchLayer('tv');
+                            document.getElementById('watermark-ch').textContent = "VOD PLAYING";
+                            setTimeout(()=> document.getElementById('watermark-ch').textContent = channels[state.tv.chIdx].name, 3000);
+                        } else if (state.nav.currentId === 'vod-btn-add') {
+                            const title = document.getElementById('vod-hero-title').textContent;
+                            showToast('Dodano do listy', `Film "${title}" został przypięty do ulubionych.`, 'fas fa-heart', 'text-pink-400', 'border-l-pink-500');
+                        } else if (state.nav.currentId.startsWith('vod-item')) {
+                            // Szybki skok na przycisk "Oglądaj" po wybraniu filmu
+                            setFocus('vod-btn-play');
+                        }
+                    }
+
+                    // Akcje Ustawień
+                    if (state.activeLayer === 'settings') {
+                        // Wi-Fi Toggle
+                        if (state.nav.currentId === 'set-opt-wifitoggle') {
+                            const val = document.getElementById('val-wifitoggle');
+                            val.textContent = val.textContent === 'Włączone' ? 'Wyłączone' : 'Włączone';
+                            val.classList.toggle('text-purple-300');
+                            val.classList.toggle('text-gray-500');
+                        }
+                        // Rozdzielczość
+                        if (state.nav.currentId === 'set-opt-res') {
+                            const val = document.getElementById('val-res');
+                            val.textContent = val.textContent === '4K (2160p)' ? '1080p (FHD)' : '4K (2160p)';
+                        }
+                        // HDR
+                        if (state.nav.currentId === 'set-opt-hdr') {
+                            const val = document.getElementById('val-hdr');
+                            const opts = ['Auto', 'Wymuszone', 'Wyłączone'];
+                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
+                        }
+                        // Audio
+                        if (state.nav.currentId === 'set-opt-audioout') {
+                            const val = document.getElementById('val-audioout');
+                            const opts = ['HDMI ARC', 'Optyczne (TOSLINK)', 'Głośniki TV', 'Bluetooth'];
+                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
+                        }
+                        // Profil dźwięku
+                        if (state.nav.currentId === 'set-opt-soundmode') {
+                            const val = document.getElementById('val-soundmode');
+                            const opts = ['Kino', 'Standard', 'Nocny', 'Sport', 'Muzyka'];
+                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
+                        }
+                        // Język
+                        if (state.nav.currentId === 'set-opt-lang') {
+                            const val = document.getElementById('val-lang');
+                            const opts = ['Polski', 'English', 'Deutsch', 'Español'];
+                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
+                        }
+                        
+                        // NOWE OPERACJE SYMETRUJĄCE DZIAŁANIE URZĄDZENIA
+                        if (state.nav.currentId === 'set-opt-netscan') {
+                            showToast('Skanowanie sieci...', 'Szukam dostępnych sieci Wi-Fi w okolicy (Skanowanie eteru)', 'fas fa-spinner fa-spin', 'text-blue-400', 'border-l-blue-500');
+                            setTimeout(() => {
+                                showModal('Wyniki skanowania sieci', 'Urządzenie wykryło następujące stacje bazowe:<br><br><strong>1. Domowy_Router_5G</strong> (Zapisano)<br>2. Netia_Gosc_24<br>3. UPC_Wi-Free', 'fas fa-wifi text-blue-400', [{id: 'btn-ok', text: 'Zamknij', primary: true}]);
+                            }, 2000);
+                        }
+                        
+                        if (state.nav.currentId === 'set-opt-nettest') {
+                            showToast('Testowanie łącza...', 'Proszę czekać, badam parametry sieci i przepustowość.', 'fas fa-tachometer-alt fa-pulse', 'text-yellow-400', 'border-l-yellow-500');
+                            setTimeout(() => {
+                                showModal('Wyniki diagnostyki łącza', 'Ping (Opóźnienie): <strong>12 ms</strong><br>Prędkość pobierania: <strong>450 Mbps</strong><br>Prędkość wysyłania: <strong>80 Mbps</strong><br><br>Status dekodera: <span class="text-green-400 font-bold">Połączenie stabilne, gotowe na streaming 4K HDR.</span>', 'fas fa-tachometer-alt text-yellow-400', [{id: 'btn-ok', text: 'Zakończ', primary: true}]);
+                            }, 3000);
+                        }
+                        
+                        if (state.nav.currentId === 'set-opt-update') {
+                            showToast('Szukam aktualizacji...', 'Nawiązywanie połączenia z chmurą dystrybucyjną Aurora...', 'fas fa-sync fa-spin', 'text-gray-400', 'border-l-gray-500');
+                            setTimeout(() => {
+                                showModal('Aktualizacje oprogramowania', 'System operacyjny Aurora OS w urządzeniu Aurora Box Pro jest w pełni aktualny.<br><br><strong>Zainstalowana wersja:</strong> 3.1.4<br><strong>Ostatnie sprawdzenie:</strong> Przed chwilą', 'fas fa-check-circle text-green-400', [{id: 'btn-ok', text: 'OK', primary: true}]);
+                            }, 2500);
+                        }
+                        
+                        if (state.nav.currentId === 'set-opt-reset') {
+                            showModal('Przywracanie ustawień fabrycznych', '<span class="text-red-400 font-bold">Ostrzeżenie o bezpowrotnej utracie danych:</span> Ta operacja usunie wszystkie zapisane sieci, konta VOD, logi systemowe i przywróci urządzenie do surowego stanu fabrycznego. <br><br>Czy na pewno chcesz kontynuować ten proces?', 'fas fa-exclamation-triangle text-red-500', 
+                            [
+                                {id: 'btn-cancel', text: 'Anuluj operację', primary: false}, 
+                                {id: 'btn-confirm', text: 'Tak, formatuj system', primary: true}
+                            ], 
+                            () => {
+                                closeModal();
+                                simulateReboot();
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
+        // Inicjalizacja
+        document.addEventListener('DOMContentLoaded', () => {
+            renderVOD();
+            renderEPG();
+            // Pokaż UI początkowe
+            setTimeout(() => {
+                showOSDPill();
+            }, 800);
+        });
+
+        // Obsługa sterowania z aplikacji C# oraz mostka pilota Apple TV
+        window.handleRemoteKey = function(keyCmd) {
+            const map = {
+                'up': 'ArrowUp',
+                'down': 'ArrowDown',
+                'left': 'ArrowLeft',
+                'right': 'ArrowRight',
+                'select': 'Enter',
+                'back': 'Escape',
+                'exit': 'm',
+                'play_pause': ' ',
+                'info': 'Enter',
+                'vol_up': 'ArrowRight',
+                'vol_down': 'ArrowLeft'
+            };
+            const k = map[keyCmd] || 'Enter';
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: k }));
+        };
+
+        if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.addEventListener('message', (event) => {
+                if (event.data && event.data.key) {
+                    window.handleRemoteKey(event.data.key);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
