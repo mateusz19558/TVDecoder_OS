@@ -152,6 +152,31 @@
         .modal-overlay.active .modal-box {
             transform: scale(1);
         }
+
+        /* Style wzorowane na PlayStation 4 (PS4) */
+        .ps4-settings-layer {
+            background: radial-gradient(circle at 50% 5%, #0e2b60 0%, #061533 40%, #020712 100%) !important;
+        }
+        .ps4-row {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .ps4-row:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .ps4-row.tv-focus-sm, .ps4-row.tv-focus {
+            background: linear-gradient(90deg, #003791 0%, #0066cc 100%) !important;
+            border-color: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 0 25px rgba(0, 102, 204, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6) !important;
+            transform: scale(1.02) !important;
+            color: #ffffff !important;
+        }
+        .ps4-row.tv-focus-sm i.fa-chevron-right, .ps4-row.tv-focus i.fa-chevron-right {
+            color: #ffffff !important;
+            transform: translateX(4px);
+        }
     </style>
 </head>
 <body>
@@ -246,18 +271,64 @@
                 <h3 class="text-xl font-medium text-white/70 mb-6 px-2 flex items-center gap-3">
                     <i class="fas fa-play text-sm"></i> Ostatnio oglądane
                 </h3>
-                <div class="flex gap-6" id="home-recent-row">
-                    <!-- Wygenerowane JS: prostokątne kafelki -->
-                    <div id="home-rec-1" class="focusable glass-panel w-72 h-40 rounded-2xl bg-cover bg-center flex items-end p-4" style="background-image: linear-gradient(to top, rgba(0,0,0,0.9), transparent), url('https://placehold.co/600x400/2e1065/ffffff?text=Wiedźmin');">
-                        <div>
-                            <div class="text-xs text-purple-300 font-bold mb-1">Odcinek 4</div>
-                            <div class="font-semibold text-lg">Wiedźmin</div>
+                <div class="flex gap-6 overflow-x-auto pb-2" id="home-recent-row">
+                    <!-- Film 1: Diuna 2 -->
+                    <div id="home-rec-1" data-title="Diuna: Część Druga" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80');">
+                        <div class="absolute top-3 right-3 bg-purple-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">4K HDR</div>
+                        <div class="relative z-10">
+                            <div class="text-xs text-purple-300 font-semibold mb-0.5">Film • Pozostało: 42 min</div>
+                            <div class="font-bold text-lg text-white truncate">Diuna: Część Druga</div>
+                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-purple-400 to-cyan-400" style="width: 68%;"></div>
+                            </div>
                         </div>
                     </div>
-                    <div id="home-rec-2" class="focusable glass-panel w-72 h-40 rounded-2xl bg-cover bg-center flex items-end p-4" style="background-image: linear-gradient(to top, rgba(0,0,0,0.9), transparent), url('https://placehold.co/600x400/064e3b/ffffff?text=Mecz');">
-                        <div>
-                            <div class="text-xs text-green-300 font-bold mb-1">Nagranie</div>
-                            <div class="font-semibold text-lg">Finał Ligi</div>
+
+                    <!-- Film 2: Oppenheimer -->
+                    <div id="home-rec-2" data-title="Oppenheimer" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80');">
+                        <div class="absolute top-3 right-3 bg-amber-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">IMAX</div>
+                        <div class="relative z-10">
+                            <div class="text-xs text-amber-300 font-semibold mb-0.5">Dramat • Pozostało: 1h 10m</div>
+                            <div class="font-bold text-lg text-white truncate">Oppenheimer</div>
+                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-amber-400 to-orange-400" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Serial 3: Wiedźmin 3 -->
+                    <div id="home-rec-3" data-title="Wiedźmin: Sezon 3" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80');">
+                        <div class="absolute top-3 right-3 bg-blue-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">NOWY ODCINEK</div>
+                        <div class="relative z-10">
+                            <div class="text-xs text-blue-300 font-semibold mb-0.5">Serial • Odc. 5: "Sztuka iluzji"</div>
+                            <div class="font-bold text-lg text-white truncate">Wiedźmin: Sezon 3</div>
+                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-blue-400 to-purple-400" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Film 4: Top Gun Maverick -->
+                    <div id="home-rec-4" data-title="Top Gun: Maverick" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1519074069444-1ba4ea16e917?w=800&auto=format&fit=crop&q=80');">
+                        <div class="absolute top-3 right-3 bg-rose-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">DOLBY ATMOS</div>
+                        <div class="relative z-10">
+                            <div class="text-xs text-rose-300 font-semibold mb-0.5">Akcja • Pozostało: 28 min</div>
+                            <div class="font-bold text-lg text-white truncate">Top Gun: Maverick</div>
+                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-rose-400 to-pink-400" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sport 5: Finał Ligi Mistrzów -->
+                    <div id="home-rec-5" data-title="Finał Ligi Mistrzów: Real - Dortmund" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80');">
+                        <div class="absolute top-3 right-3 bg-emerald-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">SPORT LIVE</div>
+                        <div class="relative z-10">
+                            <div class="text-xs text-emerald-300 font-semibold mb-0.5">Powtórka meczu • Pozostało: 12 min</div>
+                            <div class="font-bold text-lg text-white truncate">Finał Ligi Mistrzów</div>
+                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400" style="width: 90%;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -396,278 +467,177 @@
         </div>
     </div>
 
-    <!-- LAYER: Settings (Nowoczesny Dashboard Kafelkowy - Centrum Sterowania Aurora OS) -->
-    <div id="layer-settings" class="layer glass-panel-heavy p-10 flex flex-col justify-between overflow-hidden">
-        <!-- Belka Górna Dashboardu -->
-        <div class="flex items-center justify-between pb-5 border-b border-white/10 shrink-0">
+    <!-- LAYER: Settings (Wzorowane na PlayStation 4 - PS4 Settings) -->
+    <div id="layer-settings" class="layer ps4-settings-layer px-14 py-10 flex flex-col justify-between overflow-hidden">
+        <!-- Belka Górna PS4 -->
+        <div class="flex items-center justify-between pb-6 border-b border-white/10 shrink-0">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                    <i class="fas fa-sliders-h text-2xl text-white"></i>
+                <div class="w-12 h-12 rounded-full bg-blue-600/30 border border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <i class="fab fa-playstation text-2xl text-blue-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold tracking-wide flex items-center gap-3">
-                        Centrum Sterowania <span class="text-purple-400 font-light text-xl">| Ustawienia Dekodera</span>
-                    </h1>
-                    <p class="text-gray-400 text-xs">Aurora Box Pro • Oprogramowanie v3.1.4 • Status: Wszystkie moduły sprawne</p>
+                    <h1 class="text-3xl font-semibold tracking-wide text-white">Ustawienia</h1>
+                    <p class="text-sky-300/80 text-xs tracking-wider">Aurora Box Pro • Oprogramowanie v3.1.4 • PS4 Dashboard Style</p>
                 </div>
             </div>
             
-            <!-- Szybkie wskaźniki statusu i Zegar -->
-            <div class="flex items-center gap-3">
-                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-2.5 text-xs font-semibold text-white">
-                    <i class="far fa-clock text-purple-400 text-sm"></i>
-                    <span id="settings-clock" class="font-mono text-sm tracking-wider font-bold">00:00</span>
+            <div class="flex items-center gap-4 text-sm font-semibold text-white/80">
+                <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                    <i class="far fa-clock text-blue-400"></i>
+                    <span id="settings-clock" class="font-mono text-white font-bold">00:00</span>
                 </div>
-                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-2.5 text-xs font-semibold">
-                    <span class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span>
-                    <span class="text-gray-300">Apple HAP:</span>
-                    <span class="text-green-300 font-mono">51827 OK</span>
+                <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                    <i class="fas fa-wifi text-cyan-400"></i>
+                    <span class="text-xs text-cyan-200">Wi-Fi 5 GHz</span>
                 </div>
-                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-2.5 text-xs font-semibold">
-                    <i class="fas fa-wifi text-blue-400"></i>
-                    <span class="text-gray-300">Wi-Fi:</span>
-                    <span class="text-blue-300">5 GHz (450 Mb/s)</span>
-                </div>
-                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-2 text-xs text-gray-400">
-                    <span class="bg-white/10 px-2 py-0.5 rounded font-mono text-[11px] text-white">ESC</span> Powrót do TV
+                <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10 text-xs">
+                    <span class="bg-blue-600 px-2 py-0.5 rounded font-mono font-bold text-white">ESC</span> Wróć
                 </div>
             </div>
         </div>
 
-        <!-- Główna Siatka Kafelków (Grid Dashboard) -->
-        <div class="grid grid-cols-12 gap-5 my-auto pt-4 flex-1 items-stretch">
-            
-            <!-- KAFELEK 1: Pilot Apple TV & HomeKit (4 kolumny) -->
-            <div class="col-span-4 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-purple-500/30 bg-gradient-to-b from-purple-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden group">
-                <div class="absolute -right-8 -top-8 w-36 h-36 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-800 to-black border border-white/20 flex items-center justify-center shadow-md">
-                                <i class="fab fa-apple text-2xl text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold leading-tight">Pilot Apple TV</h2>
-                                <p class="text-xs text-purple-300 font-medium">Centrum Sterowania iOS</p>
-                            </div>
-                        </div>
-                        <span class="bg-green-500/20 border border-green-500/40 text-green-300 text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
-                            <i class="fas fa-circle text-[6px] text-green-400 animate-pulse"></i> AKTYWNY
-                        </span>
-                    </div>
-
-                    <!-- Karta z kodem QR i kodem PIN -->
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex gap-4 items-center mb-3">
-                        <div class="bg-white p-2 rounded-xl shadow-xl shrink-0 flex flex-col items-center">
-                            <img src="apple_remote_qr.png" class="w-24 h-24 object-contain" alt="HomeKit QR"/>
-                            <span class="text-[9px] font-black text-black tracking-tighter mt-1">APLIKACJA DOM</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <span class="text-xs text-gray-400 block mb-1">Kod PIN parowania:</span>
-                            <div class="bg-purple-900/50 border border-purple-400/80 px-3 py-1.5 rounded-xl text-center shadow-inner">
-                                <span class="text-purple-200 font-black text-lg tracking-widest font-mono">111-22-333</span>
-                            </div>
-                            <p class="text-[11px] text-gray-400 mt-2 leading-tight">Zeskanuj aparatorem lub dodaj akcesorium w Apple Home.</p>
-                        </div>
+        <!-- Główna Pionowa Lista Ustawień PS4 -->
+        <div class="my-auto py-3 flex-1 flex flex-col justify-center max-w-5xl w-full mx-auto space-y-2 overflow-y-auto" id="ps4-settings-container">
+            <!-- 1. OTA Update -->
+            <div id="ps4-set-ota" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-cloud-download-alt text-xl text-sky-400 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Aktualizacja oprogramowania systemu (OTA)</div>
+                        <div class="text-xs text-sky-200/60">Pobierz i zainstaluj najnowszą wersję systemu z repozytorium GitHub</div>
                     </div>
                 </div>
-
-                <!-- Przyciski akcji kafelka Apple (Czyste .focusable, bez hardcoded tv-focus-sm) -->
-                <div class="flex flex-col gap-2">
-                    <div id="set-opt-applepair" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-purple-600/20 border border-purple-500/40 hover:bg-purple-600/30">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fas fa-qrcode text-purple-300 text-sm"></i>
-                            <span class="text-sm font-semibold">Instrukcja i powiększ QR</span>
-                        </div>
-                        <i class="fas fa-expand text-xs text-purple-300"></i>
-                    </div>
-                    <div id="set-opt-appletest" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fas fa-satellite-dish text-purple-300 text-sm"></i>
-                            <span class="text-sm font-semibold">Testuj sygnał mostka</span>
-                        </div>
-                        <span class="text-xs text-purple-300 font-bold font-mono">Port 51827</span>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-sky-300 bg-sky-900/50 border border-sky-400/50 px-3 py-1 rounded-full uppercase tracking-wider">Dostępna v3.1.5</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
 
-            <!-- KAFELEK 2: Sieć i IPTV (4 kolumny) -->
-            <div class="col-span-4 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-blue-500/20 bg-gradient-to-b from-blue-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-8 -top-8 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-md">
-                                <i class="fas fa-wifi text-xl text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold leading-tight">Sieć i Połączenie</h2>
-                                <p class="text-xs text-blue-300 font-medium">Strumieniowanie IPTV HLS</p>
-                            </div>
-                        </div>
-                        <span class="bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
-                            <i class="fas fa-check-circle text-[8px] text-blue-400"></i> POŁĄCZONO
-                        </span>
-                    </div>
-
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3 mb-3 flex justify-between items-center text-xs">
-                        <div>
-                            <span class="text-gray-400 block text-[11px]">Sieć domowa</span>
-                            <strong class="text-white text-sm">Domowy_Router_5G</strong>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-gray-400 block text-[11px]">Adres IP dekodera</span>
-                            <span class="text-cyan-300 font-mono font-bold">192.168.0.220</span>
-                        </div>
+            <!-- 2. Apple Remote / Urządzenia -->
+            <div id="ps4-set-apple" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fab fa-apple text-2xl text-white w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Urządzenia (Pilot Apple TV & Akcesoria)</div>
+                        <div class="text-xs text-sky-200/60">Parowanie z iPhone przez HomeKit (HAP port 51827) i piloty bezprzewodowe</div>
                     </div>
                 </div>
-
-                <div class="flex flex-col gap-2">
-                    <div id="set-opt-wifitoggle" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Moduł Wi-Fi</span>
-                        <span id="val-wifitoggle" class="text-sm font-bold text-purple-300">Włączone</span>
-                    </div>
-                    <div id="set-opt-nettest" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Test prędkości (Speedtest)</span>
-                        <i class="fas fa-tachometer-alt text-xs text-blue-400"></i>
-                    </div>
-                    <div id="set-opt-netscan" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Skanuj dostępne sieci</span>
-                        <i class="fas fa-search text-xs text-gray-400"></i>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono font-bold text-green-300 bg-green-950/60 border border-green-500/40 px-3 py-1 rounded-full">PIN: 111-22-333</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
 
-            <!-- KAFELEK 3: Obraz i Dźwięk (4 kolumny) -->
-            <div class="col-span-4 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-pink-500/20 bg-gradient-to-b from-purple-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-8 -top-8 w-36 h-36 bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-md">
-                                <i class="fas fa-tv text-xl text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold leading-tight">Obraz i Dźwięk</h2>
-                                <p class="text-xs text-pink-300 font-medium">Parametry HDMI & Dolby</p>
-                            </div>
-                        </div>
-                        <span class="bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                            4K UHD
-                        </span>
+            <!-- 3. Sieć -->
+            <div id="ps4-set-network" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-wifi text-xl text-cyan-400 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Sieć</div>
+                        <div class="text-xs text-sky-200/60">Stan połączenia internetowego, diagnostyka IP i test prędkości łącza</div>
                     </div>
-
-                    <div class="flex flex-col gap-2">
-                        <div id="set-opt-res" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                            <span class="text-sm font-medium">Rozdzielczość</span>
-                            <span id="val-res" class="text-sm font-bold text-purple-300">4K (2160p)</span>
-                        </div>
-                        <div id="set-opt-hdr" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                            <span class="text-sm font-medium">Format HDR</span>
-                            <span id="val-hdr" class="text-sm font-bold text-purple-300">Auto</span>
-                        </div>
-                        <div id="set-opt-audioout" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                            <span class="text-sm font-medium">Wyjście audio</span>
-                            <span id="val-audioout" class="text-sm font-bold text-purple-300">HDMI ARC</span>
-                        </div>
-                        <div id="set-opt-soundmode" class="focusable glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                            <span class="text-sm font-medium">Profil dźwięku</span>
-                            <span id="val-soundmode" class="text-sm font-bold text-purple-300">Kino</span>
-                        </div>
-                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-cyan-300">Połączono (Wi-Fi 5 GHz • 450 Mb/s)</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
 
-            <!-- KAFELEK 4: Kontrola Rodzicielska (6 kolumn) -->
-            <div class="col-span-6 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-amber-500/20 bg-gradient-to-b from-amber-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-8 -top-8 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center shadow-md">
-                                <i class="fas fa-user-shield text-xl text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold leading-tight">Kontrola Rodzicielska</h2>
-                                <p class="text-xs text-amber-300 font-medium">Ochrona kanałów i treści</p>
-                            </div>
-                        </div>
-                        <span class="bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                            <i class="fas fa-lock text-[8px]"></i> AKTYWNA
-                        </span>
-                    </div>
-
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3 mb-3 flex justify-between items-center text-xs">
-                        <div>
-                            <span class="text-gray-400 block text-[11px]">Blokada kanałów dla dorosłych</span>
-                            <strong class="text-amber-300 text-sm flex items-center gap-1.5"><i class="fas fa-shield-alt text-xs"></i> Aktywna ochrona</strong>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-gray-400 block text-[11px]">Dostęp do zakupów VOD</span>
-                            <span class="text-gray-300 font-bold">Wymaga PIN</span>
-                        </div>
+            <!-- 4. Dźwięk i ekran -->
+            <div id="ps4-set-av" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-tv text-xl text-indigo-400 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Dźwięk i ekran</div>
+                        <div class="text-xs text-sky-200/60">Rozdzielczość wideo HDMI, format HDR i profil wyjścia audio</div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div id="set-opt-pinchange" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Kod PIN</span>
-                        <span id="val-pin" class="text-sm font-bold text-purple-300 font-mono tracking-wider">0000</span>
-                    </div>
-                    <div id="set-opt-agerating" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Klasyfikacja wiekowa</span>
-                        <span id="val-age" class="text-sm font-bold text-purple-300">18+</span>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <span id="ps4-val-av" class="text-xs font-semibold text-indigo-200">4K (2160p) • HDR Auto • HDMI ARC</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
 
-            <!-- KAFELEK 5: System i Aktualizacje (6 kolumn) -->
-            <div class="col-span-6 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-gray-600/30 bg-gradient-to-b from-gray-900/30 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-8 -top-8 w-36 h-36 bg-gray-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-gray-700 to-gray-500 flex items-center justify-center shadow-md">
-                                <i class="fas fa-microchip text-xl text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold leading-tight">System i Urządzenie</h2>
-                                <p class="text-xs text-gray-400 font-medium">Aurora Box Pro • 64GB eMMC • OTA</p>
-                            </div>
-                        </div>
-                        <span class="bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                            v3.1.4
-                        </span>
-                    </div>
-
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3 mb-3 flex justify-between items-center text-xs">
-                        <div>
-                            <span class="text-gray-400 block text-[11px]">Pamięć eMMC / RAM</span>
-                            <strong class="text-white text-sm">64 GB (51.2 GB wolne) • 4GB RAM</strong>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-gray-400 block text-[11px]">Silnik wykonawczy</span>
-                            <span class="text-blue-300 font-mono font-bold">WebView2 / Chromium</span>
-                        </div>
+            <!-- 5. Pamięć masowa -->
+            <div id="ps4-set-storage" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-hdd text-xl text-blue-300 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Pamięć masowa</div>
+                        <div class="text-xs text-sky-200/60">Pamięć masowa systemu, bufor nagrań IPTV oraz wolne miejsce</div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div id="set-opt-update" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Aktualizacja OTA</span>
-                        <span class="text-xs text-blue-300 font-bold">Sprawdź</span>
-                    </div>
-                    <div id="set-opt-lang" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
-                        <span class="text-sm font-medium">Język menu</span>
-                        <span id="val-lang" class="text-sm font-bold text-purple-300">Polski</span>
-                    </div>
-                    <div id="set-opt-reset" class="focusable glass-panel p-3 rounded-2xl flex items-center justify-between bg-red-950/40 border border-red-500/30 hover:bg-red-900/50">
-                        <span class="text-sm font-medium text-red-400">Reset fabryczny</span>
-                        <i class="fas fa-exclamation-triangle text-xs text-red-500"></i>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-300">Wolne: 51.2 GB / 64.0 GB</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
 
+            <!-- 6. Kontrola rodzicielska -->
+            <div id="ps4-set-parental" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-shield-alt text-xl text-amber-400 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Kontrola rodzicielska / Zarządzanie rodziną</div>
+                        <div class="text-xs text-sky-200/60">Ograniczenia wiekowe kanałów telewizyjnych oraz kod PIN dekodera</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="ps4-val-parental" class="text-xs font-semibold text-amber-300">PIN: 0000 (Ograniczenie: 18+)</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
+                </div>
+            </div>
+
+            <!-- 7. Informacje o systemie -->
+            <div id="ps4-set-sysinfo" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-info-circle text-xl text-purple-400 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Informacje o systemie</div>
+                        <div class="text-xs text-sky-200/60">Wersja oprogramowania dekodera, adres MAC karty i licencje</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-300">Aurora Box Pro (v3.1.4)</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
+                </div>
+            </div>
+
+            <!-- 8. Zasilanie i Inicjalizacja -->
+            <div id="ps4-set-power" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-power-off text-xl text-rose-400 w-8 text-center"></i>
+                    <div>
+                        <div class="font-medium text-lg text-white">Inicjalizacja i Zasilanie</div>
+                        <div class="text-xs text-rose-200/60">Uruchom ponownie dekoder lub przywróć ustawienia fabryczne</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-rose-400">Restart / Reset</span>
+                    <i class="fas fa-chevron-right text-white/30 text-sm"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stopka PS4 z podpowiedziami kontrolera -->
+        <div class="pt-4 border-t border-white/10 flex justify-between items-center text-xs text-white/60 shrink-0">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px] shadow">✕</span>
+                    <span>Wprowadź / Wybierz (Enter)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-red-600 text-white font-bold flex items-center justify-center text-[10px] shadow">◯</span>
+                    <span>Wróć (ESC)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded bg-white/20 text-white font-bold flex items-center justify-center text-[10px] px-1.5 py-0.5">M</span>
+                    <span>Menu Główne</span>
+                </div>
+            </div>
+            <div class="text-sky-300/60 font-mono text-[11px]">
+                PLAYSTATION® STYLE SETTINGS • AURORA STB
+            </div>
         </div>
     </div>
 
@@ -732,6 +702,32 @@
             { id: 9, name: "4FUN KIDS", cat: "Dzieci", url: "https://stream.4fun.tv:8889/hls/4fk_high/index.m3u8" },
             { id: 10, name: "NASA TV UHD", cat: "Nauka", url: "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8" }
         ];
+
+        window.pauseTVPlayer = function() {
+            try {
+                const video = document.getElementById('tv-video');
+                if (video) {
+                    video.pause();
+                    video.muted = true;
+                }
+                if (window.hlsInstance) {
+                    window.hlsInstance.stopLoad();
+                }
+            } catch(e) {}
+        };
+
+        window.resumeTVPlayer = function() {
+            try {
+                const video = document.getElementById('tv-video');
+                if (video) {
+                    video.muted = (state.tv.volume === 0);
+                    video.play().catch(()=>{});
+                }
+                if (window.hlsInstance) {
+                    window.hlsInstance.startLoad();
+                }
+            } catch(e) {}
+        };
 
         function playChannel(idx) {
             const ch = channels[idx];
@@ -853,7 +849,7 @@
                 memory: {
                     home: 'app-tv',
                     vod: 'vod-item-0',
-                    settings: 'set-opt-applepair',
+                    settings: 'ps4-set-ota',
                     tv: 'osd-btn-info',
                     epg: {r: 0, c: 0}
                 }
@@ -1072,6 +1068,41 @@
 
         // Twarde ścieżki dla specyficznych układów gdzie BoxModel może zawieść
         function checkNavOverrides(dir) {
+            if (state.activeLayer === 'settings') {
+                const ps4List = [
+                    'ps4-set-ota',
+                    'ps4-set-apple',
+                    'ps4-set-network',
+                    'ps4-set-av',
+                    'ps4-set-storage',
+                    'ps4-set-parental',
+                    'ps4-set-sysinfo',
+                    'ps4-set-power'
+                ];
+                const curIdx = ps4List.indexOf(state.nav.currentId);
+                if (curIdx !== -1) {
+                    if (dir === 'Down') return ps4List[Math.min(ps4List.length - 1, curIdx + 1)];
+                    if (dir === 'Up') return ps4List[Math.max(0, curIdx - 1)];
+                }
+            }
+
+            if (state.activeLayer === 'home') {
+                const recList = ['home-rec-1', 'home-rec-2', 'home-rec-3', 'home-rec-4', 'home-rec-5'];
+                const appList = ['app-tv', 'app-epg', 'app-vod', 'app-youtube', 'app-settings'];
+
+                if (state.nav.currentId.startsWith('home-rec-')) {
+                    const idx = recList.indexOf(state.nav.currentId);
+                    if (dir === 'Right' && idx < recList.length - 1) return recList[idx + 1];
+                    if (dir === 'Left' && idx > 0) return recList[idx - 1];
+                    if (dir === 'Down') return appList[Math.min(idx, appList.length - 1)];
+                } else if (state.nav.currentId.startsWith('app-')) {
+                    const idx = appList.indexOf(state.nav.currentId);
+                    if (dir === 'Right' && idx < appList.length - 1) return appList[idx + 1];
+                    if (dir === 'Left' && idx > 0) return appList[idx - 1];
+                    if (dir === 'Up') return recList[Math.min(idx, recList.length - 1)];
+                }
+            }
+
             if(state.activeLayer === 'vod') {
                 const isBtn = state.nav.currentId.startsWith('vod-btn');
                 const isItem = state.nav.currentId.startsWith('vod-item');
@@ -1500,14 +1531,14 @@
                             );
                         } else if (el.dataset.target) {
                             switchLayer(el.dataset.target);
-                        } else if (state.nav.currentId.startsWith('home-rec-')) {
-                            // Symulacja kliknięcia w "Ostatnio Oglądane" na Home Dashboard
-                            showToast('Wznawianie odtwarzania', 'Ładowanie wybranego materiału...', 'fas fa-play', 'text-green-400', 'border-l-green-500');
+                        } else if (state.nav.currentId && state.nav.currentId.startsWith('home-rec-')) {
+                            const movieTitle = el.dataset.title || el.querySelector('div.truncate')?.textContent || 'Wybrany Film';
+                            showToast('Wznawianie odtwarzania', `Ładowanie: ${movieTitle}`, 'fas fa-play', 'text-green-400', 'border-l-green-500');
                             setTimeout(() => {
                                 switchLayer('tv');
-                                document.getElementById('watermark-ch').textContent = el.querySelector('div.font-semibold').textContent.toUpperCase();
-                                setTimeout(()=> document.getElementById('watermark-ch').textContent = channels[state.tv.chIdx].name, 4000);
-                            }, 1000);
+                                document.getElementById('watermark-ch').textContent = movieTitle.toUpperCase();
+                                setTimeout(() => document.getElementById('watermark-ch').textContent = channels[state.tv.chIdx].name, 4000);
+                            }, 800);
                         }
                     }
                     
@@ -1521,15 +1552,18 @@
                             const title = document.getElementById('vod-hero-title').textContent;
                             showToast('Dodano do listy', `Film "${title}" został przypięty do ulubionych.`, 'fas fa-heart', 'text-pink-400', 'border-l-pink-500');
                         } else if (state.nav.currentId.startsWith('vod-item')) {
-                            // Szybki skok na przycisk "Oglądaj" po wybraniu filmu
                             setFocus('vod-btn-play');
                         }
                     }
 
-                    // Akcje Ustawień
+                    // Akcje Ustawień (PlayStation 4 Style)
                     if (state.activeLayer === 'settings') {
-                        // Apple Remote - Instrukcja i QR
-                        if (state.nav.currentId === 'set-opt-applepair') {
+                        // 1. Aktualizacja OTA (PS4 Style)
+                        if (state.nav.currentId === 'ps4-set-ota') {
+                            openPS4OTAUpdateModal();
+                        }
+                        // 2. Apple Remote / Urządzenia
+                        else if (state.nav.currentId === 'ps4-set-apple') {
                             showModal(
                                 'Pilot Apple TV • Centrum Sterowania iOS',
                                 '<div class="flex gap-6 items-center text-left">' +
@@ -1538,10 +1572,10 @@
                                 '<p class="mb-3 font-medium">2. Na iPhone otwórz aplikację <strong>Dom (Apple Home)</strong>.</p>' +
                                 '<p class="mb-3 font-medium">3. Kliknij <strong>+</strong> ➔ <strong>Dodaj akcesorium</strong> i skieruj aparat na kod po prawej stronie.</p>' +
                                 '<p class="mb-2 font-medium">4. Jeśli parujesz ręcznie, wpisz kod PIN:</p>' +
-                                '<div class="bg-purple-900/40 border border-purple-500/50 rounded-xl p-3 inline-block mt-1"><span class="text-purple-300 font-extrabold text-2xl tracking-widest">111-22-333</span></div>' +
+                                '<div class="bg-blue-900/40 border border-blue-500/50 rounded-xl p-3 inline-block mt-1"><span class="text-sky-300 font-extrabold text-2xl tracking-widest font-mono">111-22-333</span></div>' +
                                 '<p class="text-xs text-gray-400 mt-3">Mostek HAP nasłuchuje na porcie 51827. Po sparowaniu pilot pojawi się w Centrum Sterowania iOS.</p>' +
                                 '</div>' +
-                                '<div class="bg-white p-3 rounded-2xl shadow-2xl shrink-0 flex flex-col items-center border-2 border-purple-400">' +
+                                '<div class="bg-white p-3 rounded-2xl shadow-2xl shrink-0 flex flex-col items-center border-2 border-blue-400">' +
                                 '<img src="apple_remote_qr.png" class="w-44 h-44 object-contain" alt="QR Code HomeKit"/>' +
                                 '<span class="text-black text-xs font-bold mt-2 tracking-wider">APLIKACJA DOM</span>' +
                                 '</div>' +
@@ -1550,100 +1584,185 @@
                                 [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
                             );
                         }
-                        // Apple Remote - Test sygnału
-                        if (state.nav.currentId === 'set-opt-appletest') {
-                            showToast('Apple HomeKit (HAP)', 'Mostek aktywny na porcie 51827. Oczekiwanie na sygnał sterujący z iPhone...', 'fab fa-apple', 'text-white', 'border-l-purple-500');
-                        }
-                        // Zmiana PIN kontroli rodzicielskiej
-                        if (state.nav.currentId === 'set-opt-pinchange') {
-                            const val = document.getElementById('val-pin');
-                            const pins = ['0000', '1234', '4321', '9999'];
-                            const nextPin = pins[(pins.indexOf(val.textContent) + 1) % pins.length];
-                            val.textContent = nextPin;
-                            showToast('Kontrola Rodzicielska', `Zmieniono kod PIN dekodera na: ${nextPin}`, 'fas fa-key', 'text-amber-400', 'border-l-amber-500');
-                        }
-                        // Ograniczenie wiekowe
-                        if (state.nav.currentId === 'set-opt-agerating') {
-                            const val = document.getElementById('val-age');
-                            const ratings = ['18+', '16+', '12+', 'Brak limitu'];
-                            val.textContent = ratings[(ratings.indexOf(val.textContent) + 1) % ratings.length];
-                            showToast('Kontrola Rodzicielska', `Klasyfikacja wiekowa: ${val.textContent}`, 'fas fa-shield-alt', 'text-amber-400', 'border-l-amber-500');
-                        }
-
-                        // Wi-Fi Toggle
-                        if (state.nav.currentId === 'set-opt-wifitoggle') {
-                            const val = document.getElementById('val-wifitoggle');
-                            val.textContent = val.textContent === 'Włączone' ? 'Wyłączone' : 'Włączone';
-                            val.classList.toggle('text-purple-300');
-                            val.classList.toggle('text-gray-500');
-                        }
-                        // Rozdzielczość
-                        if (state.nav.currentId === 'set-opt-res') {
-                            const val = document.getElementById('val-res');
-                            val.textContent = val.textContent === '4K (2160p)' ? '1080p (FHD)' : '4K (2160p)';
-                        }
-                        // HDR
-                        if (state.nav.currentId === 'set-opt-hdr') {
-                            const val = document.getElementById('val-hdr');
-                            const opts = ['Auto', 'Wymuszone', 'Wyłączone'];
-                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
-                        }
-                        // Audio
-                        if (state.nav.currentId === 'set-opt-audioout') {
-                            const val = document.getElementById('val-audioout');
-                            const opts = ['HDMI ARC', 'Optyczne (TOSLINK)', 'Głośniki TV', 'Bluetooth'];
-                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
-                        }
-                        // Profil dźwięku
-                        if (state.nav.currentId === 'set-opt-soundmode') {
-                            const val = document.getElementById('val-soundmode');
-                            const opts = ['Kino', 'Standard', 'Nocny', 'Sport', 'Muzyka'];
-                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
-                        }
-                        // Język
-                        if (state.nav.currentId === 'set-opt-lang') {
-                            const val = document.getElementById('val-lang');
-                            const opts = ['Polski', 'English', 'Deutsch', 'Español'];
-                            val.textContent = opts[(opts.indexOf(val.textContent) + 1) % opts.length];
-                        }
-                        
-                        // NOWE OPERACJE SYMETRUJĄCE DZIAŁANIE URZĄDZENIA
-                        if (state.nav.currentId === 'set-opt-netscan') {
-                            showToast('Skanowanie sieci...', 'Szukam dostępnych sieci Wi-Fi w okolicy (Skanowanie eteru)', 'fas fa-spinner fa-spin', 'text-blue-400', 'border-l-blue-500');
+                        // 3. Sieć
+                        else if (state.nav.currentId === 'ps4-set-network') {
+                            showToast('Diagnostyka sieci...', 'Testowanie połączenia Wi-Fi 5GHz i parametrów IPTV...', 'fas fa-wifi fa-pulse', 'text-cyan-400', 'border-l-cyan-500');
                             setTimeout(() => {
-                                showModal('Wyniki skanowania sieci', 'Urządzenie wykryło następujące stacje bazowe:<br><br><strong>1. Domowy_Router_5G</strong> (Zapisano)<br>2. Netia_Gosc_24<br>3. UPC_Wi-Free', 'fas fa-wifi text-blue-400', [{id: 'btn-ok', text: 'Zamknij', primary: true}]);
-                            }, 2000);
+                                showModal(
+                                    'Stan sieci i połączenia internetowego',
+                                    '<div class="text-left space-y-3 text-sm">' +
+                                    '<div class="bg-black/40 p-4 rounded-xl border border-white/10 space-y-1.5">' +
+                                    '<p>Połączona sieć: <strong class="text-white">Domowy_Router_5G</strong></p>' +
+                                    '<p>Adres IP dekodera: <strong class="text-cyan-300 font-mono">192.168.0.220</strong></p>' +
+                                    '<p>Brama domyślna: <strong class="font-mono text-gray-300">192.168.0.1</strong></p>' +
+                                    '<p>Opóźnienie (Ping): <strong class="text-green-400 font-bold">11 ms</strong></p>' +
+                                    '<p>Przepustowość IPTV: <strong class="text-green-400 font-bold">450 Mb/s (Streaming 4K HDR Aktywny)</strong></p>' +
+                                    '</div>' +
+                                    '</div>',
+                                    'fas fa-wifi text-cyan-400',
+                                    [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
+                                );
+                            }, 1000);
                         }
-                        
-                        if (state.nav.currentId === 'set-opt-nettest') {
-                            showToast('Testowanie łącza...', 'Proszę czekać, badam parametry sieci i przepustowość.', 'fas fa-tachometer-alt fa-pulse', 'text-yellow-400', 'border-l-yellow-500');
-                            setTimeout(() => {
-                                showModal('Wyniki diagnostyki łącza', 'Ping (Opóźnienie): <strong>12 ms</strong><br>Prędkość pobierania: <strong>450 Mbps</strong><br>Prędkość wysyłania: <strong>80 Mbps</strong><br><br>Status dekodera: <span class="text-green-400 font-bold">Połączenie stabilne, gotowe na streaming 4K HDR.</span>', 'fas fa-tachometer-alt text-yellow-400', [{id: 'btn-ok', text: 'Zakończ', primary: true}]);
-                            }, 3000);
+                        // 4. Dźwięk i ekran
+                        else if (state.nav.currentId === 'ps4-set-av') {
+                            const valEl = document.getElementById('ps4-val-av');
+                            const modes = [
+                                '4K (2160p) • HDR Auto • HDMI ARC',
+                                '4K (2160p) • HDR Włączony • Dolby Atmos',
+                                '1080p (FHD) • HDR Wyłączony • Stereo',
+                                'Auto (Najlepsza jakość HDMI 2.1)'
+                            ];
+                            const nextMode = modes[(modes.indexOf(valEl.textContent) + 1) % modes.length];
+                            valEl.textContent = nextMode;
+                            showToast('Dźwięk i ekran', `Przełączono profil: ${nextMode}`, 'fas fa-tv', 'text-indigo-400', 'border-l-indigo-500');
                         }
-                        
-                        if (state.nav.currentId === 'set-opt-update') {
-                            showToast('Szukam aktualizacji...', 'Nawiązywanie połączenia z chmurą dystrybucyjną Aurora...', 'fas fa-sync fa-spin', 'text-gray-400', 'border-l-gray-500');
-                            setTimeout(() => {
-                                showModal('Aktualizacje oprogramowania', 'System operacyjny Aurora OS w urządzeniu Aurora Box Pro jest w pełni aktualny.<br><br><strong>Zainstalowana wersja:</strong> 3.1.4<br><strong>Ostatnie sprawdzenie:</strong> Przed chwilą', 'fas fa-check-circle text-green-400', [{id: 'btn-ok', text: 'OK', primary: true}]);
-                            }, 2500);
+                        // 5. Pamięć masowa
+                        else if (state.nav.currentId === 'ps4-set-storage') {
+                            showModal(
+                                'Pamięć masowa systemu (eMMC)',
+                                '<div class="text-left space-y-4">' +
+                                '<div class="text-sm text-gray-300">Pojemność całkowita: <strong>64.0 GB</strong> • Wolne miejsce: <strong class="text-green-400 font-bold">51.2 GB</strong></div>' +
+                                '<div class="w-full h-4 bg-white/10 rounded-full overflow-hidden flex border border-white/10">' +
+                                '<div class="h-full bg-blue-500" style="width: 14%;" title="System operacyjny"></div>' +
+                                '<div class="h-full bg-purple-500" style="width: 5%;" title="Aplikacje"></div>' +
+                                '<div class="h-full bg-cyan-500" style="width: 3%;" title="Bufor IPTV"></div>' +
+                                '</div>' +
+                                '<div class="text-xs text-gray-400 flex justify-between">' +
+                                '<span>■ System Aurora: 9.0 GB</span>' +
+                                '<span>■ Aplikacje & EPG: 3.2 GB</span>' +
+                                '<span>■ Bufor HLS: 1.8 GB</span>' +
+                                '</div>' +
+                                '</div>',
+                                'fas fa-hdd text-blue-300',
+                                [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
+                            );
                         }
-                        
-                        if (state.nav.currentId === 'set-opt-reset') {
-                            showModal('Przywracanie ustawień fabrycznych', '<span class="text-red-400 font-bold">Ostrzeżenie o bezpowrotnej utracie danych:</span> Ta operacja usunie wszystkie zapisane sieci, konta VOD, logi systemowe i przywróci urządzenie do surowego stanu fabrycznego. <br><br>Czy na pewno chcesz kontynuować ten proces?', 'fas fa-exclamation-triangle text-red-500', 
-                            [
-                                {id: 'btn-cancel', text: 'Anuluj operację', primary: false}, 
-                                {id: 'btn-confirm', text: 'Tak, formatuj system', primary: true}
-                            ], 
-                            () => {
-                                closeModal();
-                                simulateReboot();
-                            });
+                        // 6. Kontrola rodzicielska
+                        else if (state.nav.currentId === 'ps4-set-parental') {
+                            const valEl = document.getElementById('ps4-val-parental');
+                            const pins = ['PIN: 0000 (Ograniczenie: 18+)', 'PIN: 1234 (Ograniczenie: 16+)', 'PIN: Wyłączony (Brak limitu)'];
+                            const next = pins[(pins.indexOf(valEl.textContent) + 1) % pins.length];
+                            valEl.textContent = next;
+                            showToast('Kontrola rodzicielska', `Status ochrony: ${next}`, 'fas fa-shield-alt', 'text-amber-400', 'border-l-amber-500');
+                        }
+                        // 7. Informacje o systemie
+                        else if (state.nav.currentId === 'ps4-set-sysinfo') {
+                            showModal(
+                                'Informacje o systemie • Aurora OS',
+                                '<div class="text-left space-y-2 text-sm text-gray-300">' +
+                                '<div class="bg-black/40 p-4 rounded-xl border border-white/10 space-y-1.5">' +
+                                '<p>Urządzenie: <strong class="text-white">Aurora Box Pro (STB Appliance)</strong></p>' +
+                                '<p>Wersja oprogramowania: <strong class="text-sky-300 font-bold">3.1.4 (Kompilacja 20261013)</strong></p>' +
+                                '<p>Jądro: <strong class="text-gray-200">Linux 6.6.x LTS / Windows Hybrid Runtime</strong></p>' +
+                                '<p>ID Urządzenia: <strong class="font-mono text-purple-300">AUR-9921-PL-882A</strong></p>' +
+                                '<p>Adres MAC: <strong class="font-mono text-gray-300">B8:27:EB:44:A1:0C</strong></p>' +
+                                '</div>' +
+                                '</div>',
+                                'fas fa-info-circle text-purple-400',
+                                [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
+                            );
+                        }
+                        // 8. Zasilanie i Inicjalizacja
+                        else if (state.nav.currentId === 'ps4-set-power') {
+                            showModal(
+                                'Opcje zasilania i inicjalizacji',
+                                '<div class="text-left text-sm text-gray-300 mb-2">Wybierz operację zasilania dekodera Aurora OS:</div>',
+                                'fas fa-power-off text-rose-400',
+                                [
+                                    {id: 'btn-cancel', text: 'Anuluj', primary: false},
+                                    {id: 'btn-reboot', text: 'Uruchom ponownie dekoder', primary: true}
+                                ],
+                                () => {
+                                    closeModal();
+                                    simulateReboot();
+                                }
+                            );
                         }
                     }
                 }
             }
         });
+
+        // --- FUNKCJE DLA AKTUALIZACJI OTA (PS4 STYLE) ---
+        function openPS4OTAUpdateModal() {
+            showModal(
+                'Aktualizacja oprogramowania systemu',
+                '<div class="text-left space-y-4">' +
+                '<div class="bg-blue-950/60 border border-blue-500/40 rounded-2xl p-4 flex justify-between items-center">' +
+                '<div>' +
+                '<div class="text-xs text-sky-300 font-bold uppercase">Nowa Wersja Dostępna</div>' +
+                '<div class="text-2xl font-bold text-white">Aurora OS v3.1.5 (OTA)</div>' +
+                '<div class="text-xs text-gray-300 mt-1">Repozytorium: <span class="font-mono text-sky-300">mateusz19558/TVDecoder_OS</span></div>' +
+                '</div>' +
+                '<div class="text-right">' +
+                '<span class="bg-green-500/20 text-green-300 border border-green-400/40 text-xs font-bold px-3 py-1 rounded-full">GOTOWE DO POBRANIA</span>' +
+                '<div class="text-xs text-gray-400 mt-2 font-mono">Rozmiar: 24.8 MB</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="text-sm font-semibold text-gray-200">Główne ulepszenia w tej aktualizacji (Changelog):</div>' +
+                '<ul class="text-xs text-gray-300 space-y-2 bg-black/30 rounded-xl p-3 border border-white/5">' +
+                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>Ostatnio oglądane:</strong> Wzbogacono o polecane hity kinowe i seriale 4K HDR.</li>' +
+                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>YouTube Smart TV:</strong> Automatyczne wstrzymywanie i wyciszanie TV po otwarciu YT.</li>' +
+                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>Nawigacja YT:</strong> Bezpośredni przycisk powrotu do Menu Głównego (M).</li>' +
+                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>Ustawienia:</strong> Nowy, elegancki interfejs w stylu PlayStation 4 (PS4).</li>' +
+                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>OTA Linux & Windows:</strong> Automatyczne pobieranie najnowszych aktualizacji z GitHub.</li>' +
+                '</ul>' +
+                '<div id="ps4-ota-progress-wrap" class="hidden mt-4">' +
+                '<div class="flex justify-between text-xs text-sky-200 mb-1"><span id="ps4-ota-status-lbl">Pobieranie pakietu OTA...</span><span id="ps4-ota-pct-lbl" class="font-bold">0%</span></div>' +
+                '<div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden border border-white/20">' +
+                '<div id="ps4-ota-bar" class="h-full bg-gradient-to-r from-blue-500 to-sky-300 w-0 transition-all duration-300"></div>' +
+                '</div>' +
+                '</div>' +
+                '</div>',
+                'fas fa-cloud-download-alt text-sky-400',
+                [
+                    {id: 'btn-ota-cancel', text: 'Zainstaluj później', primary: false},
+                    {id: 'btn-ota-start', text: 'Zaktualizuj teraz (OTA)', primary: true}
+                ],
+                () => {
+                    startOTAProcess();
+                }
+            );
+        }
+
+        function startOTAProcess() {
+            const wrap = document.getElementById('ps4-ota-progress-wrap');
+            const bar = document.getElementById('ps4-ota-bar');
+            const lbl = document.getElementById('ps4-ota-status-lbl');
+            const pct = document.getElementById('ps4-ota-pct-lbl');
+            const btnContainer = document.getElementById('modal-buttons');
+
+            if (wrap) wrap.classList.remove('hidden');
+            if (btnContainer) btnContainer.innerHTML = '<span class="text-xs text-sky-300 font-bold animate-pulse">Trwa aktualizacja OTA... Nie wyłączaj zasilania dekodera.</span>';
+
+            try { fetch('http://127.0.0.1:8080/api/ota/apply').catch(()=>{}); } catch(e){}
+            try { fetch('/api/ota/apply').catch(()=>{}); } catch(e){}
+
+            let current = 0;
+            const interval = setInterval(() => {
+                current += Math.floor(Math.random() * 15) + 12;
+                if (current >= 100) {
+                    current = 100;
+                    clearInterval(interval);
+                    if (bar) bar.style.width = '100%';
+                    if (pct) pct.textContent = '100%';
+                    if (lbl) lbl.textContent = 'Aktualizacja zakończona sukcesem!';
+                    setTimeout(() => {
+                        closeModal();
+                        showToast('Aktualizacja OTA', 'System Aurora OS v3.1.5 został pomyślnie zaktualizowany!', 'fas fa-check-circle', 'text-green-400', 'border-l-green-500');
+                    }, 1200);
+                } else {
+                    if (bar) bar.style.width = current + '%';
+                    if (pct) pct.textContent = current + '%';
+                    if (lbl) {
+                        if (current > 70) lbl.textContent = 'Instalowanie plików systemowych Aurora...';
+                        else if (current > 40) lbl.textContent = 'Weryfikacja pakietu OTA z GitHub...';
+                        else lbl.textContent = 'Pobieranie plików aktualizacji...';
+                    }
+                }
+            }, 350);
+        }
 
         // Inicjalizacja
         document.addEventListener('DOMContentLoaded', () => {
@@ -1684,6 +1803,8 @@
 
         // Dedykowany launcher YouTube Smart TV
         window.openYouTubeTV = function() {
+            if (window.pauseTVPlayer) window.pauseTVPlayer();
+
             try { fetch('http://127.0.0.1:8080/api/remote?key=youtube').catch(()=>{}); } catch(e){}
             try { fetch('http://127.0.0.1:8080/api/remote?input=2').catch(()=>{}); } catch(e){}
             try { fetch('/api/remote?input=2').catch(()=>{}); } catch(e){}

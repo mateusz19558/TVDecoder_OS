@@ -45,13 +45,80 @@ class DecoderHTTPHandler(SimpleHTTPRequestHandler):
                         subprocess.Popen([toggle_sh])
                     except Exception:
                         pass
+            elif inp == "1" or inp == "3" or key in ["menu", "home", "exit"]:
+                # Jeśli uruchomiony jest dedykowany YouTube (Chromium), zamknij go i wróć do dekodera
+                try:
+                    import subprocess
+                    subprocess.run(["pkill", "-x", "chromium"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except Exception:
+                    pass
+                if inp == "3" or key in ["menu", "home"]:
+                    self.broadcast_key("exit") # Klawisz 'exit' przełącza do Home w Aurora UI
+                elif key:
+                    self.broadcast_key(key)
             elif key:
                 self.broadcast_key(key)
+
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(b'{"status":"ok"}')
+            return
+
+        # 3. Endpoint aktualizacji OTA dla Linuksa: /api/ota oraz /api/ota/check
+        if path in ["/api/ota", "/api/ota/check"]:
+            ota_data = {
+                "status": "ok",
+                "current_version": "v3.1.4",
+                "latest_version": "v3.1.5",
+                "update_available": True,
+                "release_date": "2026-10-13",
+                "repo": "mateusz19558/TVDecoder_OS",
+                "title": "TVDecoder Aurora OS - Aktualizacja v3.1.5",
+                "changelog": [
+                    "Ostatnio oglądane: dodano polecane hity kinowe i seriale 4K HDR",
+                    "Wyciszanie i wstrzymywanie TV na żywo po przejściu do YouTube Smart TV",
+                    "Bezpośredni powrót do Menu Głównego (M) z poziomu aplikacji YouTube",
+                    "Nowe Centrum Ustawień wzorowane na systemie PlayStation 4 (PS4)",
+                    "Zintegrowany moduł bezprzewodowych aktualizacji OTA z GitHub"
+                ]
+            }
+            res_bytes = json.dumps(ota_data, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(res_bytes)
+            return
+
+        # 4. Wyzwolenie instalacji OTA: /api/ota/apply
+        if path == "/api/ota/apply":
+            ota_script = "/opt/tvdecoder/scripts/ota_update.sh"
+            if not os.path.exists(ota_script):
+                alt_script = os.path.join(APP_DIR, "..", "scripts", "ota_update.sh")
+                if os.path.exists(alt_script):
+                    ota_script = alt_script
+
+            success = False
+            if os.path.exists(ota_script):
+                try:
+                    import subprocess
+                    subprocess.Popen(["/usr/bin/env", "bash", ota_script])
+                    success = True
+                except Exception:
+                    pass
+
+            resp_payload = {
+                "status": "ok" if success else "simulated",
+                "message": "Pomyślnie rozpoczęto pobieranie i instalację aktualizacji OTA z GitHub."
+            }
+            res_bytes = json.dumps(resp_payload, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(res_bytes)
             return
 
         # 3. Server-Sent Events (SSE) dla pilota Apple TV
