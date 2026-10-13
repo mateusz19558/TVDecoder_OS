@@ -299,14 +299,6 @@
                         <span class="font-medium text-lg">YouTube TV</span>
                     </div>
 
-                    <!-- Aplikacja Pilot Apple (HomeKit) -->
-                    <div id="app-apple" data-target="apple" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
-                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white/20">
-                            <i class="fab fa-apple text-3xl text-white"></i>
-                        </div>
-                        <span class="font-medium text-lg">Pilot Apple</span>
-                    </div>
-
                     <!-- Aplikacja Ustawienia -->
                     <div id="app-settings" data-target="settings" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
                         <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-gray-600 to-gray-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
@@ -404,100 +396,249 @@
         </div>
     </div>
 
-    <!-- LAYER: Settings -->
-    <div id="layer-settings" class="layer glass-panel-heavy p-16 flex gap-12">
-        <!-- Lewa kolumna menu -->
-        <div class="w-1/3 flex flex-col shrink-0">
-            <h1 class="text-4xl font-light mb-12 tracking-wide">Ustawienia</h1>
-            <div class="flex flex-col gap-4" id="settings-menu">
-                <div id="set-menu-net" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex items-center gap-5 text-xl">
-                    <i class="fas fa-wifi text-purple-400 w-8 text-center"></i> Sieć i Internet
+    <!-- LAYER: Settings (Nowoczesny Dashboard Kafelkowy - Centrum Sterowania Aurora OS) -->
+    <div id="layer-settings" class="layer glass-panel-heavy p-10 flex flex-col justify-between overflow-hidden">
+        <!-- Belka Górna Dashboardu -->
+        <div class="flex items-center justify-between pb-5 border-b border-white/10 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                    <i class="fas fa-sliders-h text-2xl text-white"></i>
                 </div>
-                <div id="set-menu-av" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex items-center gap-5 text-xl">
-                    <i class="fas fa-tv text-purple-400 w-8 text-center"></i> Obraz i Dźwięk
+                <div>
+                    <h1 class="text-3xl font-bold tracking-wide flex items-center gap-3">
+                        Centrum Sterowania <span class="text-purple-400 font-light text-xl">| Ustawienia Dekodera</span>
+                    </h1>
+                    <p class="text-gray-400 text-xs">Aurora Box Pro • Oprogramowanie v3.1.4 • Status: Wszystkie moduły sprawne</p>
                 </div>
-                <div id="set-menu-sys" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex items-center gap-5 text-xl">
-                    <i class="fas fa-info-circle text-purple-400 w-8 text-center"></i> System
+            </div>
+            
+            <!-- Szybkie wskaźniki statusu -->
+            <div class="flex items-center gap-4">
+                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-3 text-xs font-semibold">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-gray-300">Apple HAP:</span>
+                    <span class="text-green-300 font-mono">51827 OK</span>
+                </div>
+                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-3 text-xs font-semibold">
+                    <i class="fas fa-wifi text-blue-400"></i>
+                    <span class="text-gray-300">Wi-Fi:</span>
+                    <span class="text-blue-300">5 GHz (450 Mb/s)</span>
+                </div>
+                <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-2 text-xs text-gray-400">
+                    <span class="bg-white/10 px-2 py-0.5 rounded font-mono text-[11px] text-white">ESC</span> Powrót do TV
                 </div>
             </div>
         </div>
 
-        <!-- Prawa kolumna paneli -->
-        <div class="w-2/3 border-l border-white/10 pl-12 pt-4 relative overflow-hidden h-[75vh]">
+        <!-- Główna Siatka Kafelków (Grid Dashboard) -->
+        <div class="grid grid-cols-12 gap-5 my-auto pt-4 flex-1 items-stretch">
             
-            <!-- Panel: Sieć -->
-            <div id="set-panel-net" class="set-panel absolute inset-0 pl-12 pt-4 transition-opacity duration-300 flex flex-col gap-4 w-full pr-12">
-                <h2 class="text-2xl font-semibold mb-2">Stan Sieci</h2>
-                <div class="glass-panel p-6 rounded-3xl mb-4 bg-white/5 border border-white/10">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-lg">Połączenie Wi-Fi</span>
-                        <span class="text-green-400 font-bold"><i class="fas fa-check-circle mr-2"></i>Połączono</span>
+            <!-- KAFELEK 1: Pilot Apple TV & HomeKit (4 kolumny) -->
+            <div class="col-span-4 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-purple-500/30 bg-gradient-to-b from-purple-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-8 -top-8 w-36 h-36 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-800 to-black border border-white/20 flex items-center justify-center shadow-md">
+                                <i class="fab fa-apple text-2xl text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold leading-tight">Pilot Apple TV</h2>
+                                <p class="text-xs text-purple-300 font-medium">Centrum Sterowania iOS</p>
+                            </div>
+                        </div>
+                        <span class="bg-green-500/20 border border-green-500/40 text-green-300 text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+                            <i class="fas fa-circle text-[6px] text-green-400 animate-pulse"></i> AKTYWNY
+                        </span>
                     </div>
-                    <p class="text-gray-400 text-sm">Sieć: Domowy_Router_5G<br>IP: 192.168.1.104<br>Jakość sygnału: Doskonała</p>
+
+                    <!-- Karta z kodem QR i kodem PIN -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex gap-4 items-center mb-3">
+                        <div class="bg-white p-2 rounded-xl shadow-xl shrink-0 flex flex-col items-center">
+                            <img src="apple_remote_qr.png" class="w-24 h-24 object-contain" alt="HomeKit QR"/>
+                            <span class="text-[9px] font-black text-black tracking-tighter mt-1">APLIKACJA DOM</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-xs text-gray-400 block mb-1">Kod PIN parowania:</span>
+                            <div class="bg-purple-900/50 border border-purple-400/80 px-3 py-1.5 rounded-xl text-center shadow-inner">
+                                <span class="text-purple-200 font-black text-lg tracking-widest font-mono">111-22-333</span>
+                            </div>
+                            <p class="text-[11px] text-gray-400 mt-2 leading-tight">Zeskanuj aparatorem lub dodaj akcesorium w Apple Home.</p>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="text-xl font-semibold mt-4 mb-2">Opcje</h2>
-                <div id="set-opt-wifitoggle" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Stan Wi-Fi</span>
-                    <span id="val-wifitoggle" class="text-purple-300 font-bold">Włączone</span>
-                </div>
-                <div id="set-opt-netscan" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Skanuj w poszukiwaniu sieci</span>
-                    <i class="fas fa-chevron-right text-gray-500"></i>
-                </div>
-                <div id="set-opt-nettest" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Test prędkości łącza</span>
-                    <i class="fas fa-chevron-right text-gray-500"></i>
+
+                <!-- Przyciski akcji kafelka Apple -->
+                <div class="flex flex-col gap-2">
+                    <div id="set-opt-applepair" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-purple-600/20 border border-purple-500/40 hover:bg-purple-600/30">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas fa-qrcode text-purple-300 text-sm"></i>
+                            <span class="text-sm font-semibold">Instrukcja i powiększ QR</span>
+                        </div>
+                        <i class="fas fa-expand text-xs text-purple-300"></i>
+                    </div>
+                    <div id="set-opt-appletest" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas fa-satellite-dish text-purple-300 text-sm"></i>
+                            <span class="text-sm font-semibold">Testuj sygnał mostka</span>
+                        </div>
+                        <span class="text-xs text-purple-300 font-bold font-mono">Port 51827</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Panel: AV -->
-            <div id="set-panel-av" class="set-panel absolute inset-0 pl-12 pt-4 transition-opacity duration-300 flex flex-col gap-4 w-full pr-12" style="display: none; opacity: 0; pointer-events: none;">
-                <h2 class="text-2xl font-semibold mb-2">Obraz</h2>
-                <div id="set-opt-res" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Rozdzielczość</span>
-                    <span id="val-res" class="text-purple-300 font-bold">4K (2160p)</span>
+            <!-- KAFELEK 2: Sieć i IPTV (4 kolumny) -->
+            <div class="col-span-4 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-blue-500/20 bg-gradient-to-b from-blue-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-8 -top-8 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-md">
+                                <i class="fas fa-wifi text-xl text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold leading-tight">Sieć i Połączenie</h2>
+                                <p class="text-xs text-blue-300 font-medium">Strumieniowanie IPTV HLS</p>
+                            </div>
+                        </div>
+                        <span class="bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+                            <i class="fas fa-check-circle text-[8px] text-blue-400"></i> POŁĄCZONO
+                        </span>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3 mb-3 flex justify-between items-center text-xs">
+                        <div>
+                            <span class="text-gray-400 block text-[11px]">Sieć domowa</span>
+                            <strong class="text-white text-sm">Domowy_Router_5G</strong>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-gray-400 block text-[11px]">Adres IP dekodera</span>
+                            <span class="text-cyan-300 font-mono font-bold">192.168.0.220</span>
+                        </div>
+                    </div>
                 </div>
-                <div id="set-opt-hdr" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Tryb HDR</span>
-                    <span id="val-hdr" class="text-purple-300 font-bold">Auto</span>
-                </div>
-                
-                <h2 class="text-2xl font-semibold mt-4 mb-2">Dźwięk</h2>
-                <div id="set-opt-audioout" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Wyjście audio</span>
-                    <span id="val-audioout" class="text-purple-300 font-bold">HDMI ARC</span>
-                </div>
-                <div id="set-opt-soundmode" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Profil dźwięku</span>
-                    <span id="val-soundmode" class="text-purple-300 font-bold">Kino</span>
+
+                <div class="flex flex-col gap-2">
+                    <div id="set-opt-wifitoggle" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Moduł Wi-Fi</span>
+                        <span id="val-wifitoggle" class="text-sm font-bold text-purple-300">Włączone</span>
+                    </div>
+                    <div id="set-opt-nettest" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Test prędkości (Speedtest)</span>
+                        <i class="fas fa-tachometer-alt text-xs text-blue-400"></i>
+                    </div>
+                    <div id="set-opt-netscan" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Skanuj dostępne sieci</span>
+                        <i class="fas fa-search text-xs text-gray-400"></i>
+                    </div>
                 </div>
             </div>
 
-            <!-- Panel: System -->
-            <div id="set-panel-sys" class="set-panel absolute inset-0 pl-12 pt-4 transition-opacity duration-300 flex flex-col gap-4 w-full pr-12" style="display: none; opacity: 0; pointer-events: none;">
-                <div class="glass-panel p-6 rounded-3xl mb-4 bg-white/5 border border-white/10 flex gap-6 items-center">
-                    <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center border-4 border-white/10 shrink-0">
-                        <i class="fas fa-satellite-dish text-4xl"></i>
+            <!-- KAFELEK 3: Obraz i Dźwięk (4 kolumny) -->
+            <div class="col-span-4 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-pink-500/20 bg-gradient-to-b from-purple-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-8 -top-8 w-36 h-36 bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-md">
+                                <i class="fas fa-tv text-xl text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold leading-tight">Obraz i Dźwięk</h2>
+                                <p class="text-xs text-pink-300 font-medium">Parametry HDMI & Dolby</p>
+                            </div>
+                        </div>
+                        <span class="bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            4K UHD
+                        </span>
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-bold">Aurora Box Pro</h3>
-                        <p class="text-gray-400">Wersja OS: 3.1.4 (Build 2026.10)</p>
-                        <p class="text-gray-400">Pamięć: 64 GB / Dostępne: 41 GB</p>
+
+                    <div class="flex flex-col gap-2">
+                        <div id="set-opt-res" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                            <span class="text-sm font-medium">Rozdzielczość</span>
+                            <span id="val-res" class="text-sm font-bold text-purple-300">4K (2160p)</span>
+                        </div>
+                        <div id="set-opt-hdr" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                            <span class="text-sm font-medium">Format HDR</span>
+                            <span id="val-hdr" class="text-sm font-bold text-purple-300">Auto</span>
+                        </div>
+                        <div id="set-opt-audioout" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                            <span class="text-sm font-medium">Wyjście audio</span>
+                            <span id="val-audioout" class="text-sm font-bold text-purple-300">HDMI ARC</span>
+                        </div>
+                        <div id="set-opt-soundmode" class="focusable tv-focus-sm glass-panel p-2.5 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                            <span class="text-sm font-medium">Profil dźwięku</span>
+                            <span id="val-soundmode" class="text-sm font-bold text-purple-300">Kino</span>
+                        </div>
                     </div>
                 </div>
-                
-                <h2 class="text-xl font-semibold mt-2 mb-2">Zarządzanie</h2>
-                <div id="set-opt-update" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Aktualizacja oprogramowania</span>
-                    <span class="bg-blue-600/30 text-blue-300 px-2 py-0.5 rounded text-sm font-semibold">Aktualne</span>
+            </div>
+
+            <!-- KAFELEK 4: Kontrola Rodzicielska (6 kolumn) -->
+            <div class="col-span-6 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-amber-500/20 bg-gradient-to-b from-amber-950/25 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-8 -top-8 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center shadow-md">
+                                <i class="fas fa-user-shield text-xl text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold leading-tight">Kontrola Rodzicielska</h2>
+                                <p class="text-xs text-amber-300 font-medium">Ochrona kanałów i treści</p>
+                            </div>
+                        </div>
+                        <span class="bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+                            <i class="fas fa-lock text-[8px]"></i> AKTYWNA
+                        </span>
+                    </div>
                 </div>
-                <div id="set-opt-lang" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-black/20 hover:bg-white/5">
-                    <span class="font-medium">Język menu</span>
-                    <span id="val-lang" class="text-purple-300 font-bold">Polski</span>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div id="set-opt-pinchange" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Kod PIN</span>
+                        <span id="val-pin" class="text-sm font-bold text-purple-300 font-mono tracking-wider">0000</span>
+                    </div>
+                    <div id="set-opt-agerating" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Klasyfikacja wiekowa</span>
+                        <span id="val-age" class="text-sm font-bold text-purple-300">18+</span>
+                    </div>
                 </div>
-                <div id="set-opt-reset" class="focusable tv-focus-sm glass-panel p-5 rounded-2xl flex justify-between items-center bg-red-900/30 border border-red-900/50 mt-4 hover:bg-red-900/50">
-                    <span class="font-medium text-red-400">Przywróć ustawienia fabryczne</span>
-                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+            </div>
+
+            <!-- KAFELEK 5: System i Aktualizacje (6 kolumn) -->
+            <div class="col-span-6 glass-panel rounded-3xl p-5 flex flex-col justify-between border border-gray-600/30 bg-gradient-to-b from-gray-900/30 via-black/40 to-slate-950/50 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-8 -top-8 w-36 h-36 bg-gray-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-gray-700 to-gray-500 flex items-center justify-center shadow-md">
+                                <i class="fas fa-microchip text-xl text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold leading-tight">System i Urządzenie</h2>
+                                <p class="text-xs text-gray-400 font-medium">Aurora Box Pro • 64GB eMMC • OTA</p>
+                            </div>
+                        </div>
+                        <span class="bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            v3.1.4
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div id="set-opt-update" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Aktualizacja OTA</span>
+                        <span class="text-xs text-blue-300 font-bold">Sprawdź</span>
+                    </div>
+                    <div id="set-opt-lang" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-black/30 hover:bg-white/5">
+                        <span class="text-sm font-medium">Język menu</span>
+                        <span id="val-lang" class="text-sm font-bold text-purple-300">Polski</span>
+                    </div>
+                    <div id="set-opt-reset" class="focusable tv-focus-sm glass-panel p-3 rounded-2xl flex items-center justify-between bg-red-950/40 border border-red-500/30 hover:bg-red-900/50">
+                        <span class="text-sm font-medium text-red-400">Reset fabryczny</span>
+                        <i class="fas fa-exclamation-triangle text-xs text-red-500"></i>
+                    </div>
                 </div>
             </div>
 
@@ -639,7 +780,7 @@
                 memory: {
                     home: 'app-tv',
                     vod: 'vod-item-0',
-                    settings: 'set-menu-net',
+                    settings: 'set-opt-applepair',
                     tv: 'osd-btn-info',
                     epg: {r: 0, c: 0}
                 }
@@ -890,36 +1031,6 @@
                 // Centrujemy uproszczonym przelicznikiem
                 const offset = Math.max(0, (idx - 1) * 312); 
                 carousel.style.transform = `translateX(-${offset}px)`;
-            }
-
-            // Ustawienia: Zmiana paneli na podstawie menu
-            if (state.activeLayer === 'settings' && id.startsWith('set-menu-')) {
-                const panelMap = {
-                    'set-menu-net': 'set-panel-net',
-                    'set-menu-av': 'set-panel-av',
-                    'set-menu-sys': 'set-panel-sys'
-                };
-                const targetId = panelMap[id];
-                
-                // Ukryj wszystkie panele
-                document.querySelectorAll('.set-panel').forEach(p => {
-                    p.style.display = 'none';
-                    p.classList.remove('opacity-100');
-                    p.classList.add('opacity-0', 'pointer-events-none');
-                });
-                
-                // Pokaż odpowiedni panel
-                const target = document.getElementById(targetId);
-                if(target) {
-                    target.style.display = 'flex';
-                    // Aktualizacja focusList od razu po pokazaniu elementu (aby umożliwić płynną nawigację w prawo)
-                    state.nav.focusList = scanFocusables('settings'); 
-                    
-                    // Trigger reflow i animacja wejścia
-                    void target.offsetWidth; 
-                    target.classList.remove('opacity-0', 'pointer-events-none');
-                    target.classList.add('opacity-100');
-                }
             }
         }
 
@@ -1326,6 +1437,48 @@
 
                     // Akcje Ustawień
                     if (state.activeLayer === 'settings') {
+                        // Apple Remote - Instrukcja i QR
+                        if (state.nav.currentId === 'set-opt-applepair') {
+                            showModal(
+                                'Pilot Apple TV • Centrum Sterowania iOS',
+                                '<div class="flex gap-6 items-center text-left">' +
+                                '<div class="flex-1">' +
+                                '<p class="mb-3 font-medium">1. Upewnij się, że iPhone i dekoder są w tej samej sieci Wi-Fi (Domowy_Router_5G).</p>' +
+                                '<p class="mb-3 font-medium">2. Na iPhone otwórz aplikację <strong>Dom (Apple Home)</strong>.</p>' +
+                                '<p class="mb-3 font-medium">3. Kliknij <strong>+</strong> ➔ <strong>Dodaj akcesorium</strong> i skieruj aparat na kod po prawej stronie.</p>' +
+                                '<p class="mb-2 font-medium">4. Jeśli parujesz ręcznie, wpisz kod PIN:</p>' +
+                                '<div class="bg-purple-900/40 border border-purple-500/50 rounded-xl p-3 inline-block mt-1"><span class="text-purple-300 font-extrabold text-2xl tracking-widest">111-22-333</span></div>' +
+                                '<p class="text-xs text-gray-400 mt-3">Mostek HAP nasłuchuje na porcie 51827. Po sparowaniu pilot pojawi się w Centrum Sterowania iOS.</p>' +
+                                '</div>' +
+                                '<div class="bg-white p-3 rounded-2xl shadow-2xl shrink-0 flex flex-col items-center border-2 border-purple-400">' +
+                                '<img src="apple_remote_qr.png" class="w-44 h-44 object-contain" alt="QR Code HomeKit"/>' +
+                                '<span class="text-black text-xs font-bold mt-2 tracking-wider">APLIKACJA DOM</span>' +
+                                '</div>' +
+                                '</div>',
+                                'fab fa-apple text-white',
+                                [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
+                            );
+                        }
+                        // Apple Remote - Test sygnału
+                        if (state.nav.currentId === 'set-opt-appletest') {
+                            showToast('Apple HomeKit (HAP)', 'Mostek aktywny na porcie 51827. Oczekiwanie na sygnał sterujący z iPhone...', 'fab fa-apple', 'text-white', 'border-l-purple-500');
+                        }
+                        // Zmiana PIN kontroli rodzicielskiej
+                        if (state.nav.currentId === 'set-opt-pinchange') {
+                            const val = document.getElementById('val-pin');
+                            const pins = ['0000', '1234', '4321', '9999'];
+                            const nextPin = pins[(pins.indexOf(val.textContent) + 1) % pins.length];
+                            val.textContent = nextPin;
+                            showToast('Kontrola Rodzicielska', `Zmieniono kod PIN dekodera na: ${nextPin}`, 'fas fa-key', 'text-amber-400', 'border-l-amber-500');
+                        }
+                        // Ograniczenie wiekowe
+                        if (state.nav.currentId === 'set-opt-agerating') {
+                            const val = document.getElementById('val-age');
+                            const ratings = ['18+', '16+', '12+', 'Brak limitu'];
+                            val.textContent = ratings[(ratings.indexOf(val.textContent) + 1) % ratings.length];
+                            showToast('Kontrola Rodzicielska', `Klasyfikacja wiekowa: ${val.textContent}`, 'fas fa-shield-alt', 'text-amber-400', 'border-l-amber-500');
+                        }
+
                         // Wi-Fi Toggle
                         if (state.nav.currentId === 'set-opt-wifitoggle') {
                             const val = document.getElementById('val-wifitoggle');
