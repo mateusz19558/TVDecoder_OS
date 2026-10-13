@@ -292,7 +292,7 @@
                     </div>
 
                     <!-- Aplikacja YouTube Smart TV -->
-                    <div id="app-youtube" data-target="youtube" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                    <div id="app-youtube" data-target="youtube" onclick="openYouTubeTV();" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer">
                         <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                             <i class="fab fa-youtube text-3xl text-white"></i>
                         </div>
@@ -1477,13 +1477,8 @@
 
                     // Akcje dla Home Apps
                     if (state.activeLayer === 'home') {
-                        if (el.dataset.target === 'youtube') {
-                            try { fetch('http://127.0.0.1:8080/api/remote?input=2').catch(()=>{}); } catch(e){}
-                            if (window.chrome && window.chrome.webview) {
-                                window.chrome.webview.postMessage({ action: 'open_youtube' });
-                            } else {
-                                window.open('https://www.youtube.com/tv', '_blank');
-                            }
+                        if (el.dataset.target === 'youtube' || el.id === 'app-youtube') {
+                            window.openYouTubeTV();
                         } else if (el.dataset.target === 'apple') {
                             showModal(
                                 'Pilot Apple TV • Parowanie z iPhone',
@@ -1687,18 +1682,31 @@
             });
         }
 
-        // Natywna obsługa zdarzeń pilota dla systemu Linux przez Server-Sent Events (SSE)
-        try {
-            const remoteSource = new EventSource('/api/events');
-            remoteSource.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data && data.key) {
-                        window.handleRemoteKey(data.key);
-                    }
-                } catch(err) {}
-            };
-        } catch(e) {}
+        // Dedykowany launcher YouTube Smart TV
+        window.openYouTubeTV = function() {
+            try { fetch('http://127.0.0.1:8080/api/remote?key=youtube').catch(()=>{}); } catch(e){}
+            try { fetch('http://127.0.0.1:8080/api/remote?input=2').catch(()=>{}); } catch(e){}
+            try { fetch('/api/remote?input=2').catch(()=>{}); } catch(e){}
+
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({ action: 'open_youtube' });
+            } else {
+                window.open('https://www.youtube.com/tv', '_blank');
+            }
+        };
+
+        // Obsługa kliknięć myszką na elementach interfejsu TV
+        document.addEventListener('click', (e) => {
+            const focusable = e.target.closest('.focusable');
+            if (focusable) {
+                setFocus(focusable.id);
+                if (focusable.id === 'app-youtube' || focusable.dataset.target === 'youtube') {
+                    window.openYouTubeTV();
+                } else {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+                }
+            }
+        });
     </script>
 </body>
 </html>
