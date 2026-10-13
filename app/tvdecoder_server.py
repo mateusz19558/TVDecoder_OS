@@ -32,11 +32,20 @@ class DecoderHTTPHandler(SimpleHTTPRequestHandler):
             self.path = "/dekoder_aurora_ui.html"
             return super().do_GET()
 
-        # 2. Endpoint API pilota: /api/remote?key=...
+        # 2. Endpoint API pilota: /api/remote?key=... oraz ?input=...
         if path == "/api/remote":
             query = parse_qs(parsed.query)
             key = query.get("key", [None])[0]
-            if key:
+            inp = query.get("input", [None])[0]
+            if inp == "2":
+                toggle_sh = "/opt/tvdecoder/config/toggle_youtube.sh"
+                if os.path.exists(toggle_sh):
+                    try:
+                        import subprocess
+                        subprocess.Popen([toggle_sh])
+                    except Exception:
+                        pass
+            elif key:
                 self.broadcast_key(key)
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

@@ -1478,6 +1478,7 @@
                     // Akcje dla Home Apps
                     if (state.activeLayer === 'home') {
                         if (el.dataset.target === 'youtube') {
+                            try { fetch('http://127.0.0.1:8080/api/remote?input=2').catch(()=>{}); } catch(e){}
                             if (window.chrome && window.chrome.webview) {
                                 window.chrome.webview.postMessage({ action: 'open_youtube' });
                             } else {
