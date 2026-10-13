@@ -97,6 +97,22 @@ def main():
     accessory = TVDecoderAccessory(driver, "TV Decoder")
     driver.add_accessory(accessory=accessory)
     
+    # Generowanie kodu QR dla iPhone
+    try:
+        import os
+        import qrcode
+        uri = accessory.xhm_uri()
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        qr_file = os.path.join(script_dir, "apple_remote_qr.png")
+        qr = qrcode.QRCode(version=1, box_size=8, border=2)
+        qr.add_data(uri)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        img.save(qr_file)
+        logging.info(f"Kod QR HomeKit zapisany: {qr_file} (URI: {uri})")
+    except Exception as e:
+        logging.warning(f"Nie udało się wygenerować pliku QR: {e}")
+
     logging.info("=================================================================")
     logging.info(" 📱 Mostek Apple TV Remote uruchomiony!")
     logging.info(" Kod parowania w aplikacji Dom (Apple Home): 111-22-333")
