@@ -1,0 +1,26 @@
+name: Build TVDecoder OS ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repozytorium
+        uses: actions/checkout@v4
+
+      - name: Uruchomienie skryptu budowania ISO
+        run: |
+          chmod +x scripts/build_iso.sh
+          sudo ./scripts/build_iso.sh
+
+      - name: Publikacja pliku ISO jako artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: TVDecoderOS-ISO
+          path: TVDecoderOS.iso
+          if-no-files-found: error
+          retention-days: 14

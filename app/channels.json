@@ -1,0 +1,66 @@
+[
+  {
+    "number": 1,
+    "name": "TVP INFO HD",
+    "url": "https://stream.tvp.pl/live/tvpinfo/master.m3u8",
+    "category": "Informacje",
+    "resolution": "1080p FULL HD",
+    "audio": "POLSKI (STEREO)"
+  },
+  {
+    "number": 2,
+    "name": "POLSAT NEWS 24",
+    "url": "https://stream.media.pl/live/polsat/master.m3u8",
+    "category": "Informacje",
+    "resolution": "1080p FULL HD",
+    "audio": "POLSKI (DOLBY DIGITAL)"
+  },
+  {
+    "number": 3,
+    "name": "KANAŁ FILMOWY KINO POLSKA",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "category": "Filmy i Seriale",
+    "resolution": "1080p FULL HD",
+    "audio": "POLSKI (LEKTOR 5.1)"
+  },
+  {
+    "number": 4,
+    "name": "DISCOVERY & NATURE HD",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "category": "Dokumentalne",
+    "resolution": "4K UHD",
+    "audio": "POLSKI (DOLBY ATMOS)"
+  },
+  {
+    "number": 5,
+    "name": "EUROSPORT & SPEED TV",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTI.mp4",
+    "category": "Sport",
+    "resolution": "1080p 60FPS",
+    "audio": "POLSKI (KOMENTARZ)"
+  },
+  {
+    "number": 6,
+    "name": "NASA TV ULTRA HD",
+    "url": "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8",
+    "category": "Nauka i Kosmos",
+    "resolution": "4K UHD",
+    "audio": "ANGIELSKI (STEREO)"
+  },
+  {
+    "number": 7,
+    "name": "MUZYKA NON-STOP HITS",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "category": "Muzyka",
+    "resolution": "1080p FULL HD",
+    "audio": "STEREO HI-FI"
+  },
+  {
+    "number": 8,
+    "name": "TEST PATTERN / KANAŁ KONTROLNY",
+    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    "category": "Ogólne",
+    "resolution": "1080p FULL HD",
+    "audio": "POLSKI (STEREO)"
+  }
+]

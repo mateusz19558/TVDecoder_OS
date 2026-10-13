@@ -1,0 +1,21 @@
+[Unit]
+Description=TVDecoder OS Fullscreen Kiosk Session
+After=systemd-user-sessions.service network-online.target sound.target
+Wants=network-online.target sound.target
+
+[Service]
+Type=simple
+User=tvuser
+Group=tvuser
+PAMName=login
+WorkingDirectory=/home/tvuser
+Environment=DISPLAY=:0
+Environment=XDG_SESSION_TYPE=x11
+ExecStart=/usr/bin/xinit /opt/tvdecoder/config/kiosk.sh -- :0 vt1 -nocursor -keeptty
+Restart=always
+RestartSec=2
+StandardInput=tty
+TTYPath=/dev/tty1
+
+[Install]
+WantedBy=graphical.target
