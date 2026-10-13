@@ -658,8 +658,8 @@
         </div>
     </div>
 
-    <!-- Footer Hints (Globalne podpowiedzi nawigacyjne) -->
-    <div id="global-hints" class="absolute bottom-4 right-12 z-[100] flex gap-6 text-sm font-medium text-white/50 transition-opacity">
+    <!-- Footer Hints (Globalne podpowiedzi nawigacyjne - ukryte w trybie oglądania TV) -->
+    <div id="global-hints" class="absolute bottom-4 right-12 z-[100] flex gap-6 text-sm font-medium text-white/50 transition-opacity opacity-0 pointer-events-none">
         <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">OK</span> Wybierz</div>
         <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">M</span> Menu Home</div>
         <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">Wstecz</span> Cofnij</div>
@@ -1361,19 +1361,23 @@
             els.layers.forEach(l => l.classList.remove('active'));
             document.getElementById(`layer-${target}`).classList.add('active');
 
-            // Blur na obraz wideo jeśli to nie jest czyste TV
-            if (target === 'tv') {
+            // Podpowiedzi nawigacyjne (ukryte w czystym TV oraz w Ustawieniach, widoczne w Home/VOD/EPG)
+            const globalHints = document.getElementById('global-hints');
+            if (target === 'tv' || target === 'settings') {
                 els.body.classList.remove('blurred-bg');
-                document.getElementById('global-hints').classList.add('opacity-0');
+                if (globalHints) globalHints.classList.add('opacity-0', 'pointer-events-none');
             } else {
                 els.body.classList.add('blurred-bg');
-                document.getElementById('global-hints').classList.remove('opacity-0');
+                if (globalHints) globalHints.classList.remove('opacity-0', 'pointer-events-none');
             }
 
-            // Pasek zegara na wierzchu (widoczny tylko na TV i Home, ukryty w Ustawieniach, VOD, EPG)
+            // Pasek zegara i statusu (w Home stale widoczny, w TV pokazuje się tylko z OSD i znika po 4s, w reszcie ukryty)
             const topStatus = document.getElementById('top-status-bar');
             if (topStatus) {
-                if (target === 'tv' || target === 'home') {
+                if (target === 'home') {
+                    topStatus.classList.remove('opacity-0', 'pointer-events-none');
+                } else if (target === 'tv') {
+                    // Pokaż na chwilę z OSD, zgaśnie po zgaśnięciu OSD
                     topStatus.classList.remove('opacity-0', 'pointer-events-none');
                 } else {
                     topStatus.classList.add('opacity-0', 'pointer-events-none');
@@ -1410,11 +1414,19 @@
             playChannel(state.tv.chIdx);
 
             const pill = document.getElementById('osd-container');
+            const topStatus = document.getElementById('top-status-bar');
             pill.classList.add('show');
+            if (topStatus) topStatus.classList.remove('opacity-0', 'pointer-events-none');
             
             clearTimeout(state.tv.osdTimer);
             state.tv.osdTimer = setTimeout(() => {
-                if(!state.tv.actionsOpen) pill.classList.remove('show');
+                if(!state.tv.actionsOpen) {
+                    pill.classList.remove('show');
+                    // Schowaj zegar i status w trybie oglądania TV
+                    if (topStatus && state.activeLayer === 'tv') {
+                        topStatus.classList.add('opacity-0', 'pointer-events-none');
+                    }
+                }
             }, 4000);
         }
 
