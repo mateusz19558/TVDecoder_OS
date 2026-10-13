@@ -190,10 +190,10 @@
             <div class="aurora-blob bg-purple-600 w-[50vw] h-[50vw] bottom-[-20vw] right-[-10vw]" style="animation-delay: -5s;"></div>
         </div>
         
-        <!-- Znak wodny kanału w rogu -->
-        <div class="absolute top-10 right-12 opacity-40 flex items-center gap-3 z-10">
+        <!-- Znak wodny kanału w rogu (chowany automatycznie po 4 sekundach) -->
+        <div id="watermark-container" class="absolute top-10 right-12 opacity-80 flex items-center gap-3 z-10 transition-opacity duration-500 opacity-0 pointer-events-none">
             <i class="fas fa-circle text-red-500 text-xs animate-pulse"></i>
-            <span id="watermark-ch" class="text-3xl font-bold tracking-widest text-white/50">TVP 1 HD</span>
+            <span id="watermark-ch" class="text-3xl font-bold tracking-widest text-white/70">TVP 1 HD</span>
         </div>
     </div>
 
@@ -1371,6 +1371,11 @@
                 if (globalHints) globalHints.classList.remove('opacity-0', 'pointer-events-none');
             }
 
+            const watermark = document.getElementById('watermark-container');
+            if (watermark && target !== 'tv') {
+                watermark.classList.add('opacity-0', 'pointer-events-none');
+            }
+
             // Pasek zegara i statusu (w Home stale widoczny, w TV pokazuje się tylko z OSD i znika po 4s, w reszcie ukryty)
             const topStatus = document.getElementById('top-status-bar');
             if (topStatus) {
@@ -1415,16 +1420,21 @@
 
             const pill = document.getElementById('osd-container');
             const topStatus = document.getElementById('top-status-bar');
+            const watermark = document.getElementById('watermark-container');
             pill.classList.add('show');
             if (topStatus) topStatus.classList.remove('opacity-0', 'pointer-events-none');
+            if (watermark) watermark.classList.remove('opacity-0', 'pointer-events-none');
             
             clearTimeout(state.tv.osdTimer);
             state.tv.osdTimer = setTimeout(() => {
                 if(!state.tv.actionsOpen) {
                     pill.classList.remove('show');
-                    // Schowaj zegar i status w trybie oglądania TV
+                    // Schowaj zegar, status oraz nazwę kanału z czerwoną kropką w trybie TV
                     if (topStatus && state.activeLayer === 'tv') {
                         topStatus.classList.add('opacity-0', 'pointer-events-none');
+                    }
+                    if (watermark && state.activeLayer === 'tv') {
+                        watermark.classList.add('opacity-0', 'pointer-events-none');
                     }
                 }
             }, 4000);
