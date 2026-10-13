@@ -6,9 +6,15 @@ Bootowalny, hybrydowy obraz systemu operacyjnego (**Live USB + Instalator na dys
 
 ## 🌟 Główne cechy systemu
 
+* **100% Natywny Linux (Zero Wine)**:
+  - Brak powolnej emulacji Wine, brak zależności 32-bitowych bibliotek.
+  - Natywny program linuksowy z bezpośrednim dostępem do GPU (Mesa DRI, Vulkan, VA-API) i minimalnym zużyciem pamięci RAM.
 * **Błyskawiczny start (Appliance Mode)**:
-  - Brak pulpitu, paska zadań i okien systemowych.
-  - Komputer startuje bezpośrednio do aplikacji TVDecoder na pełnym ekranie.
+  - Brak pulpitu, paska zadań i zbędnych procesów okienkowych.
+  - Komputer startuje bezpośrednio do aplikacji TVDecoder na pełnym ekranie z obsługą 4K/60fps HDR.
+* **Wbudowane sterowanie Pilotem Apple (iPhone)**:
+  - Natywny mostek HomeKit HAP działający w tle.
+  - Pilot w Centrum Sterowania iOS na iPhone i iPadzie pozwala na pełną kontrolę TV, EPG, głośności i menu.
 * **Tryb Hybrydowy (Live USB + Instalator)**:
   - **Tryb Live**: Uruchamianie bezpośrednio z pendrive'a/RAM bez modyfikowania dysków w komputerze.
   - **Tryb Instalatora**: 1-kliknięciem instaluje TVDecoder OS na stałe na dysku twardym (HDD/SSD/NVMe), zamieniając maszynę w dedykowane urządzenie Smart TV.
@@ -28,14 +34,18 @@ Bootowalny, hybrydowy obraz systemu operacyjnego (**Live USB + Instalator na dys
 TVDecoder_OS/
 ├── .github/workflows/
 │   └── build_iso.yml           # Automatyczne budowanie ISO w chmurze GitHub
-├── app/                        # Pliki aplikacji TVDecoder + channels.json
-│   ├── TVDecoderApp.exe
-│   ├── channels.json
-│   └── ...
+├── app/                        # 100% Natywny program TVDecoder Linux
+│   ├── tvdecoder-linux         # Główny natywny program wykonywalny Linuksa
+│   ├── tvdecoder_server.py     # Natywny backend HTTP i Server-Sent Events dla pilota
+│   ├── tvdecoder_gtk.py        # Alternatywny natywny silnik WebKitGTK / GTK3
+│   ├── apple_tv_bridge.py      # Mostek Apple TV HomeKit (sterowanie z iPhone)
+│   ├── dekoder_aurora_ui.html  # Interfejs graficzny Dekodera TV (HLS Live, EPG, VOD)
+│   ├── channels.json           # Baza kanałów telewizyjnych (10 stacji HD/4K)
+│   └── apple_remote_qr.png     # Kod QR parowania z aplikacją Dom (Apple Home)
 ├── config/
 │   ├── grub.cfg                # Menu startowe UEFI
 │   ├── isolinux.cfg            # Menu startowe BIOS/Legacy
-│   ├── kiosk.sh                # Skrypt środowiska Kiosk & Watchdog
+│   ├── kiosk.sh                # Natywny skrypt środowiska Kiosk & Watchdog (Zero Wine)
 │   └── tvdecoder-kiosk.service # Usługa systemd autologinu do TVDecoder
 ├── scripts/
 │   ├── build_iso.sh            # Główny skrypt tworzący obraz TVDecoderOS.iso

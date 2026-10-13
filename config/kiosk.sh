@@ -34,27 +34,23 @@ if grep -q "install_mode=1" /proc/cmdline; then
     exit 0
 fi
 
-# 5. Konfiguracja środowiska Wine
-export WINEPREFIX="/home/tvuser/.wine"
-export WINEARCH="win64"
-export WINEDEBUG="-all"
+# 5. Konfiguracja środowiska graficznego
 export DISPLAY=":0"
+export XDG_SESSION_TYPE="x11"
 
 APP_DIR="/opt/tvdecoder/app"
-EXE_PATH="$APP_DIR/TVDecoderApp.exe"
+RUNNER="$APP_DIR/tvdecoder-linux"
 
-# Jeśli nie ma skompilowanego C#, sprawdzamy C++ TVDecoder
-if [ ! -f "$EXE_PATH" ]; then
-    EXE_PATH="$APP_DIR/TVDecoder.exe"
-fi
+# Uprawnienia do wykonywania natywnych skryptów
+chmod +x "$RUNNER" "$APP_DIR"/*.py 2>/dev/null || true
 
 cd "$APP_DIR" || exit 1
 
-# 6. Pętla Watchdoga (Kiosk Appliance - dekoder działa nieprzerwanie)
-echo "=== Start TVDecoder OS Kiosk ==="
+# 6. Pętla Watchdoga (Natywny Kiosk Appliance - 100% Linux, brak emulacji Wine)
+echo "=== Start TVDecoder OS Native Kiosk ==="
 while true; do
-    echo "[$(date)] Uruchamianie TVDecoder..."
-    wine "$EXE_PATH"
+    echo "[$(date)] Uruchamianie natywnego TVDecoder..."
+    "$RUNNER"
     
     EXIT_CODE=$?
     echo "[$(date)] TVDecoder zakończył działanie z kodem: $EXIT_CODE"
@@ -62,3 +58,4 @@ while true; do
     # 2 sekundy pauzy przed ponownym startem w razie crasha
     sleep 2
 done
+

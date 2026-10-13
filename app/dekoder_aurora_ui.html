@@ -1685,6 +1685,19 @@
                 }
             });
         }
+
+        // Natywna obsługa zdarzeń pilota dla systemu Linux przez Server-Sent Events (SSE)
+        try {
+            const remoteSource = new EventSource('/api/events');
+            remoteSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data && data.key) {
+                        window.handleRemoteKey(data.key);
+                    }
+                } catch(err) {}
+            };
+        } catch(e) {}
     </script>
 </body>
 </html>

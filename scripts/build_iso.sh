@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # TVDecoder OS - Automatyczny skrypt budowania bootowalnego hybrydowego ISO
-# Baza: Debian 12 (Bookworm) Minimal + Wine Kiosk Appliance
+# Baza: Debian 12 (Bookworm) Minimal + 100% Natywny Linux Kiosk Appliance (Zero Wine)
 # ==============================================================================
 
 set -e
@@ -35,7 +35,7 @@ echo "⏳ [2/7] Pobieranie minimalnego systemu bazowego (Debian 12 Bookworm)..."
 debootstrap --arch=amd64 bookworm "$CHROOT_DIR" http://deb.debian.org/debian/
 
 # 4. Konfiguracja repozytoriów, jądra i pakietów wewnątrz chroota
-echo "⏳ [3/7] Konfiguracja środowiska, sterowników GPU/Audio i Wine..."
+echo "⏳ [3/7] Konfiguracja środowiska, sterowników GPU/Audio i natywnego TVDecoder..."
 
 cat <<EOF > "$CHROOT_DIR/etc/apt/sources.list"
 deb http://deb.debian.org/debian/ bookworm main contrib non-free non-free-firmware
@@ -48,42 +48,45 @@ cat <<'EOF' > "$CHROOT_DIR/tmp/setup.sh"
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
-# Włączenie architektury 32-bit (dla pełnego wsparcia Wine)
-dpkg --add-architecture i386
 apt-get update -y
 
 # Jądro Linux i moduły Live
 apt-get install -y --no-install-recommends \
     linux-image-amd64 live-boot live-config systemd-sysv
 
-# Sterowniki GPU, sprzętu i Firmware
+# Sterowniki GPU, sprzętu i Firmware (pełna akceleracja sprzętowa VA-API/Vulkan/OpenGL)
 apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
-    mesa-vulkan-drivers libgl1-mesa-dri
+    mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + narzędzia ekranowe + przeglądarka Kiosk dla YouTube TV
+# Serwer graficzny X11 + lekki menedżer okien Openbox + natywna przeglądarka Kiosk
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium
 
-# Dźwięk (ALSA + PipeWire dla HDMI)
+# Natywne biblioteki GUI i kodeki multimedialne GStreamer
+apt-get install -y --no-install-recommends \
+    python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 libwebkit2gtk-4.1-0 \
+    gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi
+
+# Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \
     alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils
 
 # Narzędzia sieciowe i instalatora
 apt-get install -y --no-install-recommends \
-    network-manager wpasupplicant parted dosfstools e2fsprogs rsync dialog sudo ca-certificates
+    network-manager wpasupplicant parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl
 
-# Wine + Wine-Mono
+# Python 3 + biblioteki mostka Apple TV HomeKit i serwera aplikacji
 apt-get install -y --no-install-recommends \
-    wine wine64 wine32:i386 libwine libwine:i386
+    python3 python3-pip python3-requests python3-qrcode python3-pil python3-cryptography python3-zeroconf
+
+# Instalacja HAP-python dla pilota Apple (iPhone) w Centrum Sterowania
+pip3 install --break-system-packages --no-cache-dir HAP-python[QRCode] || true
 
 # Tworzenie dedykowanego użytkownika dekodera 'tvuser'
 useradd -m -s /bin/bash -G audio,video,input,render,netdev,sudo tvuser
 echo "tvuser:tvuser" | chpasswd
 echo "tvuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tvuser
-
-# Wstępna cicha inicjalizacja prefiksu Wine
-su - tvuser -c "WINEDEBUG=-all WINEARCH=win64 wineboot -i" || true
 
 # Czyszczenie pamięci podręcznej pakietów
 apt-get clean
@@ -103,6 +106,8 @@ cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 
 chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 
 # Instalacja usługi systemd
 cp "$PROJECT_ROOT/config/tvdecoder-kiosk.service" "$CHROOT_DIR/etc/systemd/system/"
