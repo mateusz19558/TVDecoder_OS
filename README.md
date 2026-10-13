@@ -34,9 +34,10 @@ Bootowalny, hybrydowy obraz systemu operacyjnego (**Live USB + Instalator na dys
 TVDecoder_OS/
 ├── .github/workflows/
 │   └── build_iso.yml           # Automatyczne budowanie ISO w chmurze GitHub
-├── app/                        # 100% Natywny program TVDecoder Linux (ZERO HTML, ZERO WINE)
-│   ├── tvdecoder-linux         # Główny natywny program wykonywalny Linuksa
-│   ├── tvdecoder_native.py     # Natywny kod programu dekodera (PyQt5 + QPainter + MPV)
+├── app/                        # Natywny program TVDecoder Linux (Aurora OS Appliance, Zero Wine)
+│   ├── tvdecoder-linux         # Główny natywny program wykonywalny Linuksa (Kiosk Appliance)
+│   ├── tvdecoder_server.py     # Wbudowany serwer API i mostek Server-Sent Events dla pilota
+│   ├── dekoder_aurora_ui.html  # Pełny koncept interfejsu Aurora OS (HLS Live TV, EPG, VOD)
 │   ├── apple_tv_bridge.py      # Mostek Apple TV HomeKit (sterowanie z iPhone)
 │   ├── channels.json           # Baza kanałów telewizyjnych (10 stacji HD/4K)
 │   ├── apple_remote_qr.png     # Kod QR parowania z aplikacją Dom (Apple Home)

@@ -59,13 +59,9 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + lekki menedżer okien Openbox (dla skrótów pilota)
+# Serwer graficzny X11 + lekki menedżer okien Openbox + dedykowany silnik Kiosk Appliance (Aurora OS)
 apt-get install -y --no-install-recommends \
-    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils
-
-# Natywny silnik programu GUI (PyQt5) oraz natywny odtwarzacz wideo z akceleracją sprzętową (mpv) - ZERO HTML
-apt-get install -y --no-install-recommends \
-    python3-pyqt5 mpv libmpv2 fonts-dejavu-core
+    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \
