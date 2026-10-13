@@ -93,7 +93,8 @@ Po wygenerowaniu pliku `TVDecoderOS.iso`:
 | **0 – 9** | Wybór kanału numerem |
 | **ENTER** / **I** | Dolny pasek informacyjny (Info Banner) |
 | **E** / **L** | Przewodnik programowy EPG / Lista kanałów |
-| **ESC** | Aplikacja YouTube Smart TV & Menu |
+| **F2** lub **ESC** | **YouTube Smart TV (Oficjalny Cobalt / Leanback)** – przełącza TV ⟷ YouTube |
+| **Alt + ESC** | Natychmiastowy powrót z YouTube do kanałów TV |
 | **◄ / ►** / **+ / -** | Regulacja głośności |
 | **M** | Wyciszenie dźwięku (MUTE) |
 | **SPACJA** | Pauza / Play |

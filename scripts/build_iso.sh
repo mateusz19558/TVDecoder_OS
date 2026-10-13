@@ -61,9 +61,9 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
     mesa-vulkan-drivers libgl1-mesa-dri
 
-# Serwer graficzny X11 + narzędzia ekranowe
+# Serwer graficzny X11 + narzędzia ekranowe + przeglądarka Kiosk dla YouTube TV
 apt-get install -y --no-install-recommends \
-    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils
+    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium
 
 # Dźwięk (ALSA + PipeWire dla HDMI)
 apt-get install -y --no-install-recommends \
@@ -101,8 +101,8 @@ cp -r "$PROJECT_ROOT/app/"* "$CHROOT_DIR/opt/tvdecoder/app/"
 cp -r "$PROJECT_ROOT/config/"* "$CHROOT_DIR/opt/tvdecoder/config/"
 cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 
-chmod +x "$CHROOT_DIR/opt/tvdecoder/config/kiosk.sh"
-chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts/installer.sh"
+chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
+chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
 
 # Instalacja usługi systemd
 cp "$PROJECT_ROOT/config/tvdecoder-kiosk.service" "$CHROOT_DIR/etc/systemd/system/"

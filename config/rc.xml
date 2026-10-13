@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <keyboard>
+    <!-- Przełącznik TV / YouTube pod klawiszem F2 lub pilotem -->
+    <keybind key="F2">
+      <action name="Execute">
+        <command>/opt/tvdecoder/config/toggle_youtube.sh</command>
+      </action>
+    </keybind>
+    <!-- Awaryjny powrót z YouTube do TV pod Alt+Escape -->
+    <keybind key="A-Escape">
+      <action name="Execute">
+        <command>pkill -x chromium</command>
+      </action>
+    </keybind>
+  </keyboard>
+  <applications>
+    <!-- Wszystkie aplikacje otwierają się domyślnie na pełnym ekranie bez ramek -->
+    <application class="*">
+      <fullscreen>yes</fullscreen>
+      <decor>no</decor>
+    </application>
+  </applications>
+</openbox_config>

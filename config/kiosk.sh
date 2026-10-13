@@ -22,6 +22,10 @@ if command -v pactl >/dev/null 2>&1; then
     pactl set-sink-mute @DEFAULT_SINK@ 0 >/dev/null 2>&1 || true
 fi
 
+# 3b. Uruchomienie menedżera okien Openbox (dla obsługi skrótów pilota, YouTube TV i trybu fullscreen)
+openbox --config-file /opt/tvdecoder/config/rc.xml &
+sleep 0.5
+
 # 4. Sprawdzenie, czy wybrano tryb instalacji z menu bootloadera
 if grep -q "install_mode=1" /proc/cmdline; then
     xterm -fullscreen -bg black -fg white -fa 'Monospace' -fs 14 -e "/opt/tvdecoder/scripts/installer.sh"
