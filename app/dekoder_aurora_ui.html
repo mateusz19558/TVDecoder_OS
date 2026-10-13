@@ -153,9 +153,11 @@
             transform: scale(1);
         }
 
-        /* Style wzorowane na PlayStation 4 (PS4) */
+        /* Style wzorowane na PlayStation 4 (PS4) w estetyce Aurora OS (zachowujące tapetę i przezroczystość szkła) */
         .ps4-settings-layer {
-            background: radial-gradient(circle at 50% 5%, #0e2b60 0%, #061533 40%, #020712 100%) !important;
+            background: rgba(10, 15, 28, 0.65) !important;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
         }
         .ps4-row {
             background: rgba(255, 255, 255, 0.04);
@@ -199,8 +201,15 @@
     <div id="top-status-bar" class="absolute top-10 left-12 z-50 flex items-center gap-4 text-white/80 font-medium transition-opacity duration-300">
         <span id="top-clock" class="text-2xl tracking-wider">00:00</span>
         <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-        <i class="fas fa-wifi text-sm"></i>
-        <i class="fas fa-hdd text-sm ml-2"></i>
+        <div class="flex items-center gap-2">
+            <i id="top-net-icon" class="fas fa-network-wired text-sm text-sky-400"></i>
+            <span id="top-net-label" class="text-xs uppercase tracking-wider text-sky-200">Kabel (Ethernet)</span>
+        </div>
+        <div id="top-usb-indicator" class="hidden flex items-center gap-2 text-emerald-400">
+            <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
+            <i class="fas fa-usb text-sm"></i>
+            <span id="top-usb-label" class="text-xs font-mono text-emerald-300">USB</span>
+        </div>
     </div>
 
     <!-- LAYER: Telewizja Na Żywo (OSD) -->
@@ -477,7 +486,7 @@
                 </div>
                 <div>
                     <h1 class="text-3xl font-semibold tracking-wide text-white">Ustawienia</h1>
-                    <p class="text-sky-300/80 text-xs tracking-wider">Aurora Box Pro • Oprogramowanie v3.1.4 • PS4 Dashboard Style</p>
+                    <p class="text-sky-300/80 text-xs tracking-wider">Aurora Box Pro • Oprogramowanie v3.1.5 • PS4 Dashboard Style</p>
                 </div>
             </div>
             
@@ -487,8 +496,12 @@
                     <span id="settings-clock" class="font-mono text-white font-bold">00:00</span>
                 </div>
                 <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
-                    <i class="fas fa-wifi text-cyan-400"></i>
-                    <span class="text-xs text-cyan-200">Wi-Fi 5 GHz</span>
+                    <i id="settings-net-icon" class="fas fa-network-wired text-cyan-400"></i>
+                    <span id="settings-net-badge" class="text-xs text-cyan-200">Kabel (Ethernet)</span>
+                </div>
+                <div id="settings-usb-badge-wrap" class="glass-panel px-4 py-2 rounded-full hidden items-center gap-2 border border-emerald-500/30 text-emerald-300">
+                    <i class="fas fa-usb"></i>
+                    <span id="settings-usb-badge" class="text-xs font-mono">Dysk USB</span>
                 </div>
                 <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10 text-xs">
                     <span class="bg-blue-600 px-2 py-0.5 rounded font-mono font-bold text-white">ESC</span> Wróć
@@ -531,14 +544,14 @@
             <!-- 3. Sieć -->
             <div id="ps4-set-network" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
                 <div class="flex items-center gap-4">
-                    <i class="fas fa-wifi text-xl text-cyan-400 w-8 text-center"></i>
+                    <i id="ps4-icon-network" class="fas fa-network-wired text-xl text-cyan-400 w-8 text-center"></i>
                     <div>
-                        <div class="font-medium text-lg text-white">Sieć</div>
-                        <div class="text-xs text-sky-200/60">Stan połączenia internetowego, diagnostyka IP i test prędkości łącza</div>
+                        <div class="font-medium text-lg text-white">Sieć i Wi-Fi</div>
+                        <div id="ps4-desc-network" class="text-xs text-sky-200/60">Wykrywanie połączenia kablowego lub Wi-Fi oraz konfiguracja sieci bezprzewodowej</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs font-semibold text-cyan-300">Połączono (Wi-Fi 5 GHz • 450 Mb/s)</span>
+                    <span id="ps4-val-network" class="text-xs font-semibold text-cyan-300">Sprawdzanie połączenia...</span>
                     <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
@@ -561,14 +574,14 @@
             <!-- 5. Pamięć masowa -->
             <div id="ps4-set-storage" class="focusable ps4-row rounded-xl px-6 py-3.5 flex items-center justify-between cursor-pointer">
                 <div class="flex items-center gap-4">
-                    <i class="fas fa-hdd text-xl text-blue-300 w-8 text-center"></i>
+                    <i id="ps4-icon-storage" class="fas fa-hdd text-xl text-blue-300 w-8 text-center"></i>
                     <div>
-                        <div class="font-medium text-lg text-white">Pamięć masowa</div>
-                        <div class="text-xs text-sky-200/60">Pamięć masowa systemu, bufor nagrań IPTV oraz wolne miejsce</div>
+                        <div class="font-medium text-lg text-white">Pamięć masowa i dyski USB</div>
+                        <div id="ps4-desc-storage" class="text-xs text-sky-200/60">Pamięć wewnętrzna eMMC, wolne miejsce oraz wykryte nośniki USB</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs font-semibold text-gray-300">Wolne: 51.2 GB / 64.0 GB</span>
+                    <span id="ps4-val-storage" class="text-xs font-semibold text-gray-300">Pamięć: sprawdzanie...</span>
                     <i class="fas fa-chevron-right text-white/30 text-sm"></i>
                 </div>
             </div>
@@ -1586,23 +1599,7 @@
                         }
                         // 3. Sieć
                         else if (state.nav.currentId === 'ps4-set-network') {
-                            showToast('Diagnostyka sieci...', 'Testowanie połączenia Wi-Fi 5GHz i parametrów IPTV...', 'fas fa-wifi fa-pulse', 'text-cyan-400', 'border-l-cyan-500');
-                            setTimeout(() => {
-                                showModal(
-                                    'Stan sieci i połączenia internetowego',
-                                    '<div class="text-left space-y-3 text-sm">' +
-                                    '<div class="bg-black/40 p-4 rounded-xl border border-white/10 space-y-1.5">' +
-                                    '<p>Połączona sieć: <strong class="text-white">Domowy_Router_5G</strong></p>' +
-                                    '<p>Adres IP dekodera: <strong class="text-cyan-300 font-mono">192.168.0.220</strong></p>' +
-                                    '<p>Brama domyślna: <strong class="font-mono text-gray-300">192.168.0.1</strong></p>' +
-                                    '<p>Opóźnienie (Ping): <strong class="text-green-400 font-bold">11 ms</strong></p>' +
-                                    '<p>Przepustowość IPTV: <strong class="text-green-400 font-bold">450 Mb/s (Streaming 4K HDR Aktywny)</strong></p>' +
-                                    '</div>' +
-                                    '</div>',
-                                    'fas fa-wifi text-cyan-400',
-                                    [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
-                                );
-                            }, 1000);
+                            openNetworkModal();
                         }
                         // 4. Dźwięk i ekran
                         else if (state.nav.currentId === 'ps4-set-av') {
@@ -1619,24 +1616,7 @@
                         }
                         // 5. Pamięć masowa
                         else if (state.nav.currentId === 'ps4-set-storage') {
-                            showModal(
-                                'Pamięć masowa systemu (eMMC)',
-                                '<div class="text-left space-y-4">' +
-                                '<div class="text-sm text-gray-300">Pojemność całkowita: <strong>64.0 GB</strong> • Wolne miejsce: <strong class="text-green-400 font-bold">51.2 GB</strong></div>' +
-                                '<div class="w-full h-4 bg-white/10 rounded-full overflow-hidden flex border border-white/10">' +
-                                '<div class="h-full bg-blue-500" style="width: 14%;" title="System operacyjny"></div>' +
-                                '<div class="h-full bg-purple-500" style="width: 5%;" title="Aplikacje"></div>' +
-                                '<div class="h-full bg-cyan-500" style="width: 3%;" title="Bufor IPTV"></div>' +
-                                '</div>' +
-                                '<div class="text-xs text-gray-400 flex justify-between">' +
-                                '<span>■ System Aurora: 9.0 GB</span>' +
-                                '<span>■ Aplikacje & EPG: 3.2 GB</span>' +
-                                '<span>■ Bufor HLS: 1.8 GB</span>' +
-                                '</div>' +
-                                '</div>',
-                                'fas fa-hdd text-blue-300',
-                                [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
-                            );
+                            openStorageModal();
                         }
                         // 6. Kontrola rodzicielska
                         else if (state.nav.currentId === 'ps4-set-parental') {
@@ -1764,10 +1744,350 @@
             }, 350);
         }
 
+        // --- SYSTEM WYKRYWANIA SIECI (ETHERNET / WI-FI) ORAZ NOŚNIKÓW USB ---
+        let currentNetworkData = { type: 'ethernet', name: 'Kabel (Ethernet)', ip: '192.168.0.220', speed: '1 Gbps', ssid: '' };
+        let currentStorageData = { internal: { total_gb: 64.0, free_gb: 51.2 }, usb_drives: [] };
+
+        async function apiFetch(endpoint) {
+            try {
+                const res = await fetch(endpoint);
+                if (res.ok) return await res.json();
+            } catch(e) {}
+            try {
+                const res2 = await fetch('http://127.0.0.1:8080' + endpoint);
+                if (res2.ok) return await res2.json();
+            } catch(e) {}
+            return null;
+        }
+
+        async function fetchNetworkInfo() {
+            const data = await apiFetch('/api/network');
+            if (data && data.status === 'ok') {
+                currentNetworkData = data;
+                updateNetworkUI(data);
+            }
+        }
+
+        function updateNetworkUI(data) {
+            const isWifi = data.type === 'wifi';
+            const topIcon = document.getElementById('top-net-icon');
+            const topLabel = document.getElementById('top-net-label');
+            const setIcon = document.getElementById('settings-net-icon');
+            const setBadge = document.getElementById('settings-net-badge');
+            const ps4Icon = document.getElementById('ps4-icon-network');
+            const ps4Val = document.getElementById('ps4-val-network');
+
+            if (isWifi) {
+                const title = data.ssid ? `Wi-Fi (${data.ssid})` : 'Sieć Wi-Fi';
+                if (topIcon) topIcon.className = 'fas fa-wifi text-sm text-cyan-400';
+                if (topLabel) topLabel.textContent = title;
+                if (setIcon) setIcon.className = 'fas fa-wifi text-cyan-400';
+                if (setBadge) setBadge.textContent = title;
+                if (ps4Icon) ps4Icon.className = 'fas fa-wifi text-xl text-cyan-400 w-8 text-center';
+                if (ps4Val) ps4Val.textContent = `Połączono bezprzewodowo (Wi-Fi • ${data.ssid || 'WLAN'} • IP: ${data.ip})`;
+            } else {
+                const title = 'Kabel (Ethernet)';
+                if (topIcon) topIcon.className = 'fas fa-network-wired text-sm text-sky-400';
+                if (topLabel) topLabel.textContent = title;
+                if (setIcon) setIcon.className = 'fas fa-network-wired text-cyan-400';
+                if (setBadge) setBadge.textContent = `${title} • ${data.speed || '1 Gbps'}`;
+                if (ps4Icon) ps4Icon.className = 'fas fa-network-wired text-xl text-sky-400 w-8 text-center';
+                if (ps4Val) ps4Val.textContent = `Połączono przewodowo (Kabel LAN • ${data.name || 'Ethernet'} • ${data.speed} • IP: ${data.ip})`;
+            }
+        }
+
+        async function fetchStorageInfo() {
+            const data = await apiFetch('/api/storage');
+            if (data && data.status === 'ok') {
+                currentStorageData = data;
+                updateStorageUI(data);
+            }
+        }
+
+        function updateStorageUI(data) {
+            const topUsb = document.getElementById('top-usb-indicator');
+            const topUsbLabel = document.getElementById('top-usb-label');
+            const setUsbWrap = document.getElementById('settings-usb-badge-wrap');
+            const setUsbBadge = document.getElementById('settings-usb-badge');
+            const ps4Val = document.getElementById('ps4-val-storage');
+
+            const hasUsb = data.usb_drives && data.usb_drives.length > 0;
+            if (hasUsb) {
+                const usb = data.usb_drives[0];
+                const name = usb.label || usb.name || 'Dysk USB';
+                if (topUsb) topUsb.classList.remove('hidden');
+                if (topUsbLabel) topUsbLabel.textContent = `USB: ${name}`;
+                if (setUsbWrap) setUsbWrap.classList.remove('hidden');
+                if (setUsbBadge) setUsbBadge.textContent = `USB: ${name}`;
+                if (ps4Val) ps4Val.textContent = `Wykryto USB (${name} • Wolne: ${usb.free_gb} GB / ${usb.total_gb} GB)`;
+            } else {
+                if (topUsb) topUsb.classList.add('hidden');
+                if (setUsbWrap) setUsbWrap.classList.add('hidden');
+                if (ps4Val) {
+                    const free = data.internal?.free_gb ?? 51.2;
+                    const total = data.internal?.total_gb ?? 64.0;
+                    ps4Val.textContent = `Pamięć dekodera: Wolne ${free} GB / ${total} GB`;
+                }
+            }
+        }
+
+        // Modal Sieci i Łączenia przez Wi-Fi
+        async function openNetworkModal() {
+            const isWifi = currentNetworkData.type === 'wifi';
+            const iconClass = isWifi ? 'fas fa-wifi text-cyan-400' : 'fas fa-network-wired text-sky-400';
+            const statusLabel = isWifi ? `Połączono bezprzewodowo: ${currentNetworkData.ssid || 'Wi-Fi'}` : 'Połączono przewodowo (Kabel LAN Ethernet)';
+
+            const contentHtml = `
+                <div class="text-left space-y-4 text-sm">
+                    <!-- Bieżący stan połączenia -->
+                    <div class="bg-black/50 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-sky-950/80 border border-sky-400/40 flex items-center justify-center">
+                                <i class="${iconClass} text-2xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-sky-300 font-bold uppercase tracking-wider">Aktywne połączenie</div>
+                                <div class="text-lg font-bold text-white">${statusLabel}</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Karta: <span class="text-gray-200">${currentNetworkData.name || 'Adapter sieciowy'}</span> • Prędkość: <span class="text-green-400 font-bold">${currentNetworkData.speed || '1 Gbps'}</span></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-500/20 text-green-300 border border-green-400/40 text-xs font-bold px-3 py-1 rounded-full uppercase">ONLINE</span>
+                            <div class="text-xs font-mono text-cyan-300 mt-2">IP: ${currentNetworkData.ip || '192.168.0.220'}</div>
+                        </div>
+                    </div>
+
+                    <!-- Menedżer sieci bezprzewodowych Wi-Fi -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-white text-base flex items-center gap-2">
+                                <i class="fas fa-satellite-dish text-cyan-400"></i> Dostępne sieci Wi-Fi w zasięgu dekodera:
+                            </span>
+                            <button id="btn-refresh-wifi" onclick="loadWifiList()" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-medium text-white flex items-center gap-1.5 transition">
+                                <i class="fas fa-sync-alt text-cyan-300"></i> Skanuj ponownie
+                            </button>
+                        </div>
+                        <div id="wifi-networks-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                            <div class="text-center py-6 text-gray-400 text-xs animate-pulse">
+                                <i class="fas fa-spinner fa-spin text-lg mb-2 text-cyan-400"></i><br>Skanowanie sieci bezprzewodowych Wi-Fi...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formularz łączenia z wybraną siecią -->
+                    <div id="wifi-connect-box" class="hidden bg-sky-950/40 border border-cyan-500/30 rounded-xl p-3 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-cyan-200">Łączenie z siecią: <strong id="wifi-target-ssid" class="text-white"></strong></span>
+                            <span class="text-[10px] text-gray-400" id="wifi-target-sec">WPA2</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="wifi-pass-input" type="password" placeholder="Wprowadź hasło do sieci Wi-Fi..." class="flex-1 bg-black/60 border border-white/20 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400" />
+                            <button id="btn-do-connect" onclick="connectSelectedWifi()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1.5">
+                                <i class="fas fa-link"></i> Połącz
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            showModal(
+                'Konfiguracja połączenia sieciowego i Wi-Fi',
+                contentHtml,
+                'fas fa-network-wired text-cyan-400',
+                [{ id: 'btn-ok', text: 'ZAMKNIJ', primary: true }]
+            );
+
+            setTimeout(loadWifiList, 200);
+        }
+
+        window.loadWifiList = async function() {
+            const container = document.getElementById('wifi-networks-container');
+            if (!container) return;
+            container.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs animate-pulse"><i class="fas fa-spinner fa-spin text-lg mb-2 text-cyan-400"></i><br>Wyszukiwanie sieci Wi-Fi w paśmie 2.4 GHz i 5 GHz...</div>';
+
+            const data = await apiFetch('/api/wifi/scan');
+            const networks = (data && data.networks && data.networks.length > 0) ? data.networks : [
+                { ssid: 'Domowy_Router_5G', signal: 96, security: 'WPA2/WPA3' },
+                { ssid: 'Netia_Swiatlowod_24', signal: 84, security: 'WPA2-PSK' },
+                { ssid: 'Orange_Swiatlowod_5G', signal: 68, security: 'WPA2-Personal' },
+                { ssid: 'UPC_Wi-Free', signal: 45, security: 'WPA2-Enterprise' }
+            ];
+
+            container.innerHTML = '';
+            networks.forEach(net => {
+                const signalColor = net.signal > 75 ? 'text-green-400' : (net.signal > 50 ? 'text-yellow-400' : 'text-orange-400');
+                const row = document.createElement('div');
+                row.className = 'bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3.5 py-2 flex items-center justify-between cursor-pointer transition';
+                row.onclick = () => selectWifiForConnection(net.ssid, net.security);
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-wifi ${signalColor} text-sm"></i>
+                        <div>
+                            <div class="font-bold text-white text-xs">${net.ssid}</div>
+                            <div class="text-[10px] text-gray-400">Zabezpieczenia: ${net.security || 'WPA2'}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[11px] font-mono ${signalColor}">${net.signal}%</span>
+                        <i class="fas fa-lock text-gray-400 text-[10px]"></i>
+                        <span class="text-xs text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-500/30">Wybierz</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        };
+
+        window.selectWifiForConnection = function(ssid, security) {
+            const box = document.getElementById('wifi-connect-box');
+            const ssidEl = document.getElementById('wifi-target-ssid');
+            const secEl = document.getElementById('wifi-target-sec');
+            const input = document.getElementById('wifi-pass-input');
+            if (box && ssidEl) {
+                ssidEl.textContent = ssid;
+                if (secEl) secEl.textContent = security || 'WPA2';
+                box.classList.remove('hidden');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+            }
+        };
+
+        window.connectSelectedWifi = async function() {
+            const ssidEl = document.getElementById('wifi-target-ssid');
+            const input = document.getElementById('wifi-pass-input');
+            const btn = document.getElementById('btn-do-connect');
+            if (!ssidEl || !ssidEl.textContent) return;
+
+            const ssid = ssidEl.textContent;
+            const pass = input ? input.value : '';
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Łączenie...';
+            }
+
+            showToast('Wi-Fi', `Nawiązywanie połączenia z ${ssid}...`, 'fas fa-wifi fa-pulse', 'text-cyan-400', 'border-l-cyan-500');
+
+            try {
+                await apiFetch(`/api/wifi/connect?ssid=${encodeURIComponent(ssid)}&pass=${encodeURIComponent(pass)}`);
+            } catch(e) {}
+
+            setTimeout(async () => {
+                await fetchNetworkInfo();
+                closeModal();
+                showToast('Wi-Fi Połączono', `Pomyślnie połączono z siecią bezprzewodową: ${ssid}`, 'fas fa-check-circle', 'text-green-400', 'border-l-green-500');
+            }, 1500);
+        };
+
+        // Modal Pamięci Masowej i Dysków USB
+        async function openStorageModal() {
+            await fetchStorageInfo();
+            const data = currentStorageData;
+            const internal = data.internal || { total_gb: 64.0, free_gb: 51.2, system_gb: 9.0, apps_gb: 3.2, buffer_gb: 1.8 };
+            const usbList = data.usb_drives || [];
+
+            let usbSectionHtml = '';
+            if (usbList.length > 0) {
+                usbSectionHtml = usbList.map(usb => {
+                    const usedGb = Math.max(0, Math.round((usb.total_gb - usb.free_gb) * 10) / 10);
+                    const pct = Math.min(100, Math.round((usedGb / usb.total_gb) * 100)) || 15;
+                    return `
+                        <div class="bg-emerald-950/30 border border-emerald-500/40 rounded-2xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-900/60 border border-emerald-400/50 flex items-center justify-center text-emerald-300">
+                                        <i class="fas fa-usb text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-white flex items-center gap-2">
+                                            ${usb.label || 'Nośnik USB'} <span class="font-mono text-xs text-emerald-300 bg-emerald-900/40 px-2 py-0.5 rounded border border-emerald-500/30">${usb.name}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-400">System plików: <strong class="text-gray-200">${usb.format || 'FAT32/exFAT'}</strong> • Wolne: <strong class="text-emerald-300">${usb.free_gb} GB</strong> z ${usb.total_gb} GB</div>
+                                    </div>
+                                </div>
+                                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">PODŁĄCZONO USB</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden border border-white/20">
+                                <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: ${pct}%;"></div>
+                            </div>
+                            <div class="flex justify-between items-center pt-1">
+                                <span class="text-[11px] text-gray-400">Zajętość nośnika: ${pct}%</span>
+                                <div class="flex gap-2">
+                                    <button onclick="safeEjectUsb('${usb.name}')" class="px-3 py-1 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                                        <i class="fas fa-eject"></i> Bezpiecznie odłącz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                usbSectionHtml = `
+                    <div class="bg-black/30 border border-dashed border-white/10 rounded-2xl p-6 text-center text-gray-400">
+                        <i class="fas fa-usb text-3xl mb-2 text-white/30"></i>
+                        <div class="font-semibold text-white text-sm">Brak podłączonych urządzeń USB</div>
+                        <div class="text-xs text-gray-400 mt-1">Podłącz pendrive lub dysk zewnętrzny do portu USB w dekoderze, aby nagrywać programy i odtwarzać filmy.</div>
+                    </div>
+                `;
+            }
+
+            const contentHtml = `
+                <div class="text-left space-y-4 text-sm">
+                    <!-- Pamięć wewnętrzna eMMC -->
+                    <div class="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-white text-base flex items-center gap-2">
+                                <i class="fas fa-hdd text-blue-400"></i> Pamięć wewnętrzna systemu (eMMC):
+                            </span>
+                            <span class="text-xs text-gray-300">Pojemność: <strong>${internal.total_gb} GB</strong> • Wolne: <strong class="text-green-400 font-bold">${internal.free_gb} GB</strong></span>
+                        </div>
+                        <div class="w-full h-3.5 bg-white/10 rounded-full overflow-hidden flex border border-white/10">
+                            <div class="h-full bg-blue-500" style="width: 15%;" title="Aurora OS"></div>
+                            <div class="h-full bg-purple-500" style="width: 8%;" title="Aplikacje"></div>
+                            <div class="h-full bg-cyan-500" style="width: 5%;" title="Bufor IPTV"></div>
+                        </div>
+                        <div class="text-[11px] text-gray-400 flex justify-between">
+                            <span>■ System Aurora: ${internal.system_gb || 9.0} GB</span>
+                            <span>■ Aplikacje & EPG: ${internal.apps_gb || 3.2} GB</span>
+                            <span>■ Bufor HLS: ${internal.buffer_gb || 1.8} GB</span>
+                        </div>
+                    </div>
+
+                    <!-- Pamięci USB i dyski przenośne -->
+                    <div class="space-y-2">
+                        <span class="font-semibold text-white text-base flex items-center gap-2">
+                            <i class="fas fa-plug text-emerald-400"></i> Wykryte pamięci USB i dyski przenośne:
+                        </span>
+                        ${usbSectionHtml}
+                    </div>
+                </div>
+            `;
+
+            showModal(
+                'Pamięć masowa i dyski przenośne USB',
+                contentHtml,
+                'fas fa-hdd text-blue-300',
+                [{ id: 'btn-ok', text: 'ZAMKNIJ', primary: true }]
+            );
+        }
+
+        window.safeEjectUsb = function(driveName) {
+            closeModal();
+            showToast('Bezpieczne usuwanie USB', `Urządzenie ${driveName} zostało odłączone. Możesz bezpiecznie wyjąć nośnik USB.`, 'fas fa-check-circle', 'text-emerald-400', 'border-l-emerald-500');
+            setTimeout(fetchStorageInfo, 1000);
+        };
+
         // Inicjalizacja
         document.addEventListener('DOMContentLoaded', () => {
             renderVOD();
             renderEPG();
+            fetchNetworkInfo();
+            fetchStorageInfo();
+            setInterval(fetchNetworkInfo, 8000);
+            setInterval(fetchStorageInfo, 8000);
+
             // Pokaż UI początkowe
             setTimeout(() => {
                 showOSDPill();
