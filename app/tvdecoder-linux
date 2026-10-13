@@ -1,125 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env bash
 # ==============================================================================
-# TVDecoder OS - Główny Natywny Program Linuksowy (Zero Wine)
-# Dedykowany Kiosk Dekodera Telewizyjnego dla systemów Linux (Debian 12)
+# TVDecoder OS - Natywny Runner Dekodera TV (100% Linux, ZERO HTML, ZERO WINE)
 # ==============================================================================
 
-import os
-import sys
-import time
-import signal
-import subprocess
-import urllib.request
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$APP_DIR" || exit 1
 
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
-subprocesses = []
+export DISPLAY="${DISPLAY:-:0}"
+export XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-x11}"
+export QT_QPA_PLATFORM="xcb"
 
-def cleanup(signum=None, frame=None):
-    print("\n[TVDecoder] Zamykanie aplikacji i usług towarzyszących...", flush=True)
-    for p in subprocesses:
-        try:
-            p.terminate()
-            p.wait(timeout=1.5)
-        except Exception:
-            try:
-                p.kill()
-            except Exception:
-                pass
-    sys.exit(0)
+echo "=================================================================="
+echo " 🚀 Start Natywnego Programu TVDecoder (Pure Native STB App)     "
+echo " Zero HTML • Zero Emulacji Wine • 100% Natywny Kod Programu      "
+echo "=================================================================="
 
-signal.signal(signal.SIGINT, cleanup)
-signal.signal(signal.SIGTERM, cleanup)
-
-def wait_for_server(url, timeout=10.0):
-    start = time.time()
-    while time.time() - start < timeout:
-        try:
-            with urllib.request.urlopen(url, timeout=0.5) as resp:
-                if resp.status == 200:
-                    return True
-        except Exception:
-            time.sleep(0.15)
-    return False
-
-def main():
-    os.chdir(APP_DIR)
-    print("==================================================================", flush=True)
-    print(" 🚀 Start Natywnego Programu TVDecoder OS (Linux Appliance)       ", flush=True)
-    print(" Brak emulacji Wine • 100% Natywny Podsystem Linux               ", flush=True)
-    print("==================================================================", flush=True)
-
-    # 1. Start wbudowanego serwera aplikacji i mostka API pilota
-    server_script = os.path.join(APP_DIR, "tvdecoder_server.py")
-    if os.path.exists(server_script):
-        print("[TVDecoder] Uruchamianie serwera aplikacji (port 8080)...", flush=True)
-        p_server = subprocess.Popen([sys.executable, server_script])
-        subprocesses.append(p_server)
-    else:
-        print("[TVDecoder] Błąd: Brak pliku tvdecoder_server.py!", flush=True)
-        sys.exit(1)
-
-    # Czekaj na start serwera
-    if not wait_for_server("http://127.0.0.1:8080/"):
-        print("[TVDecoder] Ostrzeżenie: Serwer nie odpowiedział natychmiast, kontynuuję...", flush=True)
-
-    # 2. Start mostka Apple TV / HomeKit (Centrum Sterowania iPhone)
-    apple_bridge_script = os.path.join(APP_DIR, "apple_tv_bridge.py")
-    if os.path.exists(apple_bridge_script):
-        print("[TVDecoder] Uruchamianie mostka pilota Apple TV (HomeKit HAP)...", flush=True)
-        try:
-            p_apple = subprocess.Popen([sys.executable, apple_bridge_script])
-            subprocesses.append(p_apple)
-        except Exception as e:
-            print(f"[TVDecoder] Ostrzeżenie: Nie udało się uruchomić mostka Apple: {e}", flush=True)
-
-    # 3. Uruchomienie natywnego interfejsu graficznego (Kiosk Fullscreen)
-    gui_url = "http://127.0.0.1:8080/"
-
-    # Sprawdzenie dostępnych silników wyświetlania w systemie Linux:
-    # A: Chromium Kiosk (Maksymalna wydajność GPU, Mesa DRI, HLS i bezproblemowe odtwarzanie strumieni)
-    chromium_cmd = None
-    for cand in ["chromium", "chromium-browser", "google-chrome"]:
-        if subprocess.run(["which", cand], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-            chromium_cmd = cand
-            break
-
-    if chromium_cmd:
-        print(f"[TVDecoder] Uruchamianie natywnego silnika Kiosk ({chromium_cmd})...", flush=True)
-        flags = [
-            chromium_cmd,
-            "--kiosk",
-            "--app=" + gui_url,
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--disable-infobars",
-            "--disable-translate",
-            "--disable-features=Translate",
-            "--disable-pinch",
-            "--overscroll-history-navigation=0",
-            "--autoplay-policy=no-user-gesture-required",
-            "--disable-web-security",
-            "--allow-running-insecure-content",
-            "--enable-gpu-rasterization",
-            "--enable-zero-copy",
-            "--ignore-gpu-blocklist",
-            "--check-for-update-interval=31536000",
-            "--user-data-dir=/home/tvuser/.config/tvdecoder_profile"
-        ]
-        p_gui = subprocess.Popen(flags)
-        subprocesses.append(p_gui)
-        p_gui.wait()
-    else:
-        # Fallback na WebKitGTK jeśli Chromium nie jest dostępne
-        print("[TVDecoder] Chromium niedostępne. Sprawdzam WebKitGTK...", flush=True)
-        gtk_script = os.path.join(APP_DIR, "tvdecoder_gtk.py")
-        if os.path.exists(gtk_script):
-            p_gui = subprocess.Popen([sys.executable, gtk_script])
-            subprocesses.append(p_gui)
-            p_gui.wait()
-        else:
-            print("[TVDecoder] Błąd: Brak dostępnego silnika graficznego (zainstaluj chromium lub libwebkit2gtk)!", flush=True)
-
-    cleanup()
-
-if __name__ == "__main__":
-    main()
+# Uruchomienie w 100% natywnego programu napisanego w kodzie
+exec python3 "$APP_DIR/tvdecoder_native.py" "$@"

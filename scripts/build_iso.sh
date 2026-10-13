@@ -59,14 +59,13 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + lekki menedżer okien Openbox + natywna przeglądarka Kiosk
+# Serwer graficzny X11 + lekki menedżer okien Openbox (dla skrótów pilota)
 apt-get install -y --no-install-recommends \
-    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium
+    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils
 
-# Natywne biblioteki GUI i kodeki multimedialne GStreamer
+# Natywny silnik programu GUI (PyQt5) oraz natywny odtwarzacz wideo z akceleracją sprzętową (mpv) - ZERO HTML
 apt-get install -y --no-install-recommends \
-    python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 libwebkit2gtk-4.1-0 \
-    gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi
+    python3-pyqt5 mpv libmpv2 fonts-dejavu-core
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \

@@ -34,14 +34,13 @@ Bootowalny, hybrydowy obraz systemu operacyjnego (**Live USB + Instalator na dys
 TVDecoder_OS/
 ├── .github/workflows/
 │   └── build_iso.yml           # Automatyczne budowanie ISO w chmurze GitHub
-├── app/                        # 100% Natywny program TVDecoder Linux
+├── app/                        # 100% Natywny program TVDecoder Linux (ZERO HTML, ZERO WINE)
 │   ├── tvdecoder-linux         # Główny natywny program wykonywalny Linuksa
-│   ├── tvdecoder_server.py     # Natywny backend HTTP i Server-Sent Events dla pilota
-│   ├── tvdecoder_gtk.py        # Alternatywny natywny silnik WebKitGTK / GTK3
+│   ├── tvdecoder_native.py     # Natywny kod programu dekodera (PyQt5 + QPainter + MPV)
 │   ├── apple_tv_bridge.py      # Mostek Apple TV HomeKit (sterowanie z iPhone)
-│   ├── dekoder_aurora_ui.html  # Interfejs graficzny Dekodera TV (HLS Live, EPG, VOD)
 │   ├── channels.json           # Baza kanałów telewizyjnych (10 stacji HD/4K)
-│   └── apple_remote_qr.png     # Kod QR parowania z aplikacją Dom (Apple Home)
+│   ├── apple_remote_qr.png     # Kod QR parowania z aplikacją Dom (Apple Home)
+│   └── accessory.state         # Stan parowania HomeKit
 ├── config/
 │   ├── grub.cfg                # Menu startowe UEFI
 │   ├── isolinux.cfg            # Menu startowe BIOS/Legacy
