@@ -191,14 +191,14 @@
         </div>
         
         <!-- Znak wodny kanału w rogu (chowany automatycznie po 4 sekundach) -->
-        <div id="watermark-container" class="absolute top-10 right-12 opacity-80 flex items-center gap-3 z-10 transition-opacity duration-500 opacity-0 pointer-events-none">
+        <div id="watermark-container" class="absolute top-10 right-12 flex items-center gap-3 z-10 transition-opacity duration-500 pointer-events-none" style="opacity: 0;">
             <i class="fas fa-circle text-red-500 text-xs animate-pulse"></i>
             <span id="watermark-ch" class="text-3xl font-bold tracking-widest text-white/70">TVP 1 HD</span>
         </div>
     </div>
 
     <!-- Warstwa Zawsze na wierzchu: Zegar i Status (tylko w TV i Home) -->
-    <div id="top-status-bar" class="absolute top-10 left-12 z-50 flex items-center gap-4 text-white/80 font-medium transition-opacity duration-300">
+    <div id="top-status-bar" class="absolute top-10 left-12 z-50 flex items-center gap-4 text-white/80 font-medium transition-opacity duration-300 pointer-events-none" style="opacity: 0;">
         <span id="top-clock" class="text-2xl tracking-wider">00:00</span>
         <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
         <div class="flex items-center gap-2">
@@ -1365,27 +1365,37 @@
             const globalHints = document.getElementById('global-hints');
             if (target === 'tv' || target === 'settings') {
                 els.body.classList.remove('blurred-bg');
-                if (globalHints) globalHints.classList.add('opacity-0', 'pointer-events-none');
+                if (globalHints) {
+                    globalHints.style.opacity = '0';
+                    globalHints.style.pointerEvents = 'none';
+                }
             } else {
                 els.body.classList.add('blurred-bg');
-                if (globalHints) globalHints.classList.remove('opacity-0', 'pointer-events-none');
+                if (globalHints) {
+                    globalHints.style.opacity = '1';
+                    globalHints.style.pointerEvents = 'auto';
+                }
             }
 
             const watermark = document.getElementById('watermark-container');
             if (watermark && target !== 'tv') {
-                watermark.classList.add('opacity-0', 'pointer-events-none');
+                watermark.style.opacity = '0';
+                watermark.style.pointerEvents = 'none';
             }
 
             // Pasek zegara i statusu (w Home stale widoczny, w TV pokazuje się tylko z OSD i znika po 4s, w reszcie ukryty)
             const topStatus = document.getElementById('top-status-bar');
             if (topStatus) {
                 if (target === 'home') {
-                    topStatus.classList.remove('opacity-0', 'pointer-events-none');
+                    topStatus.style.opacity = '1';
+                    topStatus.style.pointerEvents = 'auto';
                 } else if (target === 'tv') {
                     // Pokaż na chwilę z OSD, zgaśnie po zgaśnięciu OSD
-                    topStatus.classList.remove('opacity-0', 'pointer-events-none');
+                    topStatus.style.opacity = '1';
+                    topStatus.style.pointerEvents = 'auto';
                 } else {
-                    topStatus.classList.add('opacity-0', 'pointer-events-none');
+                    topStatus.style.opacity = '0';
+                    topStatus.style.pointerEvents = 'none';
                 }
             }
 
@@ -1422,8 +1432,14 @@
             const topStatus = document.getElementById('top-status-bar');
             const watermark = document.getElementById('watermark-container');
             pill.classList.add('show');
-            if (topStatus) topStatus.classList.remove('opacity-0', 'pointer-events-none');
-            if (watermark) watermark.classList.remove('opacity-0', 'pointer-events-none');
+            if (topStatus) {
+                topStatus.style.opacity = '1';
+                topStatus.style.pointerEvents = 'auto';
+            }
+            if (watermark) {
+                watermark.style.opacity = '0.85';
+                watermark.style.pointerEvents = 'auto';
+            }
             
             clearTimeout(state.tv.osdTimer);
             state.tv.osdTimer = setTimeout(() => {
@@ -1431,10 +1447,12 @@
                     pill.classList.remove('show');
                     // Schowaj zegar, status oraz nazwę kanału z czerwoną kropką w trybie TV
                     if (topStatus && state.activeLayer === 'tv') {
-                        topStatus.classList.add('opacity-0', 'pointer-events-none');
+                        topStatus.style.opacity = '0';
+                        topStatus.style.pointerEvents = 'none';
                     }
                     if (watermark && state.activeLayer === 'tv') {
-                        watermark.classList.add('opacity-0', 'pointer-events-none');
+                        watermark.style.opacity = '0';
+                        watermark.style.pointerEvents = 'none';
                     }
                 }
             }, 4000);
