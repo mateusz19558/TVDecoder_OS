@@ -719,14 +719,18 @@
     </div>
 
     <script>
-        // --- KANAŁY TELEWIZYJNE LIVE HLS ---
+        // --- KANAŁY TELEWIZYJNE LIVE HLS (Rzeczywiste Polskie i Międzynarodowe Kanały TV) ---
         const channels = [
-            { id: 1, name: "TVP 1 HD", cat: "Ogólne", url: "https://stream.tvp.pl/live/tvpinfo/master.m3u8" },
-            { id: 2, name: "TVP INFO", cat: "Wiadomości", url: "https://stream.tvp.pl/live/tvpinfo/master.m3u8" },
-            { id: 3, name: "POLSAT HD", cat: "Ogólne", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" },
-            { id: 4, name: "TVN 24", cat: "Wiadomości", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" },
-            { id: 5, name: "CANAL+ SPORT", cat: "Sport", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" },
-            { id: 6, name: "HBO KINO", cat: "Filmy", url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" }
+            { id: 1, name: "TVP 1 HD", cat: "Ogólne", url: "http://57.128.210.196:8080/144/index.m3u8" },
+            { id: 2, name: "TVP 2 HD", cat: "Ogólne", url: "http://57.128.210.196:8080/143/index.m3u8" },
+            { id: 3, name: "TVP SPORT HD", cat: "Sport", url: "http://57.128.210.196:8080/134/index.m3u8" },
+            { id: 4, name: "POLSAT 2 HD", cat: "Ogólne", url: "http://57.128.210.196:8080/208/index.m3u8" },
+            { id: 5, name: "POLSAT SPORT 1", cat: "Sport", url: "http://57.128.210.196:8080/193/index.m3u8" },
+            { id: 6, name: "EUROSPORT 1", cat: "Sport", url: "http://57.128.210.196:8080/264/index.m3u8" },
+            { id: 7, name: "POLSAT SERIALE", cat: "Filmy", url: "http://57.128.210.196:8080/196/index.m3u8" },
+            { id: 8, name: "4FUN TV", cat: "Muzyka", url: "https://stream.4fun.tv:8888/sd/4fun_sd_high.m3u8" },
+            { id: 9, name: "4FUN KIDS", cat: "Dzieci", url: "https://stream.4fun.tv:8889/hls/4fk_high/index.m3u8" },
+            { id: 10, name: "NASA TV UHD", cat: "Nauka", url: "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8" }
         ];
 
         function playChannel(idx) {
@@ -734,18 +738,61 @@
             if (!ch) return;
             const video = document.getElementById('tv-video');
             if (!video) return;
+
+            // Synchronizacja głośności
+            video.volume = state.tv.volume / 100;
+            video.muted = (state.tv.volume === 0);
             
             try {
-                if (ch.url.endsWith('.m3u8') && window.Hls && Hls.isSupported()) {
-                    if (window.hlsInstance) window.hlsInstance.destroy();
-                    window.hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
+                if (ch.url.includes('.m3u8') && window.Hls && Hls.isSupported()) {
+                    if (window.hlsInstance) {
+                        window.hlsInstance.destroy();
+                        window.hlsInstance = null;
+                    }
+                    window.hlsInstance = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                        backBufferLength: 90
+                    });
                     window.hlsInstance.loadSource(ch.url);
                     window.hlsInstance.attachMedia(video);
-                    window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+                    window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                        const playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(() => {
+                                // Jeśli przeglądarka wymaga wyciszenia przed pierwszym klikiem:
+                                video.muted = true;
+                                video.play().then(() => {
+                                    setTimeout(() => { video.muted = (state.tv.volume === 0); }, 300);
+                                }).catch(()=>{});
+                            });
+                        }
+                    });
+                    window.hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                        if (data.fatal) {
+                            switch (data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    window.hlsInstance.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    window.hlsInstance.recoverMediaError();
+                                    break;
+                                default:
+                                    window.hlsInstance.destroy();
+                                    break;
+                            }
+                        }
+                    });
                 } else {
-                    if (window.hlsInstance) { window.hlsInstance.destroy(); window.hlsInstance = null; }
+                    if (window.hlsInstance) {
+                        window.hlsInstance.destroy();
+                        window.hlsInstance = null;
+                    }
                     video.src = ch.url;
-                    video.play().catch(()=>{});
+                    video.play().catch(() => {
+                        video.muted = true;
+                        video.play().catch(()=>{});
+                    });
                 }
             } catch(e) {
                 console.log("Błąd playChannel:", e);
@@ -1318,6 +1365,12 @@
             document.getElementById('vol-text').textContent = state.tv.volume;
             document.getElementById('vol-bar').style.height = `${state.tv.volume}%`;
             
+            const video = document.getElementById('tv-video');
+            if (video) {
+                video.volume = state.tv.volume / 100;
+                video.muted = (state.tv.volume === 0);
+            }
+
             ind.classList.remove('opacity-0');
             clearTimeout(state.tv.volTimer);
             state.tv.volTimer = setTimeout(() => ind.classList.add('opacity-0'), 2000);
