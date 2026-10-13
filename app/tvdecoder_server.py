@@ -266,6 +266,37 @@ class DecoderHTTPHandler(SimpleHTTPRequestHandler):
             self.wfile.write(res_bytes)
             return
 
+        # 9. Zasilanie: Reboot i Shutdown
+        if path == "/api/power/reboot":
+            res_bytes = json.dumps({"status": "ok", "action": "reboot"}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(res_bytes)
+            def do_reboot():
+                import time, subprocess
+                time.sleep(1)
+                try: subprocess.run(["reboot"])
+                except: pass
+            threading.Thread(target=do_reboot, daemon=True).start()
+            return
+
+        if path == "/api/power/shutdown":
+            res_bytes = json.dumps({"status": "ok", "action": "shutdown"}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(res_bytes)
+            def do_shutdown():
+                import time, subprocess
+                time.sleep(1)
+                try: subprocess.run(["poweroff"])
+                except: pass
+            threading.Thread(target=do_shutdown, daemon=True).start()
+            return
+
         # 3. Server-Sent Events (SSE) dla pilota Apple TV
         if path == "/api/events":
             self.send_response(200)

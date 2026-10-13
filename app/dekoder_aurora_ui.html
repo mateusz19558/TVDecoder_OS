@@ -153,29 +153,29 @@
             transform: scale(1);
         }
 
-        /* Style wzorowane na PlayStation 4 (PS4) w estetyce Aurora OS (zachowujące tapetę i przezroczystość szkła) */
-        .ps4-settings-layer {
+        /* Ustawienia Aurora OS (elegancki frosted glassmorphism z zachowaniem tapety zorzy) */
+        .aurora-settings-layer, .ps4-settings-layer {
             background: rgba(10, 15, 28, 0.65) !important;
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
         }
-        .ps4-row {
+        .aurora-row, .ps4-row {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        .ps4-row:hover {
+        .aurora-row:hover, .ps4-row:hover {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.2);
         }
-        .ps4-row.tv-focus-sm, .ps4-row.tv-focus {
-            background: linear-gradient(90deg, #003791 0%, #0066cc 100%) !important;
-            border-color: rgba(255, 255, 255, 0.9) !important;
-            box-shadow: 0 0 25px rgba(0, 102, 204, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6) !important;
+        .aurora-row.tv-focus-sm, .aurora-row.tv-focus, .ps4-row.tv-focus-sm, .ps4-row.tv-focus {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.85) 0%, rgba(59, 130, 246, 0.85) 100%) !important;
+            border-color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.7), 0 8px 24px rgba(0, 0, 0, 0.6) !important;
             transform: scale(1.02) !important;
             color: #ffffff !important;
         }
-        .ps4-row.tv-focus-sm i.fa-chevron-right, .ps4-row.tv-focus i.fa-chevron-right {
+        .aurora-row.tv-focus-sm i.fa-chevron-right, .aurora-row.tv-focus i.fa-chevron-right, .ps4-row.tv-focus-sm i.fa-chevron-right, .ps4-row.tv-focus i.fa-chevron-right {
             color: #ffffff !important;
             transform: translateX(4px);
         }
@@ -478,21 +478,21 @@
 
     <!-- LAYER: Settings (Wzorowane na PlayStation 4 - PS4 Settings) -->
     <div id="layer-settings" class="layer ps4-settings-layer px-14 py-10 flex flex-col justify-between overflow-hidden">
-        <!-- Belka Górna PS4 -->
+        <!-- Belka Górna Aurora OS -->
         <div class="flex items-center justify-between pb-6 border-b border-white/10 shrink-0">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-600/30 border border-blue-400/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <i class="fab fa-playstation text-2xl text-blue-400"></i>
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/40 to-blue-600/40 border border-purple-400/50 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <i class="fas fa-sliders-h text-2xl text-purple-300"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-semibold tracking-wide text-white">Ustawienia</h1>
-                    <p class="text-sky-300/80 text-xs tracking-wider">Aurora Box Pro • Oprogramowanie v3.1.5 • PS4 Dashboard Style</p>
+                    <h1 class="text-3xl font-semibold tracking-wide text-white">Ustawienia systemowe</h1>
+                    <p class="text-purple-300/80 text-xs tracking-wider">Aurora Box Pro • Oprogramowanie v3.1.5 • Aurora OS Settings Engine</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-4 text-sm font-semibold text-white/80">
                 <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
-                    <i class="far fa-clock text-blue-400"></i>
+                    <i class="far fa-clock text-purple-400"></i>
                     <span id="settings-clock" class="font-mono text-white font-bold">00:00</span>
                 </div>
                 <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
@@ -504,7 +504,7 @@
                     <span id="settings-usb-badge" class="text-xs font-mono">Dysk USB</span>
                 </div>
                 <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-2 border border-white/10 text-xs">
-                    <span class="bg-blue-600 px-2 py-0.5 rounded font-mono font-bold text-white">ESC</span> Wróć
+                    <span class="bg-white/20 px-2 py-0.5 rounded font-mono font-bold text-white border border-white/20">ESC</span> Wróć
                 </div>
             </div>
         </div>
@@ -632,24 +632,28 @@
             </div>
         </div>
 
-        <!-- Stopka PS4 z podpowiedziami kontrolera -->
-        <div class="pt-4 border-t border-white/10 flex justify-between items-center text-xs text-white/60 shrink-0">
+        <!-- Stopka Aurora OS z podpowiedziami pilota -->
+        <div class="pt-4 border-t border-white/10 flex justify-between items-center text-xs text-white/70 shrink-0">
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-2">
-                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px] shadow">✕</span>
+                    <span class="px-2 py-0.5 rounded bg-purple-600 text-white font-bold text-xs shadow">OK</span>
                     <span>Wprowadź / Wybierz (Enter)</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="w-5 h-5 rounded-full bg-red-600 text-white font-bold flex items-center justify-center text-[10px] shadow">◯</span>
-                    <span>Wróć (ESC)</span>
+                    <span class="px-2 py-0.5 rounded bg-white/20 text-white font-bold text-xs border border-white/20">ESC</span>
+                    <span>Wróć</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="w-5 h-5 rounded bg-white/20 text-white font-bold flex items-center justify-center text-[10px] px-1.5 py-0.5">M</span>
+                    <span class="px-2 py-0.5 rounded bg-white/20 text-white font-bold text-xs border border-white/20">M</span>
                     <span>Menu Główne</span>
                 </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-rose-600/80 text-white font-bold text-xs shadow flex items-center gap-1"><i class="fas fa-power-off text-[10px]"></i> ZASILANIE</span>
+                    <span>Opcje wyłączenia</span>
+                </div>
             </div>
-            <div class="text-sky-300/60 font-mono text-[11px]">
-                PLAYSTATION® STYLE SETTINGS • AURORA STB
+            <div class="text-purple-300/80 font-mono text-xs font-semibold tracking-wider">
+                AURORA OS v3.1.5 • DEKODER TV HYBRID
             </div>
         </div>
     </div>
@@ -698,7 +702,18 @@
         <div class="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
             <div id="boot-progress" class="h-full bg-purple-500 w-0"></div>
         </div>
-        <p id="boot-text" class="mt-4 text-sm text-gray-500">Uruchamianie systemu...</p>
+    </div>
+
+    <!-- Warstwa Trybu Czuwania (Standby Mode) -->
+    <div id="layer-standby" class="fixed inset-0 bg-black z-[500] hidden flex-col items-center justify-center cursor-pointer transition-opacity duration-500">
+        <div class="flex flex-col items-center gap-6">
+            <div class="flex items-center gap-3">
+                <span class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-[0_0_15px_#ef4444] animate-pulse"></span>
+                <span class="text-xs uppercase font-mono tracking-widest text-red-400">AURORA OS • TRYB CZUWANIA</span>
+            </div>
+            <div id="standby-clock" class="text-8xl font-mono font-light text-white/70 tracking-wider">00:00</div>
+            <p class="text-xs text-gray-500 tracking-wide mt-2">Naciśnij dowolny przycisk pilota lub kliknij, aby włączyć dekoder</p>
+        </div>
     </div>
 
     <script>
@@ -933,37 +948,63 @@
             }, 50);
         }
 
-        function simulateReboot() {
+        function simulateReboot(isFactoryReset = false) {
             const boot = document.getElementById('boot-screen');
             const progress = document.getElementById('boot-progress');
             const text = document.getElementById('boot-text');
             
             boot.classList.remove('opacity-0', 'pointer-events-none');
+            progress.style.width = '0%';
+            text.textContent = isFactoryReset ? 'Przygotowywanie czyszczenia pamięci eMMC...' : 'Zamykanie aktywnych procesów Aurora STB...';
             
-            // Sekwencja czasowa symulująca wgrywanie OS
             setTimeout(() => {
-                progress.style.transition = 'width 2s ease-in-out';
-                progress.style.width = '40%';
-                text.textContent = 'Czyszczenie pamięci eMMC użytkownika...';
+                progress.style.transition = 'width 1.5s ease-in-out';
+                progress.style.width = '45%';
+                text.textContent = isFactoryReset ? 'Formatowanie partycji użytkownika eMMC...' : 'Restart jądra systemu Linux/Windows Hybrid...';
                 
                 setTimeout(() => {
-                    progress.style.transition = 'width 3s ease-in-out';
-                    progress.style.width = '80%';
-                    text.textContent = 'Przywracanie jądra systemu Aurora OS...';
+                    progress.style.transition = 'width 1.5s ease-in-out';
+                    progress.style.width = '85%';
+                    text.textContent = isFactoryReset ? 'Przywracanie ustawień fabrycznych Aurora OS v3.1.5...' : 'Inicjalizacja kodeków IPTV i sterowników HDMI...';
                     
                     setTimeout(() => {
-                        progress.style.transition = 'width 1s ease-in-out';
+                        progress.style.transition = 'width 0.8s ease-in-out';
                         progress.style.width = '100%';
-                        text.textContent = 'Sukces. Uruchamianie usług...';
+                        text.textContent = 'Gotowe. Uruchamianie interfejsu TV...';
                         
                         setTimeout(() => {
-                            window.location.reload(); // Całkowity hard reset UI
-                        }, 1000);
-                    }, 3000);
-                }, 2500);
-            }, 1000);
+                            window.location.reload();
+                        }, 800);
+                    }, 1500);
+                }, 1500);
+            }, 800);
         }
 
+        // Tryb Czuwania (Standby Mode)
+        let isStandbyMode = false;
+        function enterStandby() {
+            isStandbyMode = true;
+            closeModal();
+            if (window.pauseTVPlayer) window.pauseTVPlayer();
+            const standbyEl = document.getElementById('layer-standby');
+            if (standbyEl) {
+                standbyEl.classList.remove('hidden');
+                standbyEl.style.display = 'flex';
+            }
+            showToast('Tryb Czuwania', 'Dekoder przeszedł w tryb energooszczędny.', 'fas fa-moon', 'text-indigo-400', 'border-l-indigo-500');
+        }
+
+        function exitStandby() {
+            if (!isStandbyMode) return;
+            isStandbyMode = false;
+            const standbyEl = document.getElementById('layer-standby');
+            if (standbyEl) {
+                standbyEl.classList.add('hidden');
+                standbyEl.style.display = 'none';
+            }
+            if (window.resumeTVPlayer) window.resumeTVPlayer();
+            showToast('Aurora OS', 'Dekoder został wybudzony.', 'fas fa-tv', 'text-green-400', 'border-l-green-500');
+        }
 
         // Zegar systemowy
         function updateClocks() {
@@ -972,6 +1013,8 @@
             if (topClock) topClock.textContent = timeStr;
             const setClock = document.getElementById('settings-clock');
             if (setClock) setClock.textContent = timeStr;
+            const standbyClock = document.getElementById('standby-clock');
+            if (standbyClock) standbyClock.textContent = timeStr;
         }
         updateClocks();
         setInterval(updateClocks, 1000);
@@ -1423,6 +1466,11 @@
 
         // --- Obsługa Zdarzeń Klawiatury ---
         document.addEventListener('keydown', (e) => {
+            if (isStandbyMode) {
+                exitStandby();
+                e.preventDefault();
+                return;
+            }
             const key = e.key;
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Backspace', 'Escape'].includes(key)) {
                 e.preventDefault();
@@ -1491,8 +1539,8 @@
                           }
                      }
                 } else {
-                     if (key === 'ArrowUp') { state.tv.chIdx = (state.tv.chIdx + 1) % channels.length; showOSDPill(); }
-                     if (key === 'ArrowDown') { state.tv.chIdx = (state.tv.chIdx - 1 + channels.length) % channels.length; showOSDPill(); }
+                     if (key === 'ArrowUp') { changeChannel((state.tv.chIdx + 1) % channels.length); }
+                     if (key === 'ArrowDown') { changeChannel((state.tv.chIdx - 1 + channels.length) % channels.length); }
                      if (key === 'ArrowRight') { state.tv.volume = Math.min(100, state.tv.volume + 5); showVolume(); }
                      if (key === 'ArrowLeft') { state.tv.volume = Math.max(0, state.tv.volume - 5); showVolume(); }
                      if (key === 'Enter') { toggleOSDActions(); }
@@ -1603,16 +1651,7 @@
                         }
                         // 4. Dźwięk i ekran
                         else if (state.nav.currentId === 'ps4-set-av') {
-                            const valEl = document.getElementById('ps4-val-av');
-                            const modes = [
-                                '4K (2160p) • HDR Auto • HDMI ARC',
-                                '4K (2160p) • HDR Włączony • Dolby Atmos',
-                                '1080p (FHD) • HDR Wyłączony • Stereo',
-                                'Auto (Najlepsza jakość HDMI 2.1)'
-                            ];
-                            const nextMode = modes[(modes.indexOf(valEl.textContent) + 1) % modes.length];
-                            valEl.textContent = nextMode;
-                            showToast('Dźwięk i ekran', `Przełączono profil: ${nextMode}`, 'fas fa-tv', 'text-indigo-400', 'border-l-indigo-500');
+                            openAudioVideoModal();
                         }
                         // 5. Pamięć masowa
                         else if (state.nav.currentId === 'ps4-set-storage') {
@@ -1620,11 +1659,7 @@
                         }
                         // 6. Kontrola rodzicielska
                         else if (state.nav.currentId === 'ps4-set-parental') {
-                            const valEl = document.getElementById('ps4-val-parental');
-                            const pins = ['PIN: 0000 (Ograniczenie: 18+)', 'PIN: 1234 (Ograniczenie: 16+)', 'PIN: Wyłączony (Brak limitu)'];
-                            const next = pins[(pins.indexOf(valEl.textContent) + 1) % pins.length];
-                            valEl.textContent = next;
-                            showToast('Kontrola rodzicielska', `Status ochrony: ${next}`, 'fas fa-shield-alt', 'text-amber-400', 'border-l-amber-500');
+                            openParentalControlModal();
                         }
                         // 7. Informacje o systemie
                         else if (state.nav.currentId === 'ps4-set-sysinfo') {
@@ -1633,7 +1668,7 @@
                                 '<div class="text-left space-y-2 text-sm text-gray-300">' +
                                 '<div class="bg-black/40 p-4 rounded-xl border border-white/10 space-y-1.5">' +
                                 '<p>Urządzenie: <strong class="text-white">Aurora Box Pro (STB Appliance)</strong></p>' +
-                                '<p>Wersja oprogramowania: <strong class="text-sky-300 font-bold">3.1.4 (Kompilacja 20261013)</strong></p>' +
+                                '<p>Wersja oprogramowania: <strong class="text-purple-300 font-bold">3.1.5 (Kompilacja 20261013)</strong></p>' +
                                 '<p>Jądro: <strong class="text-gray-200">Linux 6.6.x LTS / Windows Hybrid Runtime</strong></p>' +
                                 '<p>ID Urządzenia: <strong class="font-mono text-purple-300">AUR-9921-PL-882A</strong></p>' +
                                 '<p>Adres MAC: <strong class="font-mono text-gray-300">B8:27:EB:44:A1:0C</strong></p>' +
@@ -1645,19 +1680,7 @@
                         }
                         // 8. Zasilanie i Inicjalizacja
                         else if (state.nav.currentId === 'ps4-set-power') {
-                            showModal(
-                                'Opcje zasilania i inicjalizacji',
-                                '<div class="text-left text-sm text-gray-300 mb-2">Wybierz operację zasilania dekodera Aurora OS:</div>',
-                                'fas fa-power-off text-rose-400',
-                                [
-                                    {id: 'btn-cancel', text: 'Anuluj', primary: false},
-                                    {id: 'btn-reboot', text: 'Uruchom ponownie dekoder', primary: true}
-                                ],
-                                () => {
-                                    closeModal();
-                                    simulateReboot();
-                                }
-                            );
+                            openPowerModal();
                         }
                     }
                 }
@@ -2079,14 +2102,562 @@
             setTimeout(fetchStorageInfo, 1000);
         };
 
+        // =========================================================================
+        // 1. PEŁNA KONTROLA RODZICIELSKA AURORA OS
+        // =========================================================================
+        let parentalConfig = {
+            enabled: true,
+            pin: "0000",
+            rating: "18+", // "none", "12+", "16+", "18+"
+            lockVod: true,
+            lockedChannels: [4, 5]
+        };
+        try {
+            const savedPar = localStorage.getItem('aurora_parental');
+            if (savedPar) parentalConfig = JSON.parse(savedPar);
+        } catch(e) {}
+
+        function saveParentalConfig() {
+            try { localStorage.setItem('aurora_parental', JSON.stringify(parentalConfig)); } catch(e){}
+            updateParentalUI();
+        }
+
+        function updateParentalUI() {
+            const valEl = document.getElementById('ps4-val-parental');
+            if (valEl) {
+                if (!parentalConfig.enabled) {
+                    valEl.textContent = 'Wyłączona (Brak ograniczeń)';
+                    valEl.className = 'text-xs font-semibold text-gray-400';
+                } else {
+                    valEl.textContent = `Aktywna (PIN: •••• • Limit: ${parentalConfig.rating} • Blokady: ${parentalConfig.lockedChannels.length} kan.)`;
+                    valEl.className = 'text-xs font-semibold text-amber-300';
+                }
+            }
+        }
+
+        function changeChannel(targetIdx) {
+            const ch = channels[targetIdx];
+            if (parentalConfig.enabled && (parentalConfig.lockedChannels.includes(ch.id) || (parentalConfig.rating === '18+' && ch.cat === 'Dla dorosłych'))) {
+                promptParentalPin(
+                    () => {
+                        state.tv.chIdx = targetIdx;
+                        showOSDPill();
+                        showToast('Kanał odblokowany', `Dostęp przyznany: ${ch.name}`, 'fas fa-unlock', 'text-green-400', 'border-l-green-500');
+                    },
+                    () => {
+                        showToast('Dostęp zablokowany', 'Wymagany poprawny kod PIN kontroli rodzicielskiej.', 'fas fa-lock', 'text-amber-400', 'border-l-amber-500');
+                    }
+                );
+                return;
+            }
+            state.tv.chIdx = targetIdx;
+            showOSDPill();
+        }
+
+        function promptParentalPin(onSuccess, onCancel) {
+            const contentHtml = `
+                <div class="text-center space-y-4 max-w-sm mx-auto">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-950/60 border border-amber-500/40 flex items-center justify-center text-amber-400 text-3xl shadow-lg">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div>
+                        <div class="text-xl font-bold text-white">Treść zablokowana</div>
+                        <div class="text-xs text-gray-400 mt-1">Wprowadź 4-cyfrowy kod PIN rodzicielski, aby odblokować:</div>
+                    </div>
+                    <div class="flex justify-center gap-3 my-4">
+                        <input id="parental-pin-input" type="password" maxlength="4" placeholder="••••" autofocus
+                            class="w-40 text-center tracking-widest text-3xl font-mono py-2 bg-black/60 border-2 border-amber-500/50 rounded-xl text-white focus:outline-none focus:border-amber-400 shadow-inner" />
+                    </div>
+                    <div id="parental-pin-err" class="text-xs text-rose-400 font-semibold hidden">Nieprawidłowy kod PIN. Spróbuj ponownie.</div>
+                    <p class="text-[11px] text-gray-500">Domyślny kod PIN w systemie to: <strong>0000</strong></p>
+                </div>
+            `;
+
+            showModal(
+                'Wymagany Kod PIN • Kontrola Rodzicielska',
+                contentHtml,
+                'fas fa-shield-alt text-amber-400',
+                [
+                    { id: 'btn-pin-cancel', text: 'Anuluj', primary: false },
+                    { id: 'btn-pin-submit', text: 'Zatwierdź', primary: true }
+                ],
+                () => {
+                    const input = document.getElementById('parental-pin-input');
+                    const err = document.getElementById('parental-pin-err');
+                    if (input && input.value === parentalConfig.pin) {
+                        closeModal();
+                        if (onSuccess) onSuccess();
+                    } else {
+                        if (err) err.classList.remove('hidden');
+                        if (input) { input.value = ''; input.focus(); }
+                        if (onCancel) onCancel();
+                    }
+                }
+            );
+
+            setTimeout(() => {
+                const inp = document.getElementById('parental-pin-input');
+                if (inp) {
+                    inp.focus();
+                    inp.onkeydown = (ev) => {
+                        if (ev.key === 'Enter') {
+                            const submitBtn = document.getElementById('btn-pin-submit');
+                            if (submitBtn) submitBtn.click();
+                        }
+                    };
+                }
+            }, 100);
+        }
+
+        function openParentalControlModal() {
+            renderParentalModalView();
+        }
+
+        function renderParentalModalView() {
+            const isEn = parentalConfig.enabled;
+            const r = parentalConfig.rating;
+
+            const chListHtml = channels.map(ch => {
+                const isLocked = parentalConfig.lockedChannels.includes(ch.id);
+                return `
+                    <div onclick="toggleChannelLock(${ch.id})" class="px-3 py-2 rounded-xl flex items-center justify-between border cursor-pointer transition ${isLocked ? 'bg-amber-950/40 border-amber-500/40 text-amber-200' : 'bg-white/5 border-white/5 text-gray-300 hover:bg-white/10'}">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-6 h-6 rounded bg-white/10 text-xs font-bold flex items-center justify-center">${ch.id}</span>
+                            <span class="text-xs font-semibold">${ch.name}</span>
+                            <span class="text-[10px] text-gray-400">(${ch.cat})</span>
+                        </div>
+                        <i class="fas ${isLocked ? 'fa-lock text-amber-400' : 'fa-lock-open text-gray-500'} text-xs"></i>
+                    </div>
+                `;
+            }).join('');
+
+            const contentHtml = `
+                <div class="text-left space-y-4 text-sm max-h-[60vh] overflow-y-auto pr-1">
+                    <!-- Status Główny -->
+                    <div class="bg-black/50 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-shield-alt text-2xl ${isEn ? 'text-amber-400' : 'text-gray-500'}"></i>
+                            <div>
+                                <div class="font-bold text-white text-base">Ochrona rodzicielska</div>
+                                <div class="text-xs text-gray-400">Blokuj wybrane kanały oraz treści nieodpowiednie dla dzieci</div>
+                            </div>
+                        </div>
+                        <button onclick="toggleParentalEnabled()" class="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition ${isEn ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/30' : 'bg-white/10 text-gray-400 border border-white/10'}">
+                            ${isEn ? 'WŁĄCZONA' : 'WYŁĄCZONA'}
+                        </button>
+                    </div>
+
+                    <!-- Zmiana Kodu PIN -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-white text-sm">Kod PIN dekodera</div>
+                            <div class="text-xs text-gray-400">Aktualny PIN: <span class="font-mono text-amber-300 font-bold tracking-widest">••••</span> (domyślnie 0000)</div>
+                        </div>
+                        <button onclick="promptChangePin()" class="px-3.5 py-1.5 bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/40 text-amber-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                            <i class="fas fa-key"></i> Zmień kod PIN
+                        </button>
+                    </div>
+
+                    <!-- Kategoria Wiekowa -->
+                    <div class="space-y-2">
+                        <div class="font-semibold text-white text-sm">Ograniczenie wiekowe (Klasyfikacja):</div>
+                        <div class="grid grid-cols-4 gap-2">
+                            ${[
+                                { id: 'none', label: 'Bez limitu', sub: 'Dla wszystkich' },
+                                { id: '12+', label: '12+', sub: 'Od 12 lat' },
+                                { id: '16+', label: '16+', sub: 'Od 16 lat' },
+                                { id: '18+', label: '18+', sub: 'Dla dorosłych' }
+                            ].map(item => `
+                                <div onclick="setParentalRating('${item.id}')" class="p-2.5 rounded-xl border text-center cursor-pointer transition ${r === item.id ? 'bg-amber-950/60 border-amber-400 text-amber-200 font-bold shadow-md shadow-amber-500/20' : 'bg-black/30 border-white/10 text-gray-400 hover:bg-white/5'}">
+                                    <div class="text-sm">${item.label}</div>
+                                    <div class="text-[10px] text-gray-400 mt-0.5">${item.sub}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Blokada VOD & Aplikacji -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-semibold text-white">Blokada Wypożyczalni VOD oraz YouTube</div>
+                            <div class="text-[11px] text-gray-400">Wymagaj podania kodu PIN przy uruchamianiu płatnych lub zewnętrznych filmów</div>
+                        </div>
+                        <button onclick="toggleLockVod()" class="px-3 py-1 rounded-lg text-xs font-bold transition ${parentalConfig.lockVod ? 'bg-amber-500/20 text-amber-300 border border-amber-400/50' : 'bg-white/10 text-gray-400'}">
+                            ${parentalConfig.lockVod ? 'ZABLOKOWANE' : 'DOSTĘPNE'}
+                        </button>
+                    </div>
+
+                    <!-- Blokada Konkretnych Kanałów TV -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-white text-sm">Blokada wybranych kanałów TV (Kliknij, aby zablokować):</span>
+                            <span class="text-xs text-amber-300 font-mono">Zablokowano: ${parentalConfig.lockedChannels.length}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
+                            ${chListHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            showModal(
+                'Kontrola Rodzicielska • Aurora STB',
+                contentHtml,
+                'fas fa-shield-alt text-amber-400',
+                [{ id: 'btn-ok', text: 'ZAPISZ I ZAMKNIJ', primary: true }]
+            );
+        }
+
+        window.toggleParentalEnabled = function() {
+            parentalConfig.enabled = !parentalConfig.enabled;
+            saveParentalConfig();
+            renderParentalModalView();
+            showToast('Kontrola rodzicielska', parentalConfig.enabled ? 'Ochrona rodzicielska włączona' : 'Ochrona rodzicielska wyłączona', 'fas fa-shield-alt', 'text-amber-400', 'border-l-amber-500');
+        };
+
+        window.setParentalRating = function(rating) {
+            parentalConfig.rating = rating;
+            saveParentalConfig();
+            renderParentalModalView();
+            showToast('Limit wiekowy', `Ustawiono klasyfikację: ${rating}`, 'fas fa-user-shield', 'text-amber-400', 'border-l-amber-500');
+        };
+
+        window.toggleLockVod = function() {
+            parentalConfig.lockVod = !parentalConfig.lockVod;
+            saveParentalConfig();
+            renderParentalModalView();
+        };
+
+        window.toggleChannelLock = function(chId) {
+            const idx = parentalConfig.lockedChannels.indexOf(chId);
+            if (idx === -1) parentalConfig.lockedChannels.push(chId);
+            else parentalConfig.lockedChannels.splice(idx, 1);
+            saveParentalConfig();
+            renderParentalModalView();
+        };
+
+        window.promptChangePin = function() {
+            const modalContent = `
+                <div class="text-left space-y-3 max-w-sm mx-auto text-xs">
+                    <div>
+                        <label class="block text-gray-300 font-semibold mb-1">Obecny kod PIN:</label>
+                        <input id="pin-old" type="password" maxlength="4" placeholder="••••" class="w-full bg-black/60 border border-white/20 rounded-lg p-2 font-mono text-center tracking-widest text-lg text-white" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 font-semibold mb-1">Nowy 4-cyfrowy kod PIN:</label>
+                        <input id="pin-new1" type="password" maxlength="4" placeholder="••••" class="w-full bg-black/60 border border-white/20 rounded-lg p-2 font-mono text-center tracking-widest text-lg text-white" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 font-semibold mb-1">Powtórz nowy kod PIN:</label>
+                        <input id="pin-new2" type="password" maxlength="4" placeholder="••••" class="w-full bg-black/60 border border-white/20 rounded-lg p-2 font-mono text-center tracking-widest text-lg text-white" />
+                    </div>
+                    <div id="pin-change-err" class="text-rose-400 font-bold hidden">Błąd: sprawdź wpisany stary PIN lub zgodność nowych PINów.</div>
+                </div>
+            `;
+
+            showModal(
+                'Zmiana kodu PIN Kontroli Rodzicielskiej',
+                modalContent,
+                'fas fa-key text-amber-400',
+                [
+                    { id: 'btn-pin-c-cancel', text: 'Anuluj', primary: false },
+                    { id: 'btn-pin-c-save', text: 'Zapisz nowy PIN', primary: true }
+                ],
+                () => {
+                    const oldP = document.getElementById('pin-old')?.value;
+                    const n1 = document.getElementById('pin-new1')?.value;
+                    const n2 = document.getElementById('pin-new2')?.value;
+                    const err = document.getElementById('pin-change-err');
+
+                    if (oldP === parentalConfig.pin && n1 && n1.length === 4 && n1 === n2) {
+                        parentalConfig.pin = n1;
+                        saveParentalConfig();
+                        closeModal();
+                        showToast('Zmieniono PIN', 'Nowy kod PIN kontroli rodzicielskiej został zapisany.', 'fas fa-check-circle', 'text-green-400', 'border-l-green-500');
+                        setTimeout(openParentalControlModal, 500);
+                    } else {
+                        if (err) err.classList.remove('hidden');
+                    }
+                }
+            );
+        };
+
+        // =========================================================================
+        // 2. PEŁNE USTAWIENIA DŹWIĘK I EKRAN AURORA OS
+        // =========================================================================
+        let avConfig = {
+            resolution: '4K Ultra HD (3840x2160 @ 60Hz)',
+            hdr: 'HDR10+ / Dolby Vision Auto',
+            aspectRatio: '16:9',
+            refreshRate: '60 Hz (Płynny ruch)',
+            audioOutput: 'HDMI eARC / ARC',
+            audioFormat: 'Dolby Atmos / Digital 5.1',
+            nightMode: false,
+            lipSync: 0
+        };
+        try {
+            const savedAv = localStorage.getItem('aurora_av_config');
+            if (savedAv) avConfig = JSON.parse(savedAv);
+        } catch(e) {}
+
+        function applyVideoSettings() {
+            const video = document.getElementById('tv-video');
+            if (video) {
+                if (avConfig.aspectRatio === '4:3') video.style.objectFit = 'contain';
+                else if (avConfig.aspectRatio === 'fill') video.style.objectFit = 'fill';
+                else video.style.objectFit = 'cover';
+            }
+
+            const valEl = document.getElementById('ps4-val-av');
+            if (valEl) {
+                const shortRes = avConfig.resolution.split(' ')[0];
+                valEl.textContent = `${shortRes} • ${avConfig.audioFormat.split(' ')[0]} • ${avConfig.aspectRatio} • ${avConfig.audioOutput.split(' ')[0]}`;
+            }
+            try { localStorage.setItem('aurora_av_config', JSON.stringify(avConfig)); } catch(e){}
+        }
+
+        function openAudioVideoModal() {
+            renderAudioVideoModalView();
+        }
+
+        function renderAudioVideoModalView() {
+            const contentHtml = `
+                <div class="text-left space-y-4 text-sm max-h-[60vh] overflow-y-auto pr-1">
+                    <!-- SEKCJA 1: EKRAN I WIDEO -->
+                    <div class="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
+                        <div class="font-bold text-white text-base flex items-center gap-2">
+                            <i class="fas fa-tv text-indigo-400"></i> Ustawienia Ekranu i Wideo HDMI
+                        </div>
+
+                        <!-- Rozdzielczość -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs text-gray-300 font-semibold">Rozdzielczość wyjścia wideo HDMI:</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                ${[
+                                    '4K Ultra HD (3840x2160 @ 60Hz)',
+                                    '1080p Full HD (1920x1080 @ 60Hz)',
+                                    '720p HD (1280x720 @ 60Hz)',
+                                    'Auto (Najlepsza jakość HDMI EDID)'
+                                ].map(res => `
+                                    <div onclick="setAvProp('resolution', '${res}')" class="px-3 py-2 rounded-xl border text-xs cursor-pointer transition ${avConfig.resolution === res ? 'bg-indigo-950/60 border-indigo-400 text-indigo-200 font-bold shadow' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}">
+                                        ${res}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Format HDR -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs text-gray-300 font-semibold">Standard HDR (Szeroka rozpiętość tonalna):</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[
+                                    'HDR10+ / Dolby Vision Auto',
+                                    'HDR Włączony na stałe',
+                                    'SDR Standard (Wyłączony HDR)'
+                                ].map(hdr => `
+                                    <div onclick="setAvProp('hdr', '${hdr}')" class="px-3 py-2 rounded-xl border text-center text-xs cursor-pointer transition ${avConfig.hdr === hdr ? 'bg-indigo-950/60 border-indigo-400 text-indigo-200 font-bold shadow' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}">
+                                        ${hdr}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Proporcje Ekranu Aspect Ratio -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs text-gray-300 font-semibold">Format proporcji obrazu (Aspect Ratio):</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[
+                                    { id: '16:9', label: '16:9 Panoramiczny (Domyślny)' },
+                                    { id: 'fill', label: 'Dopasuj do ekranu (Pełny ekran)' },
+                                    { id: '4:3', label: '4:3 Klasyczny telewizyjny' }
+                                ].map(ar => `
+                                    <div onclick="setAvProp('aspectRatio', '${ar.id}')" class="px-3 py-2 rounded-xl border text-center text-xs cursor-pointer transition ${avConfig.aspectRatio === ar.id ? 'bg-indigo-950/60 border-indigo-400 text-indigo-200 font-bold shadow' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}">
+                                        ${ar.label}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEKCJA 2: DŹWIĘK I AUDIO -->
+                    <div class="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
+                        <div class="font-bold text-white text-base flex items-center gap-2">
+                            <i class="fas fa-volume-up text-cyan-400"></i> Ustawienia Dźwięku i Profil Audio
+                        </div>
+
+                        <!-- Wyjście Audio -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs text-gray-300 font-semibold">Urządzenie wyjściowe audio:</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[
+                                    'HDMI eARC / ARC',
+                                    'Cyfrowe optyczne S/PDIF',
+                                    'Głośniki telewizora'
+                                ].map(out => `
+                                    <div onclick="setAvProp('audioOutput', '${out}')" class="px-3 py-2 rounded-xl border text-center text-xs cursor-pointer transition ${avConfig.audioOutput === out ? 'bg-cyan-950/60 border-cyan-400 text-cyan-200 font-bold shadow' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}">
+                                        ${out}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Format Audio -->
+                        <div class="space-y-1.5">
+                            <label class="text-xs text-gray-300 font-semibold">Format strumienia dźwięku przestrzennego:</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[
+                                    'Dolby Atmos / Digital 5.1',
+                                    'Dolby Digital Plus',
+                                    'Stereo PCM 2.0'
+                                ].map(fmt => `
+                                    <div onclick="setAvProp('audioFormat', '${fmt}')" class="px-3 py-2 rounded-xl border text-center text-xs cursor-pointer transition ${avConfig.audioFormat === fmt ? 'bg-cyan-950/60 border-cyan-400 text-cyan-200 font-bold shadow' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}">
+                                        ${fmt}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Opcje Zaawansowane Audio -->
+                        <div class="flex items-center justify-between pt-1 border-t border-white/10">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Tryb nocny / Wyrównywanie głośności (AVL)</div>
+                                <div class="text-[11px] text-gray-400">Automatyczna kompresja dynamiki głośnych dźwięków i wzmocnienie mowy</div>
+                            </div>
+                            <button onclick="setAvProp('nightMode', !avConfig.nightMode)" class="px-3 py-1 rounded-lg text-xs font-bold transition ${avConfig.nightMode ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/50' : 'bg-white/10 text-gray-400'}">
+                                ${avConfig.nightMode ? 'WŁĄCZONY' : 'WYŁĄCZONY'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            showModal(
+                'Ustawienia Dźwięku i Ekranu • Aurora OS',
+                contentHtml,
+                'fas fa-sliders-h text-indigo-400',
+                [{ id: 'btn-ok', text: 'ZAPISZ I ZAMKNIJ', primary: true }]
+            );
+        }
+
+        window.setAvProp = function(prop, val) {
+            avConfig[prop] = val;
+            applyVideoSettings();
+            renderAudioVideoModalView();
+            showToast('Dźwięk i Ekran', `Zastosowano: ${val}`, 'fas fa-tv', 'text-indigo-400', 'border-l-indigo-500');
+        };
+
+        // =========================================================================
+        // 3. PEŁNE ZASILANIE, RESET I REBOOT AURORA OS
+        // =========================================================================
+        function openPowerModal() {
+            const contentHtml = `
+                <div class="text-left space-y-3 text-sm">
+                    <p class="text-xs text-gray-300 mb-2">Wybierz operację zasilania dekodera Aurora OS:</p>
+
+                    <!-- 1. Reboot -->
+                    <div onclick="executePowerAction('reboot')" class="bg-white/5 hover:bg-sky-950/40 border border-white/10 hover:border-sky-400/50 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-sky-900/40 border border-sky-400/40 flex items-center justify-center text-sky-400 text-xl">
+                                <i class="fas fa-redo-alt"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-white text-base">Uruchom ponownie dekoder</div>
+                                <div class="text-xs text-gray-400">Restart oprogramowania Aurora OS i ponowne załadowanie usług IPTV</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-sky-400 bg-sky-950/60 px-3 py-1 rounded-full border border-sky-400/40">Restart</span>
+                    </div>
+
+                    <!-- 2. Standby -->
+                    <div onclick="executePowerAction('standby')" class="bg-white/5 hover:bg-indigo-950/40 border border-white/10 hover:border-indigo-400/50 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-900/40 border border-indigo-400/40 flex items-center justify-center text-indigo-400 text-xl">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-white text-base">Przejdź w tryb czuwania (Standby)</div>
+                                <div class="text-xs text-gray-400">Wycisz dekoder i wygaś ekran. Wybudzenie dowolnym przyciskiem pilota.</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-indigo-300 bg-indigo-950/60 px-3 py-1 rounded-full border border-indigo-400/40">Uśpij</span>
+                    </div>
+
+                    <!-- 3. Shutdown -->
+                    <div onclick="executePowerAction('shutdown')" class="bg-white/5 hover:bg-rose-950/40 border border-white/10 hover:border-rose-400/50 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-rose-900/40 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xl">
+                                <i class="fas fa-power-off"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-white text-base">Wyłącz dekoder (Zamknij system)</div>
+                                <div class="text-xs text-gray-400">Całkowite zamknięcie aplikacji dekodera Aurora OS</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-rose-400 bg-rose-950/60 px-3 py-1 rounded-full border border-rose-500/40">Wyłącz</span>
+                    </div>
+
+                    <!-- 4. Factory Reset -->
+                    <div onclick="executePowerAction('factory_reset')" class="bg-white/5 hover:bg-amber-950/40 border border-white/10 hover:border-amber-400/50 rounded-2xl p-4 flex items-center justify-between cursor-pointer transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-amber-900/40 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xl">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-white text-base">Przywróć ustawienia fabryczne</div>
+                                <div class="text-xs text-gray-400">Wyczyść pamięć podręczną, usuń profile i przywróć stan początkowy</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-amber-400 bg-amber-950/60 px-3 py-1 rounded-full border border-amber-500/40">Reset</span>
+                    </div>
+                </div>
+            `;
+
+            showModal(
+                'Zasilanie i Inicjalizacja • Aurora OS',
+                contentHtml,
+                'fas fa-power-off text-rose-400',
+                [{ id: 'btn-power-cancel', text: 'ANULUJ', primary: false }]
+            );
+        }
+
+        window.executePowerAction = function(action) {
+            closeModal();
+            if (action === 'reboot') {
+                showToast('Zasilanie', 'Uruchamianie ponowne dekodera Aurora OS...', 'fas fa-redo-alt fa-spin', 'text-sky-400', 'border-l-sky-500');
+                try { apiFetch('/api/power/reboot'); } catch(e){}
+                setTimeout(() => simulateReboot(false), 500);
+            } else if (action === 'standby') {
+                enterStandby();
+            } else if (action === 'shutdown') {
+                showToast('Zamykanie systemu', 'Zamykanie dekodera Aurora Box Pro...', 'fas fa-power-off', 'text-rose-500', 'border-l-rose-500');
+                try { apiFetch('/api/power/shutdown'); } catch(e){}
+                setTimeout(() => {
+                    document.body.innerHTML = '<div style="background:#000;color:#666;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:24px;">Dekoder wyłączony.</div>';
+                }, 1000);
+            } else if (action === 'factory_reset') {
+                promptParentalPin(() => {
+                    showToast('Formatowanie eMMC', 'Przywracanie ustawień fabrycznych...', 'fas fa-trash-alt', 'text-amber-400', 'border-l-amber-500');
+                    try { localStorage.clear(); } catch(e){}
+                    setTimeout(() => simulateReboot(true), 800);
+                }, () => {
+                    showToast('Anulowano reset', 'Błędny PIN. Reset fabryczny przerwany.', 'fas fa-ban', 'text-rose-400', 'border-l-rose-500');
+                });
+            }
+        };
+
         // Inicjalizacja
         document.addEventListener('DOMContentLoaded', () => {
             renderVOD();
             renderEPG();
             fetchNetworkInfo();
             fetchStorageInfo();
+            applyVideoSettings();
+            updateParentalUI();
             setInterval(fetchNetworkInfo, 8000);
             setInterval(fetchStorageInfo, 8000);
+
+            const standbyEl = document.getElementById('layer-standby');
+            if (standbyEl) standbyEl.addEventListener('click', exitStandby);
 
             // Pokaż UI początkowe
             setTimeout(() => {
