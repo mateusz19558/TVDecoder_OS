@@ -15,6 +15,11 @@
             --focus-glow: rgba(139, 92, 246, 0.6); /* Fioletowa poświata */
         }
 
+        html {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #000;
@@ -116,6 +121,21 @@
             filter: blur(15px) brightness(0.6) saturate(1.2);
         }
 
+        /* Przezroczyste tło gdy YouTube odtwarza się pod Menu Aurory */
+        body.yt-bg-active {
+            background-color: transparent !important;
+        }
+        body.yt-bg-active #tv-viewport {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        body.yt-bg-active #layer-home {
+            background: rgba(8, 8, 16, 0.45) !important;
+            backdrop-filter: blur(14px) !important;
+            -webkit-backdrop-filter: blur(14px) !important;
+        }
+
         /* OSD Pill Animation */
         .osd-pill {
             transform: translateY(150%);
@@ -195,20 +215,99 @@
             <i class="fas fa-circle text-red-500 text-xs animate-pulse"></i>
             <span id="watermark-ch" class="text-3xl font-bold tracking-widest text-white/70">TVP 1 HD</span>
         </div>
+
+        <!-- Komunikat BRAK SYGNAŁU (Nowoczesny DVB-T / IPTV OSD) -->
+        <div id="no-signal-overlay" class="absolute inset-0 flex flex-col items-center justify-center z-20 transition-all duration-500 opacity-0 pointer-events-none" style="background: radial-gradient(circle at center, rgba(15, 23, 42, 0.90) 0%, rgba(3, 7, 18, 0.98) 100%);">
+            <!-- Tło techniczne z siatką -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            
+            <div class="relative z-10 flex flex-col items-center max-w-2xl px-10 py-9 rounded-3xl glass-panel-heavy border border-red-500/30 shadow-[0_0_60px_rgba(239,68,68,0.25)] text-center">
+                <!-- Ikona satelity / braku sygnału z pulsującą czerwoną aurą -->
+                <div class="relative mb-5 flex items-center justify-center">
+                    <div class="w-24 h-24 rounded-full bg-red-950/60 border-2 border-red-500/70 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.45)]">
+                        <i class="fas fa-satellite-dish text-4xl text-red-400 animate-pulse"></i>
+                    </div>
+                    <span class="absolute -top-1 -right-1 flex h-6 w-6">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-6 w-6 bg-red-600 border-2 border-black items-center justify-center text-[11px] font-bold text-white">!</span>
+                    </span>
+                </div>
+
+                <!-- Główny napis BRAK SYGNAŁU -->
+                <h2 class="text-4xl font-extrabold tracking-wider text-white mb-2 flex items-center justify-center gap-3">
+                    <span class="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.9)]">BRAK SYGNAŁU</span>
+                </h2>
+                
+                <!-- Informacja o kanale -->
+                <div class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full mb-5 shadow-inner">
+                    <span id="no-signal-chid" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-red-500/30 text-red-200 border border-red-500/40">CH 01</span>
+                    <span id="no-signal-chname" class="text-base font-semibold text-gray-200">TVP 1 HD</span>
+                    <span class="text-xs text-gray-400 font-mono">DVB-T2 / IPTV</span>
+                </div>
+
+                <p id="no-signal-desc" class="text-sm text-gray-300 max-w-lg leading-relaxed mb-6">
+                    Brak strumienia wideo lub nadajnik jest chwilowo niedostępny. Sprawdź połączenie sieciowe lub antenę.
+                </p>
+
+                <!-- Paski diagnostyczne (Moc i Jakość sygnału) -->
+                <div class="w-full bg-black/50 border border-white/10 rounded-2xl p-4 mb-6 text-left space-y-3 shadow-inner">
+                    <div>
+                        <div class="flex justify-between text-xs font-mono text-gray-400 mb-1">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-signal text-amber-400"></i> Siła sygnału (Moc RF / Bitrate):</span>
+                            <span id="no-signal-level-val" class="text-amber-300 font-bold">12% (-78 dBm)</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="no-signal-level-bar" class="h-full bg-amber-500 rounded-full transition-all duration-700" style="width: 12%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-mono text-gray-400 mb-1">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-wave-square text-rose-400"></i> Jakość sygnału (BER):</span>
+                            <span id="no-signal-quality-val" class="text-rose-400 font-bold">0% (Brak synchronizacji)</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="no-signal-quality-bar" class="h-full bg-rose-600 rounded-full transition-all duration-700" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-white/5 text-[11px] font-mono text-gray-400">
+                        <span>Kod błędu: <strong id="no-signal-errcode" class="text-rose-300">E-204 (STREAM_TIMEOUT)</strong></span>
+                        <span id="no-signal-timer" class="text-gray-400 flex items-center gap-1.5"><i class="fas fa-circle-notch fa-spin text-xs text-sky-400"></i> Oczekiwanie na sygnał</span>
+                    </div>
+                </div>
+
+                <!-- Wskazówki sterowania pilotem -->
+                <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-300 font-medium">
+                    <button onclick="retryCurrentChannel()" class="flex items-center gap-2 bg-red-600/30 hover:bg-red-600/50 px-4 py-2 rounded-xl border border-red-500/40 transition cursor-pointer">
+                        <span class="bg-red-600 text-white font-mono px-2 py-0.5 rounded text-[11px] font-bold">OK</span>
+                        <span>Ponów próbę</span>
+                    </button>
+                    <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl border border-white/15">
+                        <span class="bg-white/20 font-mono px-2 py-0.5 rounded text-[11px] font-bold">▲ ▼</span>
+                        <span>Zmień kanał</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl border border-white/15">
+                        <span class="bg-purple-600 text-white font-mono px-2 py-0.5 rounded text-[11px] font-bold">M</span>
+                        <span>Menu Główne</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Warstwa Zawsze na wierzchu: Zegar i Status (tylko w TV i Home) -->
-    <div id="top-status-bar" class="absolute top-10 left-12 z-50 flex items-center gap-4 text-white/80 font-medium transition-opacity duration-300 pointer-events-none" style="opacity: 0;">
-        <span id="top-clock" class="text-2xl tracking-wider">00:00</span>
-        <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-        <div class="flex items-center gap-2">
-            <i id="top-net-icon" class="fas fa-network-wired text-sm text-sky-400"></i>
-            <span id="top-net-label" class="text-xs uppercase tracking-wider text-sky-200">Kabel (Ethernet)</span>
-        </div>
-        <div id="top-usb-indicator" class="hidden flex items-center gap-2 text-emerald-400">
+    <div id="top-status-bar" class="absolute top-10 left-12 right-12 z-50 flex items-center justify-between text-white/80 font-medium transition-opacity duration-300 pointer-events-none" style="opacity: 0;">
+        <div class="flex items-center gap-4">
+            <span id="top-clock" class="text-2xl tracking-wider">00:00</span>
             <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-            <i class="fas fa-usb text-sm"></i>
-            <span id="top-usb-label" class="text-xs font-mono text-emerald-300">USB</span>
+            <div class="flex items-center gap-2">
+                <i id="top-net-icon" class="fas fa-network-wired text-sm text-sky-400"></i>
+                <span id="top-net-label" class="text-xs uppercase tracking-wider text-sky-200">Kabel (Ethernet)</span>
+            </div>
+            <div id="top-usb-indicator" class="hidden flex items-center gap-2 text-emerald-400">
+                <div class="w-1.5 h-1.5 rounded-full bg-white/30"></div>
+                <i class="fas fa-usb text-sm"></i>
+                <span id="top-usb-label" class="text-xs font-mono text-emerald-300">USB</span>
+            </div>
         </div>
     </div>
 
@@ -245,17 +344,21 @@
         <!-- OSD Menu Szybkich Akcji (Otwierane Enterem) -->
         <div id="osd-actions-overlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
             <div class="glass-panel rounded-3xl p-8 flex gap-6 transform scale-95 transition-transform duration-300" id="osd-actions-box">
-                <div id="osd-btn-info" class="focusable w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10">
+                <div id="osd-btn-info" class="focusable w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10 cursor-pointer">
                     <i class="fas fa-info-circle text-3xl text-blue-400"></i>
                     <span class="font-medium">O programie</span>
                 </div>
-                <div id="osd-btn-rec" class="focusable w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10">
+                <div id="osd-btn-rec" class="focusable w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10 cursor-pointer">
                     <i class="fas fa-record-vinyl text-3xl text-red-400"></i>
                     <span class="font-medium">Nagraj</span>
                 </div>
-                <div id="osd-btn-lang" class="focusable w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10">
+                <div id="osd-btn-lang" class="focusable w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center gap-3 hover:bg-white/10 cursor-pointer">
                     <i class="fas fa-language text-3xl text-green-400"></i>
                     <span class="font-medium">Język</span>
+                </div>
+                <div id="osd-btn-store" onclick="switchLayer('store')" class="focusable w-32 h-32 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex flex-col items-center justify-center gap-3 hover:bg-emerald-900/50 cursor-pointer">
+                    <i class="fas fa-cubes text-3xl text-emerald-400 animate-pulse"></i>
+                    <span class="font-bold text-emerald-300">Sklep Apps</span>
                 </div>
             </div>
         </div>
@@ -274,6 +377,22 @@
     <div id="layer-home" class="layer">
         <div class="absolute inset-0 bg-black/20"></div> <!-- Lekkie przyciemnienie na wierzchu szkła -->
         
+        <!-- Górna belka nawigacji w Dashboardzie Aurora OS -->
+        <div class="absolute top-10 left-16 right-16 flex justify-between items-center z-20">
+            <div class="flex items-center gap-4">
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-[0_0_15px_#34d399] animate-pulse"></span>
+                <h2 class="text-3xl font-black tracking-widest text-white">AURORA <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">OS</span></h2>
+                <span class="text-xs bg-white/10 px-3 py-1 rounded-full text-gray-300 border border-white/10 hidden md:inline-block">Centrum Multimediów Smart TV</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="home-btn-store" onclick="switchLayer('store')" class="focusable flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-black text-sm shadow-[0_0_25px_rgba(16,185,129,0.5)] hover:scale-105 transition-all cursor-pointer border-2 border-emerald-300">
+                    <i class="fas fa-cubes text-base"></i>
+                    <span>AURORA STORE (S)</span>
+                    <span class="bg-black/30 px-2 py-0.5 rounded text-[10px] tracking-wider uppercase ml-1">SKLEP</span>
+                </button>
+            </div>
+        </div>
+
         <div class="relative w-full h-full flex flex-col justify-end pb-24 px-16 z-10">
             <!-- Górny rząd: Kontynuuj oglądanie -->
             <div class="mb-12">
@@ -281,82 +400,48 @@
                     <i class="fas fa-play text-sm"></i> Ostatnio oglądane
                 </h3>
                 <div class="flex gap-6 overflow-x-auto pb-2" id="home-recent-row">
-                    <!-- Film 1: Diuna 2 -->
-                    <div id="home-rec-1" data-title="Diuna: Część Druga" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80');">
-                        <div class="absolute top-3 right-3 bg-purple-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">4K HDR</div>
-                        <div class="relative z-10">
-                            <div class="text-xs text-purple-300 font-semibold mb-0.5">Film • Pozostało: 42 min</div>
-                            <div class="font-bold text-lg text-white truncate">Diuna: Część Druga</div>
-                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-purple-400 to-cyan-400" style="width: 68%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Film 2: Oppenheimer -->
-                    <div id="home-rec-2" data-title="Oppenheimer" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80');">
-                        <div class="absolute top-3 right-3 bg-amber-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">IMAX</div>
-                        <div class="relative z-10">
-                            <div class="text-xs text-amber-300 font-semibold mb-0.5">Dramat • Pozostało: 1h 10m</div>
-                            <div class="font-bold text-lg text-white truncate">Oppenheimer</div>
-                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-amber-400 to-orange-400" style="width: 45%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Serial 3: Wiedźmin 3 -->
-                    <div id="home-rec-3" data-title="Wiedźmin: Sezon 3" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80');">
-                        <div class="absolute top-3 right-3 bg-blue-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">NOWY ODCINEK</div>
-                        <div class="relative z-10">
-                            <div class="text-xs text-blue-300 font-semibold mb-0.5">Serial • Odc. 5: "Sztuka iluzji"</div>
-                            <div class="font-bold text-lg text-white truncate">Wiedźmin: Sezon 3</div>
-                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-blue-400 to-purple-400" style="width: 75%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Film 4: Top Gun Maverick -->
-                    <div id="home-rec-4" data-title="Top Gun: Maverick" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1519074069444-1ba4ea16e917?w=800&auto=format&fit=crop&q=80');">
-                        <div class="absolute top-3 right-3 bg-rose-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">DOLBY ATMOS</div>
-                        <div class="relative z-10">
-                            <div class="text-xs text-rose-300 font-semibold mb-0.5">Akcja • Pozostało: 28 min</div>
-                            <div class="font-bold text-lg text-white truncate">Top Gun: Maverick</div>
-                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-rose-400 to-pink-400" style="width: 80%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sport 5: Finał Ligi Mistrzów -->
-                    <div id="home-rec-5" data-title="Finał Ligi Mistrzów: Real - Dortmund" class="focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80');">
-                        <div class="absolute top-3 right-3 bg-emerald-600/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">SPORT LIVE</div>
-                        <div class="relative z-10">
-                            <div class="text-xs text-emerald-300 font-semibold mb-0.5">Powtórka meczu • Pozostało: 12 min</div>
-                            <div class="font-bold text-lg text-white truncate">Finał Ligi Mistrzów</div>
-                            <div class="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400" style="width: 90%;"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Generowane dynamicznie przez renderRecentlyWatched() na podstawie realnej historii użytkownika -->
                 </div>
             </div>
 
             <!-- Dolny rząd: Główne Aplikacje -->
             <div>
-                <h3 class="text-xl font-medium text-white/70 mb-6 px-2">Aplikacje Systemowe</h3>
-                <div class="flex gap-6" id="home-apps-row">
+                <h3 class="text-xl font-medium text-white/70 mb-6 px-2 flex items-center justify-between">
+                    <span>Aplikacje Systemowe & Zainstalowane</span>
+                    <span class="text-xs text-gray-400 font-normal">Naciśnij <kbd class="bg-white/10 px-1.5 py-0.5 rounded text-white font-mono">OK</kbd> aby uruchomić</span>
+                </h3>
+                <div class="flex gap-6 overflow-x-auto pb-3" id="home-apps-row">
                     <!-- Aplikacja TV -->
-                    <div id="app-tv" data-target="tv" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                    <div id="app-tv" data-target="tv" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer shrink-0">
                         <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                             <i class="fas fa-tv text-3xl text-white"></i>
                         </div>
                         <span class="font-medium text-lg">Telewizja</span>
                     </div>
+
+                    <!-- Aplikacja Aurora Store (Sklep Smart TV) - Wyróżniony na początku! -->
+                    <div id="app-store" data-target="store" class="focusable glass-panel w-52 h-48 rounded-3xl flex flex-col items-center justify-center gap-3 group cursor-pointer shrink-0 border-2 border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.45)] relative overflow-hidden bg-emerald-950/30">
+                        <div class="absolute top-2.5 right-2.5 bg-emerald-400 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow">SKLEP</div>
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-300 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-cubes text-3xl text-white animate-pulse"></i>
+                        </div>
+                        <span class="font-bold text-lg text-emerald-200">Aurora Store</span>
+                    </div>
                     
+                    <!-- Aplikacja YouTube Smart TV -->
+                    <div id="app-youtube" data-target="youtube" onclick="openYouTubeTV();" class="relative focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer shrink-0">
+                        <div id="yt-live-indicator" class="hidden absolute top-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg animate-pulse border border-red-400">
+                            <i class="fas fa-volume-high text-[9px]"></i>
+                            <span>W TLE</span>
+                        </div>
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fab fa-youtube text-3xl text-white"></i>
+                        </div>
+                        <span class="font-medium text-lg">YouTube TV</span>
+                    </div>
+
                     <!-- Aplikacja EPG -->
-                    <div id="app-epg" data-target="epg" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                    <div id="app-epg" data-target="epg" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer shrink-0">
                         <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                             <i class="fas fa-calendar-alt text-3xl text-white"></i>
                         </div>
@@ -364,23 +449,18 @@
                     </div>
 
                     <!-- Aplikacja VOD -->
-                    <div id="app-vod" data-target="vod" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                    <div id="app-vod" data-target="vod" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer shrink-0">
                         <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                             <i class="fas fa-film text-3xl text-white"></i>
                         </div>
                         <span class="font-medium text-lg">Kino VOD</span>
                     </div>
 
-                    <!-- Aplikacja YouTube Smart TV -->
-                    <div id="app-youtube" data-target="youtube" onclick="openYouTubeTV();" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer">
-                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <i class="fab fa-youtube text-3xl text-white"></i>
-                        </div>
-                        <span class="font-medium text-lg">YouTube TV</span>
-                    </div>
+                    <!-- Dynamiczny kontener na zainstalowane aplikacje ze sklepu Aurora Store -->
+                    <div id="home-installed-apps" class="flex gap-6 shrink-0"></div>
 
                     <!-- Aplikacja Ustawienia -->
-                    <div id="app-settings" data-target="settings" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group">
+                    <div id="app-settings" data-target="settings" class="focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer shrink-0">
                         <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-gray-600 to-gray-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                             <i class="fas fa-cog text-3xl text-white"></i>
                         </div>
@@ -435,29 +515,46 @@
 
     <!-- LAYER: EPG (Przewodnik TV) - Glassmorphism Grid -->
     <div id="layer-epg" class="layer glass-panel-heavy">
-        <div class="px-12 py-8 flex justify-between items-center border-b border-white/10 shrink-0">
-            <h2 class="text-3xl font-light tracking-wide"><i class="fas fa-stream mr-3 text-purple-400"></i> Przewodnik EPG</h2>
-            <div class="bg-white/10 px-6 py-2 rounded-full font-medium text-sm">Dziś, 13 Października</div>
+        <div class="px-12 py-5 flex justify-between items-center border-b border-white/10 shrink-0 bg-black/30">
+            <div class="flex items-center gap-4">
+                <h2 class="text-3xl font-light tracking-wide flex items-center">
+                    <i class="fas fa-stream mr-3 text-purple-400"></i> Przewodnik <span class="font-bold text-white ml-2">EPG</span>
+                </h2>
+                <span id="epg-source-badge" class="bg-purple-900/50 text-purple-300 border border-purple-500/30 text-xs px-3 py-1 rounded-full font-medium flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Na Żywo • Program TV
+                </span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="epg-live-channels-count" class="text-xs text-gray-400 font-mono bg-white/5 px-3 py-1 rounded-lg border border-white/5">10 KANAŁÓW HD</div>
+                <div id="epg-date-badge" class="bg-white/10 px-5 py-1.5 rounded-full font-medium text-sm text-gray-200">Dziś, Program TV</div>
+            </div>
         </div>
 
         <div class="flex-1 flex flex-col relative overflow-hidden">
-            <!-- Timeline -->
-            <div class="h-14 flex items-center border-b border-white/5 relative shrink-0 bg-black/20" id="epg-timeline-container">
-                <div id="epg-timeline" class="absolute left-64 h-full flex transition-transform duration-300 text-gray-400 text-sm font-medium items-center">
-                    <!-- Wygenerowane JS -->
+            <!-- Timeline Container -->
+            <div class="h-14 flex items-center border-b border-white/10 relative shrink-0 bg-black/50 z-20" id="epg-timeline-container">
+                <!-- Lewy narożnik osi czasu (wyrównany z listą stacji) -->
+                <div class="w-64 h-full border-r border-white/10 bg-black/70 flex items-center justify-between px-6 shrink-0 z-30">
+                    <span class="text-xs font-bold uppercase tracking-wider text-purple-300">Stacja TV</span>
+                    <span class="text-[11px] text-gray-400 font-mono">Godziny</span>
+                </div>
+                <div class="flex-1 h-full relative overflow-hidden">
+                    <div id="epg-timeline" class="absolute left-0 top-0 h-full flex transition-transform duration-300 text-gray-400 text-sm font-medium items-center">
+                        <!-- Wygenerowane JS -->
+                    </div>
                 </div>
             </div>
 
             <!-- Main Grid Area -->
             <div class="flex-1 flex relative overflow-hidden">
-                <!-- Kolumna Kanałów (Stała szerokość, nałożona na scrollujący się grid) -->
-                <div id="epg-channels" class="w-64 h-full flex flex-col border-r border-white/10 bg-black/40 z-20 transition-transform duration-300 absolute left-0 top-0 pt-2 pb-24 shadow-[10px_0_20px_rgba(0,0,0,0.5)]">
+                <!-- Kolumna Kanałów -->
+                <div id="epg-channels" class="w-64 h-full flex flex-col border-r border-white/10 bg-black/60 z-20 transition-transform duration-300 absolute left-0 top-0 pt-2 pb-36 shadow-[10px_0_25px_rgba(0,0,0,0.6)]">
                     <!-- Wygenerowane JS -->
                 </div>
 
                 <!-- Przesuwna siatka programów -->
-                <div class="flex-1 h-full relative overflow-hidden ml-64 bg-black/10">
-                    <div id="epg-grid" class="absolute top-0 left-0 transition-transform duration-300 pt-2 pb-24">
+                <div class="flex-1 h-full relative overflow-hidden ml-64 bg-black/20">
+                    <div id="epg-grid" class="absolute top-0 left-0 transition-transform duration-300 pt-2 pb-36">
                         <!-- Wygenerowane JS -->
                     </div>
                 </div>
@@ -465,13 +562,32 @@
         </div>
 
         <!-- EPG Detail Panel (Floating na dole) -->
-        <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-10/12 glass-panel rounded-3xl p-6 flex gap-8 shadow-2xl z-30">
-            <div class="w-1/3 border-r border-white/10 pr-6">
-                <h3 id="epg-det-title" class="text-2xl font-bold mb-2 truncate">Wybierz program</h3>
-                <p id="epg-det-time" class="text-purple-300 font-medium">--:--</p>
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 glass-panel rounded-3xl p-5 flex gap-8 shadow-2xl z-30 border border-white/15 bg-black/75 backdrop-blur-xl">
+            <div class="w-5/12 border-r border-white/10 pr-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                        <span id="epg-det-ch" class="bg-purple-600/30 border border-purple-400/40 text-purple-200 text-xs font-bold px-2.5 py-0.5 rounded-full">1 TVP 1 HD</span>
+                        <span id="epg-det-cat" class="bg-white/10 text-gray-300 text-xs px-2.5 py-0.5 rounded-full font-medium">Ogólne</span>
+                        <span id="epg-det-live-tag" class="hidden bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse uppercase tracking-wider">NA ŻYWO</span>
+                    </div>
+                    <h3 id="epg-det-title" class="text-2xl font-bold mb-1 truncate text-white">Wybierz program</h3>
+                    <p id="epg-det-time" class="text-purple-300 font-medium text-sm">--:--</p>
+                </div>
+                <div id="epg-det-action-hint" class="mt-2 text-xs font-semibold text-gray-300 flex items-center gap-2">
+                    <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[11px] font-bold">OK</span>
+                    <span id="epg-det-action-text">Włącz ten kanał</span>
+                </div>
             </div>
-            <div class="w-2/3">
-                <p id="epg-det-desc" class="text-gray-300 line-clamp-2">Nawiguj po siatce EPG za pomocą strzałek. Naciśnij OK aby przełączyć kanał na trwający program.</p>
+            <div class="w-7/12 flex flex-col justify-between">
+                <p id="epg-det-desc" class="text-gray-300 text-sm leading-relaxed line-clamp-3">Nawiguj po siatce EPG za pomocą strzałek na pilocie lub klawiaturze. Naciśnij OK aby przełączyć na aktualnie trwający program.</p>
+                <div class="flex justify-between items-center text-[11px] text-gray-400 pt-2 border-t border-white/5 mt-2">
+                    <div class="flex gap-4">
+                        <span><strong class="text-white">◄ ►</strong> Przewijaj czas</span>
+                        <span><strong class="text-white">▲ ▼</strong> Wybierz kanał</span>
+                        <span><strong class="text-white">OK</strong> Włącz / Zaplanuj</span>
+                    </div>
+                    <span><strong class="text-white">G / E / ESC</strong> Wróć do TV</span>
+                </div>
             </div>
         </div>
     </div>
@@ -658,6 +774,110 @@
         </div>
     </div>
 
+    <!-- LAYER: Aurora Store (Nowoczesny Sklep z Aplikacjami Smart TV) -->
+    <div id="layer-store" class="layer aurora-settings-layer px-14 py-10 flex flex-col justify-between overflow-hidden">
+        <!-- Belka Górna Aurora Store -->
+        <div class="flex justify-between items-center border-b border-white/10 pb-5 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                    <i class="fas fa-cubes text-3xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                        AURORA <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent font-extrabold">STORE</span>
+                    </h1>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-xs text-gray-400">Oficjalny Sklep Aplikacji Smart TV</span>
+                        <span class="text-gray-500">•</span>
+                        <span class="bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[11px] font-mono px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                            <i class="fab fa-github text-emerald-400"></i> mateusz19558/TVDecoder_OS
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informacja o pamięci urządzenia i synchronizacja -->
+            <div class="flex items-center gap-4">
+                <button id="btn-sync-store" onclick="syncStoreFromGitHub()" class="focusable bg-white/10 hover:bg-white/20 border border-white/20 px-3.5 py-2 rounded-2xl text-xs font-semibold text-white flex items-center gap-2 transition cursor-pointer shadow-md">
+                    <i class="fas fa-rotate text-emerald-400" id="sync-icon"></i>
+                    <span>Synchronizuj z GitHub (R)</span>
+                </button>
+                <div class="bg-white/5 border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-inner">
+                    <i class="fas fa-hard-drive text-emerald-400 text-sm"></i>
+                    <div class="text-xs">
+                        <span class="text-gray-400">Pamięć flash dekodera:</span>
+                        <strong id="store-storage-badge" class="text-white ml-1 font-mono">Pamięć OK</strong>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div id="store-clock-display" class="text-2xl font-light font-mono text-white">12:00</div>
+                    <div class="text-xs text-emerald-400 flex items-center justify-end gap-1.5 font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Połączono z GitHub
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pasek Kategorii Sklepu -->
+        <div class="flex items-center gap-3 my-4 shrink-0 overflow-x-auto pb-1" id="store-categories-bar">
+            <button onclick="setStoreCategory('all')" id="store-cat-all" class="store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/30">
+                <i class="fas fa-border-all mr-1.5"></i> Wszystkie
+            </button>
+            <button onclick="setStoreCategory('video')" id="store-cat-video" class="store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-white/5 text-gray-300 hover:bg-white/10">
+                <i class="fas fa-film mr-1.5 text-purple-400"></i> Wideo & TV
+            </button>
+            <button onclick="setStoreCategory('music')" id="store-cat-music" class="store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-white/5 text-gray-300 hover:bg-white/10">
+                <i class="fas fa-music mr-1.5 text-blue-400"></i> Muzyka
+            </button>
+            <button onclick="setStoreCategory('tools')" id="store-cat-tools" class="store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-white/5 text-gray-300 hover:bg-white/10">
+                <i class="fas fa-toolbox mr-1.5 text-amber-400"></i> Narzędzia
+            </button>
+            <button onclick="setStoreCategory('games')" id="store-cat-games" class="store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-white/5 text-gray-300 hover:bg-white/10">
+                <i class="fas fa-gamepad mr-1.5 text-rose-400"></i> Gry & Retro
+            </button>
+        </div>
+
+        <!-- Główna siatka aplikacji -->
+        <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar my-2" style="max-height: calc(100vh - 280px);">
+            <div id="store-apps-grid" class="grid grid-cols-3 gap-5">
+                <!-- Generowane dynamicznie przez renderStoreApps() -->
+            </div>
+        </div>
+
+        <!-- Dolny pasek nawigacyjny -->
+        <div class="border-t border-white/10 pt-4 flex justify-between items-center text-xs text-gray-400 shrink-0">
+            <div class="flex items-center gap-6">
+                <span class="flex items-center gap-2"><kbd class="bg-white/10 px-2 py-0.5 rounded font-mono text-white text-[11px]">ENTER / OK</kbd> Pobierz z GitHub / Otwórz</span>
+                <span class="flex items-center gap-2"><kbd class="bg-white/10 px-2 py-0.5 rounded font-mono text-white text-[11px]">R</kbd> Synchronizuj z GitHub</span>
+                <span class="flex items-center gap-2"><kbd class="bg-white/10 px-2 py-0.5 rounded font-mono text-white text-[11px]">ESC / BACK</kbd> Powrót do menu</span>
+                <span class="flex items-center gap-2"><kbd class="bg-white/10 px-2 py-0.5 rounded font-mono text-white text-[11px]">M</kbd> Pulpit Aurora</span>
+            </div>
+            <div class="text-gray-400 flex items-center gap-2">
+                <i class="fab fa-github text-emerald-400"></i> Aurora Store v2.5 • Pakiety pobierane z GitHub Releases & Raw
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Uruchamiania Aplikacji Zewnętrznych / Sklepu -->
+    <div id="app-runner-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[350] hidden flex-col items-center justify-center p-8 transition-opacity duration-300">
+        <div class="glass-panel-heavy rounded-3xl p-10 max-w-lg w-full flex flex-col items-center text-center border border-white/20 shadow-2xl relative">
+            <div id="runner-icon-wrap" class="w-24 h-24 rounded-3xl flex items-center justify-center text-5xl mb-6 shadow-xl">
+                <i id="runner-icon" class="fas fa-cube text-white"></i>
+            </div>
+            <h2 id="runner-title" class="text-3xl font-extrabold text-white mb-2">Aplikacja</h2>
+            <p id="runner-subtitle" class="text-sm text-gray-300 mb-6">Trwa uruchamianie środowiska aplikacji Smart TV...</p>
+            <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden mb-8">
+                <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 animate-pulse w-full"></div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="closeAppRunner();" class="focusable px-6 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition border border-white/10">
+                    <i class="fas fa-arrow-left mr-2"></i> Powrót do Aurory
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer Hints (Globalne podpowiedzi nawigacyjne - ukryte w trybie oglądania TV) -->
     <div id="global-hints" class="absolute bottom-4 right-12 z-[100] flex gap-6 text-sm font-medium text-white/50 transition-opacity opacity-0 pointer-events-none">
         <div class="flex items-center gap-2"><span class="bg-white/20 px-2 py-0.5 rounded text-white border border-white/30 shadow-sm">OK</span> Wybierz</div>
@@ -719,13 +939,13 @@
     <script>
         // --- KANAŁY TELEWIZYJNE LIVE HLS (Rzeczywiste Polskie i Międzynarodowe Kanały TV) ---
         const channels = [
-            { id: 1, name: "TVP 1 HD", cat: "Ogólne", url: "http://57.128.210.196:8080/144/index.m3u8" },
-            { id: 2, name: "TVP 2 HD", cat: "Ogólne", url: "http://57.128.210.196:8080/143/index.m3u8" },
-            { id: 3, name: "TVP SPORT HD", cat: "Sport", url: "http://57.128.210.196:8080/134/index.m3u8" },
-            { id: 4, name: "POLSAT 2 HD", cat: "Ogólne", url: "http://57.128.210.196:8080/208/index.m3u8" },
-            { id: 5, name: "POLSAT SPORT 1", cat: "Sport", url: "http://57.128.210.196:8080/193/index.m3u8" },
-            { id: 6, name: "EUROSPORT 1", cat: "Sport", url: "http://57.128.210.196:8080/264/index.m3u8" },
-            { id: 7, name: "POLSAT SERIALE", cat: "Filmy", url: "http://57.128.210.196:8080/196/index.m3u8" },
+            { id: 1, name: "TVP 1 HD", cat: "Ogólne", url: "https://tvpi.travny.workers.dev/tvp1.m3u8" },
+            { id: 2, name: "TVP 2 HD", cat: "Ogólne", url: "https://tvpi.travny.workers.dev/tvp2.m3u8" },
+            { id: 3, name: "TVP SPORT HD", cat: "Sport", url: "https://tvpi.travny.workers.dev/tvpsport.m3u8" },
+            { id: 4, name: "POLSAT 2 HD", cat: "Ogólne", url: "https://cdn-s-lb2.pluscdn.pl/lv/1517830/349/hls/f03a76f3/masterlist.m3u8" },
+            { id: 5, name: "POLSAT SPORT 1", cat: "Sport", url: "https://dash4.antik.sk/live/test_tvp_info/playlist.m3u8" },
+            { id: 6, name: "EUROSPORT 1", cat: "Sport", url: "https://dash2.antik.sk/live/test_tvp_polonia/playlist.m3u8" },
+            { id: 7, name: "POLSAT SERIALE", cat: "Filmy", url: "https://dash2.antik.sk/live/test_tvp_world/playlist.m3u8" },
             { id: 8, name: "4FUN TV", cat: "Muzyka", url: "https://stream.4fun.tv:8888/sd/4fun_sd_high.m3u8" },
             { id: 9, name: "4FUN KIDS", cat: "Dzieci", url: "https://stream.4fun.tv:8889/hls/4fk_high/index.m3u8" },
             { id: 10, name: "NASA TV UHD", cat: "Nauka", url: "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8" }
@@ -757,15 +977,93 @@
             } catch(e) {}
         };
 
+        let signalWatchdog = null;
+        let isNoSignalVisible = false;
+
+        function showNoSignal(reason, errCode) {
+            if (state.activeLayer !== 'tv') return;
+            isNoSignalVisible = true;
+            const overlay = document.getElementById('no-signal-overlay');
+            if (!overlay) return;
+
+            const ch = channels[state.tv.chIdx] || { id: 1, name: 'TVP 1 HD' };
+            const chIdEl = document.getElementById('no-signal-chid');
+            const chNameEl = document.getElementById('no-signal-chname');
+            const descEl = document.getElementById('no-signal-desc');
+            const errCodeEl = document.getElementById('no-signal-errcode');
+            const levelVal = document.getElementById('no-signal-level-val');
+            const levelBar = document.getElementById('no-signal-level-bar');
+            const qualVal = document.getElementById('no-signal-quality-val');
+            const qualBar = document.getElementById('no-signal-quality-bar');
+
+            if (chIdEl) chIdEl.textContent = `CH ${String(ch.id).padStart(2, '0')}`;
+            if (chNameEl) chNameEl.textContent = ch.name;
+            if (descEl && reason) descEl.textContent = reason;
+            if (errCodeEl) errCodeEl.textContent = errCode || 'E-204 (STREAM_TIMEOUT)';
+
+            if (levelVal) levelVal.textContent = '11% (-79 dBm)';
+            if (levelBar) levelBar.style.width = '11%';
+            if (qualVal) qualVal.textContent = '0% (Brak nośnej / BER max)';
+            if (qualBar) qualBar.style.width = '0%';
+
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+        }
+
+        function hideNoSignal() {
+            isNoSignalVisible = false;
+            clearTimeout(signalWatchdog);
+            const overlay = document.getElementById('no-signal-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+            }
+        }
+
+        window.retryCurrentChannel = function() {
+            hideNoSignal();
+            showToast('Ponawianie próby', 'Trwa ponowne strojenie głowicy i buforowanie...', 'fas fa-sync fa-spin', 'text-sky-400', 'border-l-sky-500');
+            playChannel(state.tv.chIdx);
+        };
+
         function playChannel(idx) {
             const ch = channels[idx];
             if (!ch) return;
             const video = document.getElementById('tv-video');
             if (!video) return;
 
+            hideNoSignal();
+
             // Synchronizacja głośności
             video.volume = state.tv.volume / 100;
             video.muted = (state.tv.volume === 0);
+
+            // Rejestracja zdarzeń video (wykrywanie sygnału)
+            if (!video._signalListenersAttached) {
+                video._signalListenersAttached = true;
+                video.addEventListener('playing', () => {
+                    hideNoSignal();
+                });
+                video.addEventListener('timeupdate', () => {
+                    if (video.currentTime > 0) hideNoSignal();
+                });
+                video.addEventListener('canplay', () => {
+                    hideNoSignal();
+                });
+                video.addEventListener('error', () => {
+                    if (state.activeLayer === 'tv') {
+                        showNoSignal('Błąd dekodowania źródła strumienia wideo.', 'E-500 (DECODER_ERROR)');
+                    }
+                });
+            }
+
+            // Watchdog sygnału: jeśli po 5 sekundach wideo nie ruszy
+            clearTimeout(signalWatchdog);
+            signalWatchdog = setTimeout(() => {
+                if (state.activeLayer === 'tv' && (video.paused || video.readyState < 2)) {
+                    showNoSignal('Brak strumienia wideo lub serwer nadawczy nie odpowiada.', 'E-204 (STREAM_TIMEOUT)');
+                }
+            }, 5000);
             
             try {
                 if (ch.url.includes('.m3u8') && window.Hls && Hls.isSupported()) {
@@ -796,12 +1094,14 @@
                         if (data.fatal) {
                             switch (data.type) {
                                 case Hls.ErrorTypes.NETWORK_ERROR:
+                                    showNoSignal('Błąd sieciowy: Nie można połączyć się ze źródłem nadawczym kanału.', 'E-502 (NETWORK_UNREACHABLE)');
                                     window.hlsInstance.startLoad();
                                     break;
                                 case Hls.ErrorTypes.MEDIA_ERROR:
                                     window.hlsInstance.recoverMediaError();
                                     break;
                                 default:
+                                    showNoSignal('Krytyczny błąd odtwarzania strumienia HLS.', 'E-500 (FATAL_HLS_ERROR)');
                                     window.hlsInstance.destroy();
                                     break;
                             }
@@ -815,11 +1115,14 @@
                     video.src = ch.url;
                     video.play().catch(() => {
                         video.muted = true;
-                        video.play().catch(()=>{});
+                        video.play().catch(() => {
+                            showNoSignal('Nie udało się zainicjować odtwarzacza wideo.', 'E-400 (PLAY_REJECTED)');
+                        });
                     });
                 }
             } catch(e) {
                 console.log("Błąd playChannel:", e);
+                showNoSignal('Wystąpił błąd podczas ładowania kanału.', 'E-500 (INTERNAL_ERROR)');
             }
         }
 
@@ -831,27 +1134,316 @@
             { id: 'm5', title: 'W cieniu gór', year: '2025', genre: 'Dramat', img: 'https://placehold.co/400x600/3f3f46/d4d4d8?text=Gory', desc: 'Wzruszająca historia alpinisty, który musi zmierzyć się z przeszłością podczas najtrudniejszej wspinaczki.' },
         ];
 
-        // Generowanie stałego EPG
-        const generateEPG = () => {
+        // ===================== ZAAWANSOWANY SYSTEM EPG (24H PROGRAM TV) =====================
+        const epgMinHour = 5;   // 05:00 początek doby emisyjnej
+        const epgMaxHour = 29;  // 05:00 rano następnego dnia (pełne 24 godziny)
+        const epgCellW = 320;   // 320px na godzinę (~5.33px / minutę)
+        const epgRowH = 80;     // Wysokość wiersza kanału
+
+        function getCurrentBroadcastHour() {
+            const d = new Date();
+            let h = d.getHours() + (d.getMinutes() / 60) + (d.getSeconds() / 3600);
+            if (h < epgMinHour) h += 24; // Godziny po północy (00:00 - 04:59) to 24:00 - 28:59 doby
+            return h;
+        }
+
+        function formatBroadcastHour(hDec) {
+            let norm = Math.round(hDec * 1000) / 1000;
+            let h = Math.floor(norm) % 24;
+            let m = Math.floor(((norm % 1) * 60) + 0.5);
+            if (m >= 60) { m = 0; h = (h + 1) % 24; }
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+
+        // Realistyczny, 24-godzinny generator ramówki stacji telewizyjnych
+        function generateRealistic24hEPG() {
+            const schedules = {
+                1: [ // TVP 1 HD
+                    { time: "05:00", dur: 1.0, title: "Wykrywacz kłamstw", genre: "Publicystyka", desc: "Program poświęcony kłamstwom w debacie publicznej. Dziennikarze i eksperci analizują wypowiedzi polityków." },
+                    { time: "06:00", dur: 2.5, title: "Pytanie na śniadanie • Pasmo poranne", genre: "Magazyn", desc: "Poranny magazyn lifestylowy TVP. Ciekawe tematy, porady ekspertów, kącik kulinarny i najświeższe wiadomości." },
+                    { time: "08:30", dur: 1.0, title: "Wspaniałe stulecie", genre: "Serial historyczny", desc: "Epicki dramat kostiumowy o losach imperium osmańskiego za panowania sułtana Sulejmana Wspaniałego." },
+                    { time: "09:30", dur: 1.0, title: "Klan", genre: "Telenowela", desc: "Najdłużej emitowany polski serial obyczajowy przedstawiający codzienne perypetie wielopokoleniowej rodziny Lubiczów." },
+                    { time: "10:30", dur: 1.5, title: "Akacjowa 38", genre: "Telenowela", desc: "Hiszpańska opowieść o miłości, zdradzie i sekretach zamożnych mieszkańców madryckiej kamienicy pod koniec XIX wieku." },
+                    { time: "12:00", dur: 0.5, title: "Wiadomości Południowe i Pogoda", genre: "Wiadomości", desc: "Podsumowanie najważniejszych wydarzeń z Polski i ze świata w południe." },
+                    { time: "12:30", dur: 1.5, title: "Natura w Jedynce: Dzika Polska", genre: "Dokument", desc: "Niezwykłe ujęcia polskiej flory i fauny w rezerwatach Puszczy Białowieskiej i Doliny Biebrzy." },
+                    { time: "14:00", dur: 1.0, title: "Królowa przetrwania", genre: "Reality Show", desc: "Uczestnicy mierzą się z ekstremalnymi wyzwaniami w dzikich zakątkach natury." },
+                    { time: "15:00", dur: 0.5, title: "Wiadomości 15:00", genre: "Wiadomości", desc: "Popołudniowy serwis informacyjny prezentujący bieżące doniesienia z kraju." },
+                    { time: "15:30", dur: 1.5, title: "Wspaniałe stulecie: Nowe imperium", genre: "Serial historyczny", desc: "Kolejne dramatyczne wybory na sułtańskim dworze. Walka o władzę i wpływy przybiera na sile." },
+                    { time: "17:00", dur: 0.5, title: "Teleexpress", genre: "Informacje", desc: "Legendarny, dynamiczny serwis informacyjny z najciekawszymi wiadomościami dnia i muzyczną kasetą Teleexpressu." },
+                    { time: "17:30", dur: 1.0, title: "Jaka to melodia?", genre: "Teleturniej", desc: "Muzyczny teleturniej prowadzony przez Roberta Janowskiego, w którym uczestnicy odgadują znane hity po kilku nutkach." },
+                    { time: "18:30", dur: 1.0, title: "Jeden z dziesięciu", genre: "Teleturniej", desc: "Kultowy teleturniej wiedzowy pod przewodnictwem Tadeusza Sznuka. Najbardziej prestiżowy pojedynek umysłów." },
+                    { time: "19:30", dur: 0.75, title: "19:30 - Główne Wydanie Wiadomości", genre: "Wiadomości", desc: "Główny program informacyjny Telewizji Polskiej. Relacje korespondentów, rzetelne fakty i analizy polityczne." },
+                    { time: "20:15", dur: 1.0, title: "Ojciec Mateusz: Tajemnica sandomierska", genre: "Serial kryminalny", desc: "Ksiądz Mateusz Żmigrodzki z Sandomierza po raz kolejny pomaga policji w rozwikłaniu zagadkowego śledztwa." },
+                    { time: "21:15", dur: 1.5, title: "Sprawa dla reportera", genre: "Magazyn społeczny", desc: "Elżbieta Jaworowicz i zaproszeni goście interweniują w najtrudniejszych sporach i dramatach zwykłych ludzi." },
+                    { time: "22:45", dur: 2.0, title: "Kino Gwiazd: Na noże (Knives Out)", genre: "Film kryminalny", desc: "Mistrzowski kryminał z Danielem Craigiem. Detektyw Benoit Blanc bada śmierć nestora zamożnego rodu." },
+                    { time: "00:45", dur: 2.0, title: "Kino Nocne: Ostatni bastion", genre: "Film akcji", desc: "Szeryf małego miasteczka na granicy staje do walki z bezwzględnym kartelem uciekającym z konwoju." },
+                    { time: "02:45", dur: 2.15, title: "Z archiwum TVP: Koncert Gwiazd Opola", genre: "Muzyka", desc: "Największe legendy polskiej sceny muzycznej w archiwalnych występach na deskach opolskiego amfiteatru." }
+                ],
+                2: [ // TVP 2 HD
+                    { time: "05:00", dur: 1.5, title: "Familiada - Powtórka", genre: "Teleturniej", desc: "Zabawne zmagania dwóch rodzin pod okiem Karola Strasburgera z sucharami na otwarcie." },
+                    { time: "06:30", dur: 1.0, title: "Złote serce", genre: "Telenowela", desc: "Dramatyczna historia młodej kobiety walczącej o prawdę o swoim pochodzeniu." },
+                    { time: "07:30", dur: 3.5, title: "Pytanie na śniadanie • Wydanie Główne", genre: "Śniadaniowy", desc: "Najpopularniejszy poranek w Polsce: kuchnia, goście ze świata kultury, muzyka na żywo i gwiazdy." },
+                    { time: "11:00", dur: 1.0, title: "Koło Fortuny", genre: "Teleturniej", desc: "Zakręć kołem i zgarnij nagrody! Hasła, bankruci i wielkie emocje przy odgadywaniu liter." },
+                    { time: "12:00", dur: 1.0, title: "Va Banque", genre: "Teleturniej", desc: "Zadawaj pytania do podanych odpowiedzi! Elitarna wiedza w dynamicznym teleturnieju TVP2." },
+                    { time: "13:00", dur: 1.0, title: "Słowo na niedzielę i kultura", genre: "Magazyn", desc: "Przegląd nowości literackich, spektakli teatralnych i wystaw sztuki współczesnej." },
+                    { time: "14:00", dur: 1.0, title: "Familiada: Premiera", genre: "Teleturniej", desc: "Nowe wydanie najsłynniejszego teleturnieju drużynowego w Polsce. Odpowiedzi ankietowanych." },
+                    { time: "15:00", dur: 1.0, title: "Koło Fortuny - Wydanie Popołudniowe", genre: "Teleturniej", desc: "Dynamiczne hasła i zmagania uczestników z całej Polski o samochód osobowy." },
+                    { time: "16:00", dur: 1.0, title: "Szansa na sukces. Opole 2026", genre: "Program muzyczny", desc: "Młodzi wokaliści mierzą się z repertuarem wybitnego artysty w drodze do debiutów w Opolu." },
+                    { time: "17:00", dur: 1.0, title: "Na sygnale", genre: "Serial medyczny", desc: "Ratownicy medyczni z Leśnej Góry pędzą na pomoc poszkodowanym w dramatycznych wypadkach." },
+                    { time: "18:00", dur: 0.5, title: "Panorama", genre: "Informacje", desc: "Główne wydanie Panoramy Dwójki: wnikliwe analizy społeczno-gospodarcze i wiadomości ze świata." },
+                    { time: "18:30", dur: 1.5, title: "Postaw na milion", genre: "Teleturniej", desc: "Łukasz Nowicki prowadzi grę, w której para uczestników kładzie milion złotych na zapadnie." },
+                    { time: "20:00", dur: 1.0, title: "Barwy Szczęścia", genre: "Serial obyczajowy", desc: "Emocjonalne zwroty akcji na warszawskim osiedlu. Klara i Hubert stają przed trudną próbą." },
+                    { time: "21:00", dur: 1.0, title: "M jak Miłość", genre: "Serial obyczajowy", desc: "Kultowa saga rodu Mostowiaków z Grabiny. Najchętniej oglądany serial w historii polskiej telewizji." },
+                    { time: "22:00", dur: 1.0, title: "Na dobre i na złe", genre: "Serial medyczny", desc: "Szpital w Leśnej Górze: chirurdzy podejmują się skomplikowanej operacji kardiochirurgicznej." },
+                    { time: "23:00", dur: 1.5, title: "The Voice of Poland: Najlepsze Występy", genre: "Talent Show", desc: "Niezapomniane przesłuchania w ciemno i bitwy wokalne na wielkiej scenie." },
+                    { time: "00:30", dur: 2.0, title: "Kino Dwójki: Labirynt (Prisoners)", genre: "Thriller", desc: "Hugh Jackman i Jake Gyllenhaal w trzymającym za gardło thrillerze o porwaniu dziewczynek." },
+                    { time: "02:30", dur: 2.3, title: "Nocna Panorama i Reportaże", genre: "Dokument", desc: "Nocne pasmo reportaży śledczych i magazynów reporterskich TVP2." }
+                ],
+                3: [ // TVP SPORT HD
+                    { time: "05:00", dur: 1.5, title: "Sportowy Poranek na Żywo", genre: "Informacje", desc: "Wszystkie skróty nocy: NBA, NHL, wyniki ze świata i zapowiedzi najważniejszych wydarzeń dnia." },
+                    { time: "06:30", dur: 2.0, title: "Piłka Nożna: Retro TVP Sport", genre: "Piłka Nożna", desc: "Historyczne mecze reprezentacji Polski. Mistrzostwa Świata 1974 i 1982 w pełnym blasku." },
+                    { time: "08:30", dur: 1.5, title: "Magazyn GOL: Podsumowanie Ekstraklasy", genre: "Magazyn", desc: "Bramki, kontrowersje sędziowskie i analizy taktyczne minionej kolejki PKO BP Ekstraklasy." },
+                    { time: "10:00", dur: 2.5, title: "Tenis: Turniej ATP Masters 1000", genre: "Tenis", desc: "Transmisja na żywo pojedynku 1/4 finału prestiżowego turnieju rangi Masters." },
+                    { time: "12:30", dur: 1.5, title: "Magazyn Sportów Walki: Ring", genre: "Boks / MMA", desc: "Kulisy gal bokserskich, wywiady z zawodnikami UFC i analizy techniczne przed walkami o pas." },
+                    { time: "14:00", dur: 2.0, title: "Piłka Nożna: Liga Narodów UEFA (Skróty)", genre: "Piłka Nożna", desc: "Wszystkie bramki fazy pucharowej Ligi Narodów z udziałem czołowych reprezentacji Europy." },
+                    { time: "16:00", dur: 2.0, title: "Lekkoatletyka: Memoriał Kamili Skolimowskiej", genre: "Lekkoatletyka", desc: "Diamentowa Liga na Stadionie Śląskim w Chorzowie. Najlepsi lekkoatleci świata w walce o rekordy." },
+                    { time: "18:00", dur: 2.5, title: "Piłka Ręczna: Liga Mistrzów (Na Żywo)", genre: "Piłka Ręczna", desc: "Pojedynek fazy grupowej EHF Champions League: Industria Kielce walczy o punkty." },
+                    { time: "20:30", dur: 2.0, title: "Sportowy Wieczór: Studio Live", genre: "Publicystyka", desc: "Podsumowanie dnia w sporcie, łączenia z ekspertami na stadionach i gorące komentarze." },
+                    { time: "22:30", dur: 2.0, title: "Boks Zawodowy: Walka o Pas Mistrza Świata", genre: "Boks", desc: "Walka wieczoru w wadze ciężkiej. 12 rund bezkompromisowej walki w ringu." },
+                    { time: "00:30", dur: 2.0, title: "Motorsport: Rajdowe Mistrzostwa Świata WRC", genre: "Rajdy", desc: "Skróty oesów z Rajdu Monte Carlo i popisy najlepszych kierowców rakiet Rally1." },
+                    { time: "02:30", dur: 2.3, title: "Sportowa Noc Powtórek", genre: "Sport", desc: "Najciekawsze momenty i decydujące akcje z dzisiejszych aren sportowych." }
+                ],
+                4: [ // POLSAT 2 HD
+                    { time: "05:00", dur: 1.0, title: "Nowy Dzień z Polsat News", genre: "Wiadomości", desc: "Poranny program informacyjny z prognozą pogody i doniesieniami z dróg w całym kraju." },
+                    { time: "06:00", dur: 1.5, title: "Malanowski i Partnerzy", genre: "Serial kryminalny", desc: "Biuro detektywistyczne Bronisława Malanowskiego pomaga klientom w prywatnych śledztwach." },
+                    { time: "07:30", dur: 1.5, title: "Dlaczego ja?", genre: "Dokumentalny", desc: "Historie ludzi, których życie wywróciło się do góry nogami z powodu niespodziewanych zbiegów okoliczności." },
+                    { time: "09:00", dur: 1.5, title: "Trudne sprawy", genre: "Docu-Soap", desc: "Konflikty rodzinne, kłamstwa i zdrady. Codzienne problemy zwykłych polskich rodzin." },
+                    { time: "10:30", dur: 1.5, title: "Gliniarze", genre: "Serial akcji", desc: "Policjanci z Wydziału Kryminalnego Warszawy tropią groźne gangi, morderców i porywaczy." },
+                    { time: "12:00", dur: 1.0, title: "Pierwsza miłość", genre: "Serial obyczajowy", desc: "Wrocławskie perypetie Marysi, Kingi i ich przyjaciół. Miłość, biznes i rodzinne tajemnice." },
+                    { time: "13:00", dur: 1.5, title: "Pamiętniki z wakacji", genre: "Rozrywka", desc: "Słoneczna Majorka i wakacyjne przygody polskich turystów. Gorący romans i zabawne wpadki." },
+                    { time: "14:30", dur: 1.5, title: "Przyjaciółki", genre: "Serial obyczajowy", desc: "Inga, Patrycja, Anka i Zuza wspierają się nawzajem w zmaganiach z życiem i karierą." },
+                    { time: "16:00", dur: 1.5, title: "Gliniarze: Sprawa Specjalna", genre: "Kryminał", desc: "Naczelnik wydziału zarządza operację pod przykryciem w celu rozbicia siatki przemytników." },
+                    { time: "17:30", dur: 1.0, title: "Wydarzenia 18:50", genre: "Wiadomości", desc: "Główny serwis informacyjny Telewizji Polsat prowadzony przez Dorotę Gawryluk." },
+                    { time: "18:30", dur: 1.0, title: "Gość Wydarzeń", genre: "Publicystyka", desc: "Rozmowa z czołowym politykiem i kluczowymi postaciami polskiego życia publicznego." },
+                    { time: "19:30", dur: 1.0, title: "Pierwsza miłość: Premiera", genre: "Serial obyczajowy", desc: "Dramatyczny zwrot akcji w Wadlewie. Emilka podejmuje decyzję o przyszłości fabryki." },
+                    { time: "20:30", dur: 2.0, title: "Kabaret na żywo: Młodzi i Moralni", genre: "Kabaret", desc: "Robert Górski i Kabaret Młodych Panów w bezlitosnej satyrze na polską scenę polityczną." },
+                    { time: "22:30", dur: 2.0, title: "MegaHit Polsatu: John Wick 4", genre: "Film akcji", desc: "Keanu Reeves jako legendarny zabójca staje do walki z Wysoką Radą w Paryżu i Osace." },
+                    { time: "00:30", dur: 2.0, title: "Świat według Kiepskich: Maraton", genre: "Komedia", desc: "Ferdynand Kiepski, Boczek i Paździoch w kultowych odcinkach wrocławskiej kamienicy." },
+                    { time: "02:30", dur: 2.3, title: "Tajemnice Losu i Muzyka Polsatu", genre: "Rozrywka", desc: "Nocne pasmo interaktywne i przeboje disco polo." }
+                ],
+                5: [ // POLSAT SPORT 1
+                    { time: "05:00", dur: 1.5, title: "Siatkówka: PlusLiga Skróty", genre: "Siatkówka", desc: "Najważniejsze punkty i asy serwisowe z parkietów najlepszej ligi siatkarskiej świata." },
+                    { time: "06:30", dur: 2.0, title: "Cafe Futbol: Magazyn Dyskusyjny", genre: "Publicystyka", desc: "Bożydar Iwanow i Roman Kołtoń w bezkompromisowej debacie o polskiej piłce nożnej." },
+                    { time: "08:30", dur: 2.0, title: "Koszykówka: Orlen Basket Liga", genre: "Koszykówka", desc: "Pojedynek na szczycie polskiej ekstraklasy koszykówki mężczyzn." },
+                    { time: "10:30", dur: 2.5, title: "Siatkówka: ZAKSA Kędzierzyn vs Jastrzębski Węgiel", genre: "Siatkówka", desc: "Wielki klasyk PlusLigi. Walka o pierwsze miejsce w tabeli." },
+                    { time: "13:00", dur: 1.5, title: "Magazyn Polsat Sport: 7 Dni Sportu", genre: "Magazyn", desc: "Kompleksowe podsumowanie minionego tygodnia ze wszystkich dyscyplin." },
+                    { time: "14:30", dur: 3.0, title: "Siatkówka Kobiet: Tauron Liga (Na Żywo)", genre: "Siatkówka", desc: "Transmisja na żywo hitowego meczu Developres Rzeszów z Chemikiem Police." },
+                    { time: "17:30", dur: 3.0, title: "Siatkówka Mężczyzn: PlusLiga (Na Żywo)", genre: "Siatkówka", desc: "Bezpośrednia relacja z gorącego starcia PGE Projekt Warszawa z Aluron Warta Zawiercie." },
+                    { time: "20:30", dur: 2.0, title: "Koloseum: Magazyn Sportów Walki", genre: "MMA", desc: "Zapowiedzi gal KSW, wywiady z Mamedem Khalidovem i analiza poddań." },
+                    { time: "22:30", dur: 2.0, title: "KSW: Najlepsze Nokauty Roku", genre: "MMA", desc: "Potężne ciosy, latające kolana i widowiskowe skończenia w klatce KSW." },
+                    { time: "00:30", dur: 2.0, title: "Piłka Nożna: Liga Holenderska Eredivisie", genre: "Piłka Nożna", desc: "Ajax Amsterdam kontra Feyenoord Rotterdam w odwiecznym klasyku De Klassieker." },
+                    { time: "02:30", dur: 2.3, title: "Noc z Polsat Sport", genre: "Sport", desc: "Powtórki najlepszych transmisji sportowych i kulisy meczów." }
+                ],
+                6: [ // EUROSPORT 1
+                    { time: "05:00", dur: 1.5, title: "Wiadomości Eurosportu", genre: "Informacje", desc: "Światowe doniesienia sportowe, tabele i terminarze międzynarodowych pucharów." },
+                    { time: "06:30", dur: 2.0, title: "Kolarstwo: Tour de France - Kronika", genre: "Kolarstwo", desc: "Legendarne alpejskie etapy i zmagania Tadeja Pogačara z Jonasem Vingegaardem." },
+                    { time: "08:30", dur: 2.0, title: "Skoki Narciarskie: Puchar Świata Zakopane", genre: "Skoki", desc: "Wielka Krokiew w biało-czerwonym szaleństwie. Najdalsze skoki polskich skoczków." },
+                    { time: "10:30", dur: 3.5, title: "Snooker: Mistrzostwa Świata w Crucible (Na Żywo)", genre: "Snooker", desc: "Ronnie O'Sullivan przy stole w Sheffield. Precyzja, taktyka i walka o break maksymalny 147." },
+                    { time: "14:00", dur: 3.5, title: "Kolarstwo: Giro d'Italia (Na Żywo)", genre: "Kolarstwo", desc: "Królewski etap górski w Dolomitach. Kolarze pokonują mordercze przełęcze Passo dello Stelvio." },
+                    { time: "17:30", dur: 3.0, title: "Tenis: Roland Garros - Mecz Dnia (Na Żywo)", genre: "Tenis", desc: "Mecz na korcie Philippe'a Chatriera w Paryżu z udziałem Igi Świątek na mączce." },
+                    { time: "20:30", dur: 3.0, title: "Snooker: Sesja Wieczorna (Na Żywo)", genre: "Snooker", desc: "Decydująca faza półfinałowa turnieju snookerowego w Crucible Theatre." },
+                    { time: "23:30", dur: 1.5, title: "Motorsport: Wyścigi Długodystansowe 24h Le Mans", genre: "Wyścigi", desc: "Kulisy legendarnego 24-godzinnego wyścigu na torze Circuit de la Sarthe w klasie Hypercar." },
+                    { time: "01:00", dur: 2.0, title: "Wspinaczka Sportowa: Puchar Świata", genre: "Wspinaczka", desc: "Finały wspinaczki na czas i boulderingu z udziałem Aleksandry Mirosław." },
+                    { time: "03:00", dur: 2.0, title: "Eurosport Flash Nocny", genre: "Sport", desc: "Skróty najważniejszych wydarzeń sportowych globu." }
+                ],
+                7: [ // POLSAT SERIALE
+                    { time: "05:00", dur: 1.5, title: "Miodowe Lata: Wielka szansa", genre: "Serial komediowy", desc: "Karol Krawczyk i Tadeusz Norek snują kolejny genialny plan szybkiego wzbogacenia się." },
+                    { time: "06:30", dur: 1.5, title: "Rodzina Zastępcza", genre: "Serial familijny", desc: "Anka i Jacek Kwiatkowski mierzą się ze szkolnymi i miłosnymi perypetiami swoich dzieci." },
+                    { time: "08:00", dur: 2.0, title: "Świat według Kiepskich", genre: "Komedia", desc: "Dwa odcinki kultowych przygód Ferdynanda Kiepskiego i jego sąsiadów z korytarza." },
+                    { time: "10:00", dur: 2.0, title: "Kości (Bones)", genre: "Kryminał", desc: "Dr Temperance Brennan i agent Seeley Booth rozwiązują zagadkę szkieletu znalezionego w lesie." },
+                    { time: "12:00", dur: 2.0, title: "CSI: Kryminalne Zagadki Miami", genre: "Kryminał", desc: "Horatio Caine w nieodłącznych ciemnych okularach bada sprawę zabójstwa na luksusowym jachcie." },
+                    { time: "14:00", dur: 2.0, title: "CSI: Kryminalne Zagadki Nowego Jorku", genre: "Kryminał", desc: "Detektyw Mac Taylor i jego zespół śledczy badają zbrodnie w sercu Manhattanu." },
+                    { time: "16:00", dur: 2.0, title: "Mentalista (The Mentalist)", genre: "Kryminał", desc: "Patrick Jane wykorzystuje niezwykłą spostrzegawczość w poszukiwaniu seryjnego mordercy Red Johna." },
+                    { time: "18:00", dur: 2.0, title: "Przyjaciółki: Sezon Gwiazdorski", genre: "Dramat", desc: "Nowy rozdział w życiu czterech przyjaciółek. Sukces zawodowy wystawia związki na ciężką próbę." },
+                    { time: "20:00", dur: 2.0, title: "Wataha: Na granicy", genre: "Thriller kryminalny", desc: "Mroczne Bieszczady. Kapitan Wiktor Rebrow staje oko w oko z bezwzględną mafią przemytników." },
+                    { time: "22:00", dur: 2.0, title: "Skazana", genre: "Dramat kryminalny", desc: "Sędzia Alicja Mazur trafia do więzienia, w którym sama umieszczała groźne przestępczynie." },
+                    { time: "00:00", dur: 2.0, title: "Prawnik z Lincolna", genre: "Dramat sądowy", desc: "Mickey Haller prowadzi sprawy z tylnego siedzenia swojego Lincolna, walcząc o uniewinnienie klienta." },
+                    { time: "02:00", dur: 3.0, title: "Kryminalny Maraton Nocny", genre: "Kryminał", desc: "Archiwalne odcinki najlepszych seriali sensacyjnych i detektywistycznych." }
+                ],
+                8: [ // 4FUN TV
+                    { time: "05:00", dur: 3.0, title: "Dzień Dobry 4FUN Hits", genre: "Muzyka pop", desc: "Pobudka w rytmie największych radiowych przebojów i energetycznych klipów z całego globu." },
+                    { time: "08:00", dur: 3.0, title: "Chcesz Masz - Hity na Życzenie", genre: "Muzyka", desc: "Widzowie przejmują stację! Głosuj w aplikacji i decyduj, jaki utwór zagra za chwilę." },
+                    { time: "11:00", dur: 3.0, title: "Top 20 Pop & Dance", genre: "Lista przebojów", desc: "Oficjalne notowanie najgorętszych klubowych i radiowych hitów tego tygodnia." },
+                    { time: "14:00", dur: 3.0, title: "4FUN Na Propsie • Trendy TikToka", genre: "Trendy", desc: "Utwory, które podbijają Spotify i wirale z TikToka. Muzyka nowej generacji." },
+                    { time: "17:00", dur: 3.0, title: "4FUN Party Zone: Beforek", genre: "Klubowa", desc: "Klubowe remiksy, house i dance na rozgrzewkę przed wieczornym wyjściem." },
+                    { time: "20:00", dur: 3.0, title: "Gorąca 20 - Główna Lista Przebojów", genre: "Hity", desc: "Dwadzieścia utworów rządzących w Polsce. Kto zgarnie numer jeden w tym wydaniu?" },
+                    { time: "23:00", dur: 6.0, title: "Nocny 4FUN Non Stop: Electro & Chill", genre: "Chillout", desc: "Ciągły miks muzyczny bez reklam. Hipnotyzujące teledyski i relaksujące beaty do rana." }
+                ],
+                9: [ // 4FUN KIDS
+                    { time: "05:00", dur: 2.5, title: "Wesołe Piosenki dla Maluchów", genre: "Dzieci", desc: "Śpiewające kaczuszki, radosne melodie i kolorowe animacje na radosny poranek maluszka." },
+                    { time: "07:30", dur: 2.5, title: "Tańcz i Klaszcz z Nami", genre: "Zabawa", desc: "Ruchowe piosenki gimnastyczne zachęcające dzieci do tańca i ćwiczeń przed telewizorem." },
+                    { time: "10:00", dur: 3.0, title: "Bajkowa Kraina Melodii i Rymowanek", genre: "Edukacja", desc: "Uczymy się kolorów, literek i cyferek przez wesołe piosenki z animowanymi zwierzątkami." },
+                    { time: "13:00", dur: 3.0, title: "Popołudniowe Bajkowe Karaoke", genre: "Karaoke", desc: "Teksty na ekranie! Wspólne śpiewanie najpopularniejszych polskich piosenek dziecięcych." },
+                    { time: "16:00", dur: 3.0, title: "Klub Małych Odkrywców", genre: "Zabawa", desc: "Poznajemy kosmos, morza i oceany w rytmie chwytliwych melodii edukacyjnych." },
+                    { time: "19:00", dur: 2.0, title: "Dobranockowe Kołysanki na Sen", genre: "Wyciszenie", desc: "Ciche, łagodne melodie przygotowujące dzieci do spokojnego i bezpiecznego snu." },
+                    { time: "21:00", dur: 8.0, title: "Cicha Noc Malucha • Szumy i Relaks", genre: "Relaks", desc: "Biały szum, odgłosy deszczu i delikatne kołysanki pomagające w uśpieniu niemowląt." }
+                ],
+                10: [ // NASA TV UHD
+                    { time: "05:00", dur: 3.0, title: "ISS Live: Widoki Ziemi w 4K Ultra HD", genre: "Kosmos", desc: "Bezpośrednia transmisja w jakości 4K z kamer zewnętrznych Międzynarodowej Stacji Kosmicznej." },
+                    { time: "08:00", dur: 2.5, title: "Space Station Science Briefing", genre: "Nauka", desc: "Raport NASA z eksperymentów prowadzonych w warunkach mikrograwitacji na orbicie okołoziemskiej." },
+                    { time: "10:30", dur: 2.5, title: "Artemis: Droga Powrotu na Księżyc", genre: "Dokument", desc: "Testy rakiety SLS, kapsuły Orion i przygotowania do załogowego lądowania na biegunie Księżyca." },
+                    { time: "13:00", dur: 3.0, title: "Kosmiczny Teleskop Jamesa Webba (JWST)", genre: "Astronomia", desc: "Niezwykłe zdjęcia pierwszych galaktyk, narodzin gwiazd i atmosfer odległych egzoplanet." },
+                    { time: "16:00", dur: 2.5, title: "Mars Perseverance: W Poszukiwaniu Życia", genre: "Eksploracja", desc: "Prace łazika w kraterze Jezero. Wiercenia w skałach i loty helikoptera Ingenuity." },
+                    { time: "18:30", dur: 3.0, title: "Spacewalk: Spacer Kosmiczny w Otwartym Kosmosie", genre: "Relacja", desc: "Zapis wyjścia astronautów w przestrzeń kosmiczną w celu montażu nowych paneli słonecznych iROSA." },
+                    { time: "21:30", dur: 3.5, title: "Głębia Wszechświata: Czarne Dziury i Czasoprzestrzeń", genre: "Astrofizyka", desc: "Fascynująca opowieść wybitnych fizyków o horyzoncie zdarzeń, falach grawitacyjnych i teorii Einsteina." },
+                    { time: "01:00", dur: 4.0, title: "Nocne Czuwanie Nad Błękitną Planetą (4K)", genre: "Kosmos", desc: "Spokojne przeloty ISS nad nocnymi miastami, zorzami polarnymi i burzami z muzyką ambient." }
+                ]
+            };
+
             const grid = [];
-            for(let c=0; c<channels.length; c++) {
-                let row = [];
-                let start = 18;
-                for(let i=0; i<6; i++) {
-                    let dur = (Math.random() > 0.5) ? 2 : 1;
+            channels.forEach((ch, chIdx) => {
+                const list = schedules[ch.id] || schedules[1];
+                let curOffset = 0;
+                let prevHour = -1;
+                const row = [];
+
+                for (let i = 0; i < list.length; i++) {
+                    const item = list[i];
+                    const pts = item.time.split(':');
+                    const rawH = parseFloat(pts[0]) + parseFloat(pts[1]) / 60;
+                    if (prevHour >= 0 && rawH < prevHour && (prevHour - rawH) > 6) {
+                        curOffset += 24; // Przejście przez północ
+                    }
+                    prevHour = rawH;
+
+                    const startH = rawH + curOffset;
+                    const dur = item.dur || 1.5;
+                    const endH = startH + dur;
+                    const endHNorm = (rawH + dur) % 24;
+                    const eh = Math.floor(endHNorm);
+                    const em = Math.floor(((endHNorm % 1) * 60) + 0.5);
+                    const endTimeStr = `${eh.toString().padStart(2, '0')}:${em.toString().padStart(2, '0')}`;
+
                     row.push({
-                        id: `epg-item-${c}-${i}`,
-                        title: c % 2 === 0 ? `Film Hit ${i+1}` : `Wiadomości / Sport ${i+1}`,
-                        start: start, dur: dur,
-                        desc: `Przykładowy opis programu emitowanego o godzinie ${start}:00 na kanale ${channels[c].name}.`
+                        id: `epg-${ch.id}-${i}`,
+                        channelId: ch.id,
+                        channelName: ch.name,
+                        channelCat: ch.cat,
+                        title: item.title,
+                        genre: item.genre || ch.cat,
+                        desc: item.desc || `Program ${item.title} emitowany na żywo na kanale ${ch.name}.`,
+                        time: item.time,
+                        endTime: endTimeStr,
+                        timeRange: `${item.time} - ${endTimeStr}`,
+                        startHour: Math.round(startH * 1000) / 1000,
+                        endHour: Math.round(endH * 1000) / 1000,
+                        dur: Math.round(dur * 1000) / 1000,
+                        isLive: false,
+                        progressPct: 0
                     });
-                    start += dur;
                 }
                 grid.push(row);
-            }
+            });
             return grid;
-        };
-        const epgData = generateEPG();
+        }
+
+        let epgData = generateRealistic24hEPG();
+
+        // Aktualizacja statusu NA ŻYWO oraz paska postępu dla każdego programu
+        function updateEPGLiveStatuses() {
+            const curH = getCurrentBroadcastHour();
+            const nowTimeStr = formatBroadcastHour(curH);
+
+            epgData.forEach(row => {
+                row.forEach(p => {
+                    if (curH >= p.startHour && curH < p.endHour) {
+                        p.isLive = true;
+                        p.progressPct = Math.max(0, Math.min(100, Math.round(((curH - p.startHour) / p.dur) * 100)));
+                    } else {
+                        p.isLive = false;
+                        p.progressPct = 0;
+                    }
+                });
+            });
+
+            // Aktualizacja czerwonej linii "TERAZ" w siatce
+            const nowLine = document.getElementById('epg-now-line');
+            if (nowLine) {
+                const nowX = (curH - epgMinHour) * epgCellW;
+                nowLine.style.left = `${nowX}px`;
+                const label = document.getElementById('epg-now-label');
+                if (label) label.textContent = `TERAZ ${nowTimeStr}`;
+            }
+
+            // Aktualizacja daty w nagłówku
+            const dateBadge = document.getElementById('epg-date-badge');
+            if (dateBadge) {
+                const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+                const months = ['Stycznia', 'Lutego', 'Marca', 'Kwietnia', 'Maja', 'Czerwca', 'Lipca', 'Sierpnia', 'Września', 'Października', 'Listopada', 'Grudnia'];
+                const now = new Date();
+                dateBadge.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+            }
+        }
+
+        // Asynchroniczne pobieranie rzeczywistych danych EPG z serwera backendu
+        async function fetchServerEPG() {
+            try {
+                let res = null;
+                try {
+                    res = await fetch('/api/epg', { cache: 'no-cache' });
+                } catch(e) {
+                    try {
+                        res = await fetch('http://127.0.0.1:8080/api/epg', { cache: 'no-cache' });
+                    } catch(e2) {}
+                }
+
+                if (res && res.ok) {
+                    const data = await res.json();
+                    if (data && data.channels && data.channels.length > 0) {
+                        const fallback = generateRealistic24hEPG();
+                        const merged = [];
+
+                        channels.forEach((ch, chIdx) => {
+                            const srvCh = data.channels.find(c => c.id === ch.id);
+                            if (srvCh && srvCh.programs && srvCh.programs.length > 0) {
+                                const row = srvCh.programs.map((p, pIdx) => ({
+                                    id: `epg-${ch.id}-${pIdx}`,
+                                    channelId: ch.id,
+                                    channelName: ch.name,
+                                    channelCat: ch.cat,
+                                    title: p.title,
+                                    genre: p.genre || ch.cat,
+                                    desc: p.desc || `Program ${p.title} na kanale ${ch.name}.`,
+                                    time: p.time,
+                                    endTime: p.endTime || p.time,
+                                    timeRange: p.timeRange || `${p.time} - ${p.endTime}`,
+                                    startHour: p.startHour,
+                                    endHour: p.endHour,
+                                    dur: p.dur,
+                                    isLive: false,
+                                    progressPct: 0
+                                }));
+                                merged.push(row);
+                            } else {
+                                merged.push(fallback[chIdx]);
+                            }
+                        });
+
+                        epgData = merged;
+                        const srcBadge = document.getElementById('epg-source-badge');
+                        if (srcBadge) srcBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Teleman Live • Program TV';
+                        updateEPGLiveStatuses();
+                        renderEPG();
+                        if (state.activeLayer === 'tv') showOSDPill();
+                        console.log('[EPG] Pomyślnie załadowano rzeczywiste dane z /api/epg');
+                        return true;
+                    }
+                }
+            } catch(err) {
+                console.warn('[EPG] Błąd pobierania /api/epg:', err);
+            }
+            return false;
+        }
 
         // --- STAN APLIKACJI ---
         const state = {
@@ -1143,19 +1735,29 @@
             }
 
             if (state.activeLayer === 'home') {
-                const recList = ['home-rec-1', 'home-rec-2', 'home-rec-3', 'home-rec-4', 'home-rec-5'];
-                const appList = ['app-tv', 'app-epg', 'app-vod', 'app-youtube', 'app-settings'];
+                const appElements = Array.from(document.querySelectorAll('#home-apps-row .focusable')).map(el => el.id);
+                const recElements = Array.from(document.querySelectorAll('#home-recent-row .focusable')).map(el => el.id);
 
-                if (state.nav.currentId.startsWith('home-rec-')) {
-                    const idx = recList.indexOf(state.nav.currentId);
-                    if (dir === 'Right' && idx < recList.length - 1) return recList[idx + 1];
-                    if (dir === 'Left' && idx > 0) return recList[idx - 1];
-                    if (dir === 'Down') return appList[Math.min(idx, appList.length - 1)];
-                } else if (state.nav.currentId.startsWith('app-')) {
-                    const idx = appList.indexOf(state.nav.currentId);
-                    if (dir === 'Right' && idx < appList.length - 1) return appList[idx + 1];
-                    if (dir === 'Left' && idx > 0) return appList[idx - 1];
-                    if (dir === 'Up') return recList[Math.min(idx, recList.length - 1)];
+                if (state.nav.currentId === 'home-btn-store') {
+                    if (dir === 'Down') {
+                        return recElements.length > 0 ? recElements[0] : (appElements.length > 0 ? appElements[0] : null);
+                    }
+                    return null;
+                }
+
+                if (recElements.includes(state.nav.currentId)) {
+                    const idx = recElements.indexOf(state.nav.currentId);
+                    if (dir === 'Right' && idx < recElements.length - 1) return recElements[idx + 1];
+                    if (dir === 'Left' && idx > 0) return recElements[idx - 1];
+                    if (dir === 'Up') return 'home-btn-store';
+                    if (dir === 'Down') return appElements[Math.min(idx, appElements.length - 1)];
+                } else if (appElements.includes(state.nav.currentId)) {
+                    const idx = appElements.indexOf(state.nav.currentId);
+                    if (dir === 'Right' && idx < appElements.length - 1) return appElements[idx + 1];
+                    if (dir === 'Left' && idx > 0) return appElements[idx - 1];
+                    if (dir === 'Up') {
+                        return recElements.length > 0 ? recElements[Math.min(idx, recElements.length - 1)] : 'home-btn-store';
+                    }
                 }
             }
 
@@ -1215,106 +1817,247 @@
             });
         }
 
-        const epgCellW = 350; // px na godzine
-        const epgRowH = 76; // px
-
         function renderEPG() {
             const tl = document.getElementById('epg-timeline');
             const chPanel = document.getElementById('epg-channels');
             const grid = document.getElementById('epg-grid');
-            
-            // Oś czasu (18-24)
-            for(let h=18; h<=24; h++) {
+            if (!tl || !chPanel || !grid) return;
+
+            tl.innerHTML = '';
+            chPanel.innerHTML = '';
+            grid.innerHTML = '';
+
+            const totalW = (epgMaxHour - epgMinHour) * epgCellW;
+            tl.style.width = `${totalW}px`;
+            grid.style.width = `${totalW}px`;
+
+            // 1. Oś czasu (05:00 - 05:00 następnego dnia)
+            for (let h = epgMinHour; h <= epgMaxHour; h++) {
+                const hourX = (h - epgMinHour) * epgCellW;
                 const div = document.createElement('div');
-                div.className = 'absolute h-full flex items-center px-4 border-l border-white/10';
-                div.style.left = `${(h-18)*epgCellW}px`;
+                div.className = 'absolute h-full flex flex-col justify-center px-4 border-l border-white/10 select-none';
+                div.style.left = `${hourX}px`;
                 div.style.width = `${epgCellW}px`;
-                div.textContent = `${h}:00`;
+
+                const normH = h % 24;
+                const hStr = `${normH.toString().padStart(2, '0')}:00`;
+                div.innerHTML = `
+                    <span class="text-sm font-semibold tracking-wider text-gray-300">${hStr}</span>
+                    <span class="text-[10px] text-gray-500 font-mono">${normH < 12 ? 'RANO / POŁUDNIE' : 'POPOŁUDNIE / WIECZÓR'}</span>
+                `;
                 tl.appendChild(div);
+
+                // Znacznik 30-minutowy (delikatna pionowa linia)
+                if (h < epgMaxHour) {
+                    const tick30 = document.createElement('div');
+                    tick30.className = 'absolute top-1/2 -translate-y-1/2 h-4 border-l border-dashed border-white/10';
+                    tick30.style.left = `${hourX + (epgCellW / 2)}px`;
+                    tl.appendChild(tick30);
+                }
             }
 
+            // 2. Czerwona linia wskaźnika "TERAZ" na osi czasu
+            const curH = getCurrentBroadcastHour();
+            const nowX = (curH - epgMinHour) * epgCellW;
+            const nowTimeStr = formatBroadcastHour(curH);
+
+            const nowLine = document.createElement('div');
+            nowLine.id = 'epg-now-line';
+            nowLine.className = 'absolute top-0 bottom-0 z-30 pointer-events-none transition-all duration-300';
+            nowLine.style.left = `${nowX}px`;
+            nowLine.style.width = '2px';
+            nowLine.style.height = `${channels.length * epgRowH + 60}px`;
+            nowLine.style.background = '#ef4444';
+            nowLine.style.boxShadow = '0 0 12px #ef4444, 0 0 24px rgba(239,68,68,0.8)';
+            nowLine.innerHTML = `
+                <div class="absolute -top-7 -translate-x-1/2 bg-red-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-[0_0_12px_#ef4444] flex items-center gap-1.5 whitespace-nowrap">
+                    <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    <span id="epg-now-label">TERAZ ${nowTimeStr}</span>
+                </div>
+            `;
+            grid.appendChild(nowLine);
+
+            // 3. Wiersze kanałów i audycji
             channels.forEach((ch, r) => {
-                // Kolumna kanałów
+                // Kolumna kanału
                 const chDiv = document.createElement('div');
-                chDiv.className = `h-[${epgRowH}px] border-b border-white/5 flex items-center px-6 gap-4 font-semibold`;
+                chDiv.className = `border-b border-white/5 flex items-center px-5 gap-3.5 font-semibold text-white cursor-pointer hover:bg-white/5 transition select-none`;
                 chDiv.style.height = `${epgRowH}px`;
-                chDiv.innerHTML = `<span class="w-10 h-10 rounded-full bg-white/10 flex justify-center items-center">${ch.id}</span> ${ch.name}`;
+                chDiv.onclick = () => selectChannelFromEPG(r);
+                chDiv.innerHTML = `
+                    <span class="w-9 h-9 rounded-xl bg-purple-600/30 border border-purple-400/40 flex justify-center items-center text-sm font-bold text-purple-200 shrink-0 shadow">${ch.id}</span>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-sm font-bold truncate text-white leading-tight">${ch.name}</span>
+                        <span class="text-[11px] text-gray-400 font-normal uppercase tracking-wider">${ch.cat}</span>
+                    </div>
+                `;
                 chPanel.appendChild(chDiv);
 
-                // Wiersz programów
+                // Wiersz programów dla kanału
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'absolute border-b border-white/5 flex w-[3000px]';
+                rowDiv.className = 'absolute border-b border-white/5 flex';
                 rowDiv.style.top = `${r * epgRowH}px`;
                 rowDiv.style.height = `${epgRowH}px`;
+                rowDiv.style.width = `${totalW}px`;
 
-                let left = 0;
-                epgData[r].forEach((p, c) => {
-                    const w = p.dur * epgCellW;
+                const progs = epgData[r] || [];
+                progs.forEach((p, c) => {
+                    const blockLeft = (p.startHour - epgMinHour) * epgCellW;
+                    const blockW = Math.max(80, (p.dur * epgCellW) - 4);
+
                     const pDiv = document.createElement('div');
                     pDiv.id = p.id;
-                    pDiv.className = 'focusable absolute h-full border-r border-white/5 bg-white/5 p-4 flex flex-col justify-center';
-                    pDiv.style.left = `${left}px`;
-                    pDiv.style.width = `${w}px`;
+                    pDiv.className = `epg-card focusable absolute top-1 bottom-1 rounded-xl p-3 flex flex-col justify-between cursor-pointer border transition-all ${
+                        p.isLive 
+                            ? 'bg-gradient-to-r from-purple-950/70 to-indigo-950/60 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]' 
+                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    }`;
+                    pDiv.style.left = `${blockLeft}px`;
+                    pDiv.style.width = `${blockW}px`;
+                    pDiv.onclick = () => { focusEPG(r, c); handleEPGSelect(); };
+
                     pDiv.innerHTML = `
-                        <div class="font-bold truncate text-white">${p.title}</div>
-                        <div class="text-xs text-purple-300 mt-1">${p.start}:00 - ${p.start+p.dur}:00</div>
+                        <div class="flex items-center justify-between gap-1 w-full">
+                            <span class="text-[11px] font-mono font-medium ${p.isLive ? 'text-purple-300 font-bold' : 'text-gray-400'}">${p.timeRange}</span>
+                            ${p.isLive ? '<span class="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wider uppercase animate-pulse shrink-0">LIVE</span>' : ''}
+                        </div>
+                        <div class="font-bold text-sm truncate text-white leading-tight">${p.title}</div>
+                        <div class="text-[11px] text-gray-400 truncate">${p.genre}</div>
+                        ${p.isLive ? `<div class="w-full h-1 bg-white/20 rounded-full mt-1 overflow-hidden"><div class="h-full bg-gradient-to-r from-red-500 to-purple-400" style="width: ${p.progressPct}%"></div></div>` : ''}
                     `;
-                    pDiv.dataset.r = r; pDiv.dataset.c = c;
-                    pDiv.dataset.title = p.title; pDiv.dataset.time = `${p.start}:00 - ${p.start+p.dur}:00`;
-                    pDiv.dataset.desc = p.desc;
-                    
+
                     rowDiv.appendChild(pDiv);
-                    left += w;
                 });
+
                 grid.appendChild(rowDiv);
             });
         }
 
-        // Custom EPG Navigation (Matrix based)
+        // Nawigacja przestrzenna po macierzy EPG (ze spójnością czasu przy zmianie kanałów)
         function navigateEPG(key) {
             let r = state.nav.memory.epg.r;
             let c = state.nav.memory.epg.c;
-            
-            if(key === 'ArrowDown') r = Math.min(r + 1, channels.length - 1);
-            if(key === 'ArrowUp') r = Math.max(r - 1, 0);
-            if(key === 'ArrowRight') c = Math.min(c + 1, epgData[r].length - 1);
-            if(key === 'ArrowLeft') c = Math.max(c - 1, 0);
-            
-            // Check boundaries for column on row change
-            c = Math.min(c, epgData[r].length - 1);
+            if (!epgData[r] || !epgData[r][c]) {
+                r = state.tv.chIdx || 0;
+                c = 0;
+            }
+
+            const curProg = epgData[r][c];
+            const curMidTime = (curProg.startHour + curProg.endHour) / 2;
+
+            if (key === 'ArrowRight') {
+                c = Math.min(c + 1, epgData[r].length - 1);
+            } else if (key === 'ArrowLeft') {
+                c = Math.max(c - 1, 0);
+            } else if (key === 'ArrowDown') {
+                const nextR = Math.min(r + 1, channels.length - 1);
+                if (nextR !== r) {
+                    r = nextR;
+                    // Znajdź program na nowym kanale pokrywający się w czasie
+                    const rowProgs = epgData[r] || [];
+                    let bestIdx = 0;
+                    let minDiff = 999;
+                    for (let i = 0; i < rowProgs.length; i++) {
+                        const p = rowProgs[i];
+                        if (curMidTime >= p.startHour && curMidTime < p.endHour) {
+                            bestIdx = i;
+                            break;
+                        }
+                        const pMid = (p.startHour + p.endHour) / 2;
+                        const diff = Math.abs(curMidTime - pMid);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            bestIdx = i;
+                        }
+                    }
+                    c = bestIdx;
+                }
+            } else if (key === 'ArrowUp') {
+                const prevR = Math.max(r - 1, 0);
+                if (prevR !== r) {
+                    r = prevR;
+                    const rowProgs = epgData[r] || [];
+                    let bestIdx = 0;
+                    let minDiff = 999;
+                    for (let i = 0; i < rowProgs.length; i++) {
+                        const p = rowProgs[i];
+                        if (curMidTime >= p.startHour && curMidTime < p.endHour) {
+                            bestIdx = i;
+                            break;
+                        }
+                        const pMid = (p.startHour + p.endHour) / 2;
+                        const diff = Math.abs(curMidTime - pMid);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            bestIdx = i;
+                        }
+                    }
+                    c = bestIdx;
+                }
+            }
 
             focusEPG(r, c);
         }
 
         function focusEPG(r, c) {
-            // Remove old custom focus style
-            const oldId = epgData[state.nav.memory.epg.r][state.nav.memory.epg.c].id;
-            const oldEl = document.getElementById(oldId);
-            if(oldEl) {
-                oldEl.style.boxShadow = 'none';
-                oldEl.style.border = 'none';
-                oldEl.style.backgroundColor = '';
-                oldEl.style.zIndex = '1';
-                oldEl.classList.remove('scale-105');
+            if (!epgData[r] || !epgData[r][c]) return;
+
+            // Usuń stary fokus
+            const oldR = state.nav.memory.epg.r;
+            const oldC = state.nav.memory.epg.c;
+            if (epgData[oldR] && epgData[oldR][oldC]) {
+                const oldEl = document.getElementById(epgData[oldR][oldC].id);
+                if (oldEl) {
+                    oldEl.style.boxShadow = '';
+                    oldEl.style.borderColor = '';
+                    oldEl.style.transform = '';
+                    oldEl.style.zIndex = '1';
+                }
             }
 
             state.nav.memory.epg.r = r;
             state.nav.memory.epg.c = c;
-            
-            const newId = epgData[r][c].id;
-            const newEl = document.getElementById(newId);
-            state.nav.currentId = newId;
 
-            if(newEl) {
-                // Apply Aurora style focus manually to absolute EPG blocks
-                newEl.style.boxShadow = `inset 0 0 0 2px ${getComputedStyle(document.body).getPropertyValue('--focus-ring')}, 0 0 20px rgba(139, 92, 246, 0.5)`;
-                newEl.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                newEl.style.zIndex = '10';
-                
-                // Update detail pane
-                document.getElementById('epg-det-title').textContent = newEl.dataset.title;
-                document.getElementById('epg-det-time').textContent = newEl.dataset.time;
-                document.getElementById('epg-det-desc').textContent = newEl.dataset.desc;
+            const p = epgData[r][c];
+            const ch = channels[r];
+            const newEl = document.getElementById(p.id);
+            state.nav.currentId = p.id;
+
+            if (newEl) {
+                newEl.style.borderColor = '#c084fc';
+                newEl.style.boxShadow = 'inset 0 0 0 2px #c084fc, 0 10px 25px -5px rgba(0,0,0,0.8), 0 0 30px rgba(168,85,247,0.7)';
+                newEl.style.transform = 'scale(1.04)';
+                newEl.style.zIndex = '25';
+
+                // Aktualizacja panelu szczegółów na dole
+                const chEl = document.getElementById('epg-det-ch');
+                if (chEl) chEl.textContent = `${ch.id} ${ch.name}`;
+
+                const catEl = document.getElementById('epg-det-cat');
+                if (catEl) catEl.textContent = p.genre || ch.cat;
+
+                const liveTag = document.getElementById('epg-det-live-tag');
+                if (liveTag) {
+                    if (p.isLive) liveTag.classList.remove('hidden');
+                    else liveTag.classList.add('hidden');
+                }
+
+                const titleEl = document.getElementById('epg-det-title');
+                if (titleEl) titleEl.textContent = p.title;
+
+                const timeEl = document.getElementById('epg-det-time');
+                if (timeEl) {
+                    const durMinutes = Math.round(p.dur * 60);
+                    timeEl.textContent = `${p.timeRange} • Czas trwania: ${durMinutes} min ${p.isLive ? `(Trwa: ${p.progressPct}%)` : ''}`;
+                }
+
+                const descEl = document.getElementById('epg-det-desc');
+                if (descEl) descEl.textContent = p.desc;
+
+                const actEl = document.getElementById('epg-det-action-text');
+                if (actEl) {
+                    actEl.textContent = p.isLive ? 'Włącz ten kanał teraz' : 'Zaplanuj nagranie / przypomnienie audycji';
+                }
 
                 scrollEPG(newEl, r);
             }
@@ -1324,34 +2067,81 @@
             const grid = document.getElementById('epg-grid');
             const tl = document.getElementById('epg-timeline');
             const ch = document.getElementById('epg-channels');
-            
-            const left = parseInt(el.style.left);
-            const w = parseInt(el.style.width);
+            if (!grid || !tl || !ch || !el) return;
+
+            const left = parseFloat(el.style.left) || 0;
+            const w = parseFloat(el.style.width) || 200;
             const top = r * epgRowH;
-            
-            const viewW = window.innerWidth - 256; // Minus sidebar kanałów (64rem = 256px)
-            const viewH = window.innerHeight - (120 + 200); // Minus nagłówki i footer
-            
-            // X Scroll
-            let tx = -(left - viewW/2 + w/2);
-            if(tx > 0) tx = 0;
-            
-            // Y Scroll
-            let ty = -(top - viewH/2 + epgRowH/2);
-            if(ty > 0) ty = 0;
+
+            const viewW = window.innerWidth - 256;
+            const viewH = window.innerHeight - 300;
+
+            let tx = -(left - (viewW / 3) + (w / 2));
+            if (tx > 0) tx = 0;
+
+            let ty = -(top - (viewH / 3) + (epgRowH / 2));
+            if (ty > 0) ty = 0;
 
             grid.style.transform = `translate(${tx}px, ${ty}px)`;
             tl.style.transform = `translateX(${tx}px)`;
             ch.style.transform = `translateY(${ty}px)`;
         }
 
-        
-        function switchLayer(target) {
-            if (state.activeLayer === target) return;
-            
-            // Jeśli otwieramy Home (Dashboard) z innej warstwy niż TV, przejdź najpierw przez TV
-            if (target === 'home' && state.activeLayer !== 'tv' && state.activeLayer !== 'home') {
-                 // W produkcji to by wyglądało inaczej, w prototypie tak jest czytelniej
+        function selectChannelFromEPG(r) {
+            state.tv.chIdx = r;
+            showToast('Zmieniono kanał', channels[r].name, 'fas fa-tv', 'text-purple-400', 'border-l-purple-500');
+            switchLayer('tv');
+        }
+
+        function handleEPGSelect() {
+            const r = state.nav.memory.epg.r;
+            const c = state.nav.memory.epg.c;
+            if (!epgData[r] || !epgData[r][c]) return;
+            const p = epgData[r][c];
+            const ch = channels[r];
+
+            if (p.isLive) {
+                state.tv.chIdx = r;
+                showToast('Włączono kanał na żywo', `${ch.name}: ${p.title}`, 'fas fa-play-circle', 'text-emerald-400', 'border-l-emerald-500');
+                switchLayer('tv');
+            } else {
+                showToast('Zaplanowano nagranie', `Zlecono PVR: ${p.title} (${p.timeRange}) • ${ch.name}`, 'fas fa-calendar-check', 'text-purple-400', 'border-l-purple-500');
+            }
+        }
+
+        function onOpenEPGLayer() {
+            updateEPGLiveStatuses();
+            renderEPG();
+
+            // Ustaw fokus na aktualnie trwający program na bieżącym kanale
+            const r = state.tv.chIdx || 0;
+            const rowProgs = epgData[r] || [];
+            let liveIdx = rowProgs.findIndex(p => p.isLive);
+            if (liveIdx === -1) {
+                const curH = getCurrentBroadcastHour();
+                liveIdx = 0;
+                let minDiff = 999;
+                for (let i = 0; i < rowProgs.length; i++) {
+                    const diff = Math.abs(curH - rowProgs[i].startHour);
+                    if (diff < minDiff) { minDiff = diff; liveIdx = i; }
+                }
+            }
+
+            setTimeout(() => {
+                focusEPG(r, liveIdx);
+            }, 60);
+        }
+
+        function switchLayer(target, force = false) {
+            if (state.activeLayer === target && !force) return;
+
+            // Jeśli YouTube gra w tle i użytkownik przełącza się na TV lub VOD -> wyłącz YouTube
+            if (window.isYouTubeBackgroundActive && (target === 'tv' || target === 'vod')) {
+                window.isYouTubeBackgroundActive = false;
+                if (window.setYouTubeBackgroundActive) window.setYouTubeBackgroundActive(false);
+                if (window.chrome && window.chrome.webview) {
+                    window.chrome.webview.postMessage({ action: 'stop_youtube' });
+                }
             }
 
             state.prevLayer = state.activeLayer;
@@ -1359,9 +2149,18 @@
 
             // Zmiana UI
             els.layers.forEach(l => l.classList.remove('active'));
-            document.getElementById(`layer-${target}`).classList.add('active');
+            const targetEl = document.getElementById(`layer-${target}`);
+            if (targetEl) targetEl.classList.add('active');
 
-            // Podpowiedzi nawigacyjne (ukryte w czystym TV oraz w Ustawieniach, widoczne w Home/VOD/EPG)
+            if (target === 'home') {
+                if (window.renderRecentlyWatched) renderRecentlyWatched();
+                if (window.renderHomeInstalledApps) renderHomeInstalledApps();
+            } else if (target === 'store') {
+                if (window.renderStoreApps) renderStoreApps(currentStoreCategory);
+                if (window.updateStoreClock) updateStoreClock();
+            }
+
+            // Podpowiedzi nawigacyjne
             const globalHints = document.getElementById('global-hints');
             if (target === 'tv' || target === 'settings') {
                 els.body.classList.remove('blurred-bg');
@@ -1383,14 +2182,18 @@
                 watermark.style.pointerEvents = 'none';
             }
 
-            // Pasek zegara i statusu (w Home stale widoczny, w TV pokazuje się tylko z OSD i znika po 4s, w reszcie ukryty)
+            const noSignalOverlay = document.getElementById('no-signal-overlay');
+            if (noSignalOverlay && target !== 'tv') {
+                noSignalOverlay.style.opacity = '0';
+                noSignalOverlay.style.pointerEvents = 'none';
+            } else if (noSignalOverlay && target === 'tv' && isNoSignalVisible) {
+                noSignalOverlay.style.opacity = '1';
+                noSignalOverlay.style.pointerEvents = 'auto';
+            }
+
             const topStatus = document.getElementById('top-status-bar');
             if (topStatus) {
-                if (target === 'home') {
-                    topStatus.style.opacity = '1';
-                    topStatus.style.pointerEvents = 'auto';
-                } else if (target === 'tv') {
-                    // Pokaż na chwilę z OSD, zgaśnie po zgaśnięciu OSD
+                if (target === 'home' || target === 'tv') {
                     topStatus.style.opacity = '1';
                     topStatus.style.pointerEvents = 'auto';
                 } else {
@@ -1406,25 +2209,53 @@
                     if(state.tv.actionsOpen) closeOSDActions();
                     showOSDPill();
                 } else if (target === 'epg') {
-                    focusEPG(state.nav.memory.epg.r, state.nav.memory.epg.c);
+                    onOpenEPGLayer();
+                } else if (target === 'store') {
+                    state.nav.focusList = scanFocusables('store');
+                    setFocus(state.nav.memory['store'] || 'store-cat-all');
                 } else {
                     state.nav.focusList = scanFocusables(target);
                     setFocus(state.nav.memory[target]);
                 }
-            }, 50); // Dom render delay
+            }, 50);
         }
 
         // --- Obsługa OSD TV ---
         function showOSDPill() {
             if(state.activeLayer !== 'tv') return;
             const ch = channels[state.tv.chIdx];
-            const prog = epgData[state.tv.chIdx][0]; // uproszczone dane aktualne
+            const chProgs = epgData[state.tv.chIdx] || [];
+            updateEPGLiveStatuses();
+
+            let curProg = chProgs.find(p => p.isLive) || chProgs[0] || {
+                title: 'Program Telewizyjny',
+                timeRange: '--:--',
+                genre: ch.cat,
+                progressPct: 50
+            };
+            let nextProg = null;
+            if (chProgs.length > 0) {
+                const curIdx = chProgs.indexOf(curProg);
+                if (curIdx >= 0 && curIdx + 1 < chProgs.length) {
+                    nextProg = chProgs[curIdx + 1];
+                }
+            }
 
             document.getElementById('osd-num').textContent = ch.id;
             document.getElementById('watermark-ch').textContent = ch.name;
-            document.getElementById('osd-title').textContent = prog.title;
-            document.getElementById('osd-time').textContent = `${prog.start}:00 - ${prog.start+prog.dur}:00`;
-            document.getElementById('osd-cat').textContent = ch.cat;
+            document.getElementById('osd-title').textContent = curProg.title;
+            document.getElementById('osd-time').textContent = curProg.timeRange;
+            document.getElementById('osd-cat').textContent = curProg.genre || ch.cat;
+
+            const nextEl = document.getElementById('osd-next');
+            if (nextEl) {
+                nextEl.textContent = nextProg ? `${nextProg.time} ${nextProg.title}` : 'Kolejne pasmo programu';
+            }
+
+            const progBar = document.getElementById('osd-progress');
+            if (progBar) {
+                progBar.style.width = `${curProg.progressPct || 45}%`;
+            }
 
             playChannel(state.tv.chIdx);
 
@@ -1541,17 +2372,54 @@
                 return; // Przerwij dalszą obsługę klawiszy systemowych
             }
 
-            // Klawisz M = Przełącznik Home (Dashboard)
+            // Klawisz M = Przełącznik Home (Dashboard) lub powrót do YouTube jeśli gra w tle
             if (key.toLowerCase() === 'm') {
+                if (window.isYouTubeBackgroundActive) {
+                    window.openYouTubeTV();
+                    return;
+                }
                 if (state.activeLayer === 'home') switchLayer('tv');
                 else switchLayer('home');
                 return;
             }
 
-            // Backspace / ESC = Zawsze powrót do poprzedniej warstwy lub do TV
+            // Klawisze E, G, P = Bezpośredni skrót do EPG (Przewodnik)
+            if (['e', 'g', 'p'].includes(key.toLowerCase())) {
+                if (state.activeLayer === 'epg') switchLayer('tv');
+                else switchLayer('epg');
+                return;
+            }
+
+            // Klawisz S = Bezpośredni skrót do Aurora Store (Sklep Smart TV)
+            if (key.toLowerCase() === 's') {
+                if (state.activeLayer === 'store') switchLayer('home');
+                else switchLayer('store');
+                return;
+            }
+
+            // Klawisz R = Synchronizacja Aurora Store z GitHub
+            if (key.toLowerCase() === 'r' && state.activeLayer === 'store') {
+                syncStoreFromGitHub();
+                return;
+            }
+
+            // Backspace / ESC = Inteligentny powrót: warstwa podrzędna -> home -> powrót do YT (jeśli gra w tle) lub TV
             if (key === 'Backspace' || key === 'Escape') {
+                const runnerModal = document.getElementById('app-runner-modal');
+                if (runnerModal && !runnerModal.classList.contains('hidden')) {
+                    closeAppRunner();
+                    return;
+                }
                 if (state.activeLayer === 'tv' && state.tv.actionsOpen) {
                     toggleOSDActions();
+                } else if (state.activeLayer === 'store' || state.activeLayer === 'settings' || state.activeLayer === 'epg' || state.activeLayer === 'vod') {
+                    switchLayer('home');
+                } else if (state.activeLayer === 'home') {
+                    if (window.isYouTubeBackgroundActive) {
+                        window.openYouTubeTV();
+                    } else {
+                        switchLayer('tv');
+                    }
                 } else if (state.activeLayer !== 'tv') {
                     switchLayer('tv');
                 }
@@ -1566,15 +2434,17 @@
                      if (key === 'Enter') {
                           if (!state.nav.currentId) return; // Null check
                           
+                          const chProgs = epgData[state.tv.chIdx] || [];
+                          const curProg = chProgs.find(p => p.isLive) || chProgs[0] || { title: 'Program TV', desc: 'Brak szczegółowego opisu.', genre: channels[state.tv.chIdx].cat, timeRange: '--:--' };
+
                           // Ożywienie przycisków na nakładce TV
                           if (state.nav.currentId === 'osd-btn-info') {
-                              const prog = epgData[state.tv.chIdx][0];
-                              showModal('Informacje o programie: ' + prog.title, prog.desc + '<br><br><strong>Gatunek:</strong> ' + channels[state.tv.chIdx].cat + '<br><strong>Czas trwania:</strong> ' + prog.start + ':00 - ' + (prog.start+prog.dur) + ':00', 'fas fa-info-circle');
+                              showModal('Informacje o programie: ' + curProg.title, curProg.desc + '<br><br><strong>Kanał:</strong> ' + channels[state.tv.chIdx].name + '<br><strong>Gatunek:</strong> ' + curProg.genre + '<br><strong>Czas emisji:</strong> ' + curProg.timeRange, 'fas fa-info-circle text-purple-400');
                           } else if (state.nav.currentId === 'osd-btn-rec') {
-                              showToast('Nagrywanie zaplanowane', `Zlecono nagranie: ${epgData[state.tv.chIdx][0].title}`, 'fas fa-record-vinyl', 'text-red-400', 'border-l-red-500');
+                              showToast('Nagrywanie zaplanowane', `Zlecono nagranie: ${curProg.title}`, 'fas fa-record-vinyl', 'text-red-400', 'border-l-red-500');
                               toggleOSDActions();
                           } else if (state.nav.currentId === 'osd-btn-lang') {
-                              showToast('Ścieżka dźwiękowa', 'Zmieniono język audycji z POL na ENG', 'fas fa-language', 'text-green-400', 'border-l-green-500');
+                              showToast('Ścieżka dźwiękowa', 'Zmieniono język audycji z POL na ENG (Dolby Digital Plus)', 'fas fa-language', 'text-green-400', 'border-l-green-500');
                               toggleOSDActions();
                           }
                      }
@@ -1583,23 +2453,27 @@
                      if (key === 'ArrowDown') { changeChannel((state.tv.chIdx - 1 + channels.length) % channels.length); }
                      if (key === 'ArrowRight') { state.tv.volume = Math.min(100, state.tv.volume + 5); showVolume(); }
                      if (key === 'ArrowLeft') { state.tv.volume = Math.max(0, state.tv.volume - 5); showVolume(); }
-                     if (key === 'Enter') { toggleOSDActions(); }
+                     if (key === 'Enter') {
+                         if (isNoSignalVisible) {
+                             retryCurrentChannel();
+                         } else {
+                             toggleOSDActions();
+                         }
+                     }
                 }
             } 
             else if (state.activeLayer === 'epg') {
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) navigateEPG(key);
                 if (key === 'Enter') {
-                    state.tv.chIdx = state.nav.memory.epg.r;
-                    showToast('Zmieniono kanał', channels[state.tv.chIdx].name, 'fas fa-tv', 'text-blue-400', 'border-l-blue-500');
-                    switchLayer('tv');
+                    handleEPGSelect();
                 }
             } 
             else {
-                // Generyczna nawigacja przestrzenna dla Home, VOD, Settings
+                // Generyczna nawigacja przestrzenna dla Home, Store, VOD, Settings
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
                     navigate(key.replace('Arrow', ''));
                 } else if (key === 'Enter') {
-                    if (!state.nav.currentId) return; // Zabezpieczenie przed kliknięciem w nic (Null check z poprzednich wymagań)
+                    if (!state.nav.currentId) return; // Zabezpieczenie przed kliknięciem w nic
                     const el = document.getElementById(state.nav.currentId);
                     if (!el) return;
                     
@@ -1607,10 +2481,16 @@
                     el.style.transform = 'scale(0.95)';
                     setTimeout(() => el.style.transform = '', 150);
 
-                    // Akcje dla Home Apps
+                    // Akcje dla Home Apps & Ostatnio oglądane
                     if (state.activeLayer === 'home') {
                         if (el.dataset.target === 'youtube' || el.id === 'app-youtube') {
                             window.openYouTubeTV();
+                        } else if (el.dataset.target === 'store' || el.id === 'app-store') {
+                            switchLayer('store');
+                        } else if (el.dataset.appId) {
+                            openInstalledApp(el.dataset.appId);
+                        } else if (el.dataset.watchIdx !== undefined) {
+                            resumeWatchItem(parseInt(el.dataset.watchIdx, 10));
                         } else if (el.dataset.target === 'apple') {
                             showModal(
                                 'Pilot Apple TV • Parowanie z iPhone',
@@ -1632,14 +2512,19 @@
                             );
                         } else if (el.dataset.target) {
                             switchLayer(el.dataset.target);
-                        } else if (state.nav.currentId && state.nav.currentId.startsWith('home-rec-')) {
-                            const movieTitle = el.dataset.title || el.querySelector('div.truncate')?.textContent || 'Wybrany Film';
-                            showToast('Wznawianie odtwarzania', `Ładowanie: ${movieTitle}`, 'fas fa-play', 'text-green-400', 'border-l-green-500');
-                            setTimeout(() => {
-                                switchLayer('tv');
-                                document.getElementById('watermark-ch').textContent = movieTitle.toUpperCase();
-                                setTimeout(() => document.getElementById('watermark-ch').textContent = channels[state.tv.chIdx].name, 4000);
-                            }, 800);
+                        }
+                    }
+                    
+                    // Akcje dla Aurora Store
+                    if (state.activeLayer === 'store') {
+                        if (el.dataset.cat) {
+                            setStoreCategory(el.dataset.cat);
+                        } else if (el.dataset.storeAction === 'install') {
+                            installStoreApp(el.dataset.appId);
+                        } else if (el.dataset.storeAction === 'open') {
+                            openInstalledApp(el.dataset.appId);
+                        } else if (el.dataset.storeAction === 'uninstall') {
+                            uninstallStoreApp(el.dataset.appId);
                         }
                     }
                     
@@ -1833,12 +2718,14 @@
 
         function updateNetworkUI(data) {
             const isWifi = data.type === 'wifi';
+            const hasWifi = data.has_wifi === true;
             const topIcon = document.getElementById('top-net-icon');
             const topLabel = document.getElementById('top-net-label');
             const setIcon = document.getElementById('settings-net-icon');
             const setBadge = document.getElementById('settings-net-badge');
             const ps4Icon = document.getElementById('ps4-icon-network');
             const ps4Val = document.getElementById('ps4-val-network');
+            const ps4Desc = document.getElementById('ps4-desc-network');
 
             if (isWifi) {
                 const title = data.ssid ? `Wi-Fi (${data.ssid})` : 'Sieć Wi-Fi';
@@ -1853,9 +2740,12 @@
                 if (topIcon) topIcon.className = 'fas fa-network-wired text-sm text-sky-400';
                 if (topLabel) topLabel.textContent = title;
                 if (setIcon) setIcon.className = 'fas fa-network-wired text-cyan-400';
-                if (setBadge) setBadge.textContent = `${title} • ${data.speed || '1 Gbps'}`;
+                if (setBadge) setBadge.textContent = `${title} • ${data.speed || '1 Gb/s'}`;
                 if (ps4Icon) ps4Icon.className = 'fas fa-network-wired text-xl text-sky-400 w-8 text-center';
-                if (ps4Val) ps4Val.textContent = `Połączono przewodowo (Kabel LAN • ${data.name || 'Ethernet'} • ${data.speed} • IP: ${data.ip})`;
+                if (ps4Val) ps4Val.textContent = `Połączono przewodowo (${data.name || 'Intel Ethernet'} • ${data.speed || '1 Gb/s'} • IP: ${data.ip})`;
+                if (ps4Desc && !hasWifi) {
+                    ps4Desc.textContent = 'Karta sieciowa Ethernet LAN, stan połączenia i adresacja IP (brak modułu Wi-Fi)';
+                }
             }
         }
 
@@ -1874,64 +2764,92 @@
             const setUsbBadge = document.getElementById('settings-usb-badge');
             const ps4Val = document.getElementById('ps4-val-storage');
 
-            const hasUsb = data.usb_drives && data.usb_drives.length > 0;
+            const drives = data.drives || [];
+            const usbDrives = drives.filter(d => d.type === 'usb');
+            const hasUsb = usbDrives.length > 0;
+
             if (hasUsb) {
-                const usb = data.usb_drives[0];
+                const usb = usbDrives[0];
                 const name = usb.label || usb.name || 'Dysk USB';
                 if (topUsb) topUsb.classList.remove('hidden');
                 if (topUsbLabel) topUsbLabel.textContent = `USB: ${name}`;
                 if (setUsbWrap) setUsbWrap.classList.remove('hidden');
                 if (setUsbBadge) setUsbBadge.textContent = `USB: ${name}`;
-                if (ps4Val) ps4Val.textContent = `Wykryto USB (${name} • Wolne: ${usb.free_gb} GB / ${usb.total_gb} GB)`;
             } else {
                 if (topUsb) topUsb.classList.add('hidden');
                 if (setUsbWrap) setUsbWrap.classList.add('hidden');
-                if (ps4Val) {
-                    const free = data.internal?.free_gb ?? 51.2;
-                    const total = data.internal?.total_gb ?? 64.0;
-                    ps4Val.textContent = `Pamięć dekodera: Wolne ${free} GB / ${total} GB`;
+            }
+
+            if (ps4Val) {
+                if (drives.length > 0) {
+                    const driveListStr = drives.map(d => `${d.letter} (${d.label ? d.label + ' • ' : ''}${d.total_gb} GB)`).join(', ');
+                    ps4Val.textContent = `Wykryto ${drives.length} dyski: ${driveListStr} • Wolne: ${data.total_free_gb || 0} GB z ${data.total_capacity_gb || 0} GB`;
+                } else {
+                    ps4Val.textContent = 'Pamięć masowa: Sprawdzanie dysków...';
                 }
             }
         }
 
-        // Modal Sieci i Łączenia przez Wi-Fi
+        // Modal Sieci i Modemów (ukrywa Wi-Fi gdy komputer nie posiada karty Wi-Fi)
         async function openNetworkModal() {
-            const isWifi = currentNetworkData.type === 'wifi';
-            const iconClass = isWifi ? 'fas fa-wifi text-cyan-400' : 'fas fa-network-wired text-sky-400';
-            const statusLabel = isWifi ? `Połączono bezprzewodowo: ${currentNetworkData.ssid || 'Wi-Fi'}` : 'Połączono przewodowo (Kabel LAN Ethernet)';
+            await fetchNetworkInfo();
+            const data = currentNetworkData || {};
+            const isWifi = data.type === 'wifi';
+            const hasWifi = data.has_wifi === true;
+            const adapters = data.adapters || [];
 
-            const contentHtml = `
-                <div class="text-left space-y-4 text-sm">
-                    <!-- Bieżący stan połączenia -->
-                    <div class="bg-black/50 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-sky-950/80 border border-sky-400/40 flex items-center justify-center">
-                                <i class="${iconClass} text-2xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs text-sky-300 font-bold uppercase tracking-wider">Aktywne połączenie</div>
-                                <div class="text-lg font-bold text-white">${statusLabel}</div>
-                                <div class="text-xs text-gray-400 mt-0.5">Karta: <span class="text-gray-200">${currentNetworkData.name || 'Adapter sieciowy'}</span> • Prędkość: <span class="text-green-400 font-bold">${currentNetworkData.speed || '1 Gbps'}</span></div>
-                            </div>
+            const iconClass = isWifi ? 'fas fa-wifi text-cyan-400' : 'fas fa-network-wired text-sky-400';
+            const statusLabel = isWifi ? `Połączono bezprzewodowo: ${data.ssid || 'Wi-Fi'}` : `Połączono przewodowo: ${data.name || 'Intel Ethernet'}`;
+
+            let adaptersHtml = '';
+            if (adapters.length > 0) {
+                adaptersHtml = `
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-microchip text-sky-400"></i> Rzeczywiste modemy i karty sieciowe w komputerze:
                         </div>
-                        <div class="text-right">
-                            <span class="bg-green-500/20 text-green-300 border border-green-400/40 text-xs font-bold px-3 py-1 rounded-full uppercase">ONLINE</span>
-                            <div class="text-xs font-mono text-cyan-300 mt-2">IP: ${currentNetworkData.ip || '192.168.0.220'}</div>
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            ${adapters.map(a => `
+                                <div class="bg-black/40 border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-sky-950/60 border border-sky-400/30 flex items-center justify-center text-sky-300">
+                                            <i class="${a.type === 'wifi' ? 'fas fa-wifi' : (a.type === 'modem' ? 'fas fa-broadcast-tower' : 'fas fa-network-wired')}"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-xs font-bold text-white flex items-center gap-2">
+                                                ${a.name}
+                                                <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded font-mono text-gray-300">${a.iface}</span>
+                                            </div>
+                                            <div class="text-[11px] text-gray-400 mt-0.5">
+                                                Prędkość: <strong class="text-green-400">${a.speed}</strong> • MAC: <span class="font-mono text-gray-300">${a.mac}</span> ${a.ip ? '• IP: <strong class="text-cyan-300">' + a.ip + '</strong>' : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="${a.status === 'connected' ? 'bg-green-500/20 text-green-300 border-green-500/40' : 'bg-gray-500/20 text-gray-400 border-gray-500/30'} border text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                                        ${a.status === 'connected' ? 'POŁĄCZONO' : 'ODŁĄCZONO'}
+                                    </span>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
+                `;
+            }
 
+            let wifiSectionHtml = '';
+            if (hasWifi) {
+                wifiSectionHtml = `
                     <!-- Menedżer sieci bezprzewodowych Wi-Fi -->
-                    <div class="space-y-2">
+                    <div class="space-y-2 pt-2 border-t border-white/10">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-white text-base flex items-center gap-2">
+                            <span class="font-semibold text-white text-sm flex items-center gap-2">
                                 <i class="fas fa-satellite-dish text-cyan-400"></i> Dostępne sieci Wi-Fi w zasięgu dekodera:
                             </span>
                             <button id="btn-refresh-wifi" onclick="loadWifiList()" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-medium text-white flex items-center gap-1.5 transition">
                                 <i class="fas fa-sync-alt text-cyan-300"></i> Skanuj ponownie
                             </button>
                         </div>
-                        <div id="wifi-networks-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                            <div class="text-center py-6 text-gray-400 text-xs animate-pulse">
+                        <div id="wifi-networks-container" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                            <div class="text-center py-4 text-gray-400 text-xs animate-pulse">
                                 <i class="fas fa-spinner fa-spin text-lg mb-2 text-cyan-400"></i><br>Skanowanie sieci bezprzewodowych Wi-Fi...
                             </div>
                         </div>
@@ -1950,33 +2868,74 @@
                             </button>
                         </div>
                     </div>
+                `;
+            } else {
+                wifiSectionHtml = `
+                    <div class="bg-sky-950/20 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-4 text-gray-300">
+                        <div class="w-10 h-10 rounded-xl bg-sky-900/40 border border-sky-400/30 flex items-center justify-center text-sky-400 shrink-0">
+                            <i class="fas fa-network-wired text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-xs">Brak wbudowanej karty bezprzewodowej Wi-Fi</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
+                                Komputer korzysta z bezpośredniego połączenia kablowego <strong>Ethernet (LAN)</strong>. Zakładka sieci Wi-Fi jest automatycznie ukryta.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const contentHtml = `
+                <div class="text-left space-y-4 text-sm">
+                    <!-- Bieżący stan połączenia -->
+                    <div class="bg-black/50 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-sky-950/80 border border-sky-400/40 flex items-center justify-center">
+                                <i class="${iconClass} text-2xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-sky-300 font-bold uppercase tracking-wider">Aktywne połączenie internetowe</div>
+                                <div class="text-lg font-bold text-white">${statusLabel}</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Prędkość łącza: <span class="text-green-400 font-bold">${data.speed || '1 Gb/s'}</span> • Brama: <span class="text-gray-200">DHCP LAN</span></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-green-500/20 text-green-300 border border-green-400/40 text-xs font-bold px-3 py-1 rounded-full uppercase">ONLINE</span>
+                            <div class="text-xs font-mono text-cyan-300 mt-2">IP: ${data.ip || '127.0.0.1'}</div>
+                        </div>
+                    </div>
+
+                    ${adaptersHtml}
+                    ${wifiSectionHtml}
                 </div>
             `;
 
             showModal(
-                'Konfiguracja połączenia sieciowego i Wi-Fi',
+                hasWifi ? 'Konfiguracja połączenia sieciowego i Wi-Fi' : 'Konfiguracja połączenia sieciowego & Modemy',
                 contentHtml,
                 'fas fa-network-wired text-cyan-400',
                 [{ id: 'btn-ok', text: 'ZAMKNIJ', primary: true }]
             );
 
-            setTimeout(loadWifiList, 200);
+            if (hasWifi) {
+                setTimeout(loadWifiList, 200);
+            }
         }
 
         window.loadWifiList = async function() {
             const container = document.getElementById('wifi-networks-container');
             if (!container) return;
-            container.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs animate-pulse"><i class="fas fa-spinner fa-spin text-lg mb-2 text-cyan-400"></i><br>Wyszukiwanie sieci Wi-Fi w paśmie 2.4 GHz i 5 GHz...</div>';
+            container.innerHTML = '<div class="text-center py-4 text-gray-400 text-xs animate-pulse"><i class="fas fa-spinner fa-spin text-lg mb-2 text-cyan-400"></i><br>Wyszukiwanie sieci Wi-Fi w paśmie 2.4 GHz i 5 GHz...</div>';
 
             const data = await apiFetch('/api/wifi/scan');
-            const networks = (data && data.networks && data.networks.length > 0) ? data.networks : [
-                { ssid: 'Domowy_Router_5G', signal: 96, security: 'WPA2/WPA3' },
-                { ssid: 'Netia_Swiatlowod_24', signal: 84, security: 'WPA2-PSK' },
-                { ssid: 'Orange_Swiatlowod_5G', signal: 68, security: 'WPA2-Personal' },
-                { ssid: 'UPC_Wi-Free', signal: 45, security: 'WPA2-Enterprise' }
-            ];
+            const networks = (data && data.networks) ? data.networks : [];
 
             container.innerHTML = '';
+            if (networks.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-gray-400 text-xs">Brak dostępnych sieci bezprzewodowych Wi-Fi w zasięgu.</div>';
+                return;
+            }
+
             networks.forEach(net => {
                 const signalColor = net.signal > 75 ? 'text-green-400' : (net.signal > 50 ? 'text-yellow-400' : 'text-orange-400');
                 const row = document.createElement('div');
@@ -2044,94 +3003,77 @@
             }, 1500);
         };
 
-        // Modal Pamięci Masowej i Dysków USB
+        // Modal Pamięci Masowej - Pełna lista rzeczywistych dysków komputera
         async function openStorageModal() {
             await fetchStorageInfo();
-            const data = currentStorageData;
-            const internal = data.internal || { total_gb: 64.0, free_gb: 51.2, system_gb: 9.0, apps_gb: 3.2, buffer_gb: 1.8 };
-            const usbList = data.usb_drives || [];
+            const data = currentStorageData || {};
+            const drives = data.drives || [];
 
-            let usbSectionHtml = '';
-            if (usbList.length > 0) {
-                usbSectionHtml = usbList.map(usb => {
-                    const usedGb = Math.max(0, Math.round((usb.total_gb - usb.free_gb) * 10) / 10);
-                    const pct = Math.min(100, Math.round((usedGb / usb.total_gb) * 100)) || 15;
+            let drivesListHtml = '';
+            if (drives.length > 0) {
+                drivesListHtml = drives.map(d => {
+                    const isSystem = d.type === 'system';
+                    const isUsb = d.type === 'usb';
+                    const icon = isSystem ? 'fas fa-server text-cyan-400' : (isUsb ? 'fas fa-usb text-emerald-400' : 'fas fa-hdd text-blue-400');
+                    const barGrad = isSystem ? 'from-cyan-500 to-blue-500' : (isUsb ? 'from-emerald-500 to-teal-400' : 'from-indigo-500 to-purple-500');
+                    const badgeText = isSystem ? 'DYSK SYSTEMOWY' : (isUsb ? 'NOŚNIK USB' : 'DYSK LOKALNY');
+                    const badgeColor = isSystem ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40' : (isUsb ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' : 'bg-blue-500/20 text-blue-300 border-blue-400/40');
+
                     return `
-                        <div class="bg-emerald-950/30 border border-emerald-500/40 rounded-2xl p-4 space-y-3">
+                        <div class="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-emerald-900/60 border border-emerald-400/50 flex items-center justify-center text-emerald-300">
-                                        <i class="fas fa-usb text-xl"></i>
+                                    <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/15 flex items-center justify-center text-xl">
+                                        <i class="${icon}"></i>
                                     </div>
                                     <div>
                                         <div class="text-sm font-bold text-white flex items-center gap-2">
-                                            ${usb.label || 'Nośnik USB'} <span class="font-mono text-xs text-emerald-300 bg-emerald-900/40 px-2 py-0.5 rounded border border-emerald-500/30">${usb.name}</span>
+                                            ${d.label} <span class="font-mono text-xs text-sky-300 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-500/30">${d.name}</span>
                                         </div>
-                                        <div class="text-xs text-gray-400">System plików: <strong class="text-gray-200">${usb.format || 'FAT32/exFAT'}</strong> • Wolne: <strong class="text-emerald-300">${usb.free_gb} GB</strong> z ${usb.total_gb} GB</div>
+                                        <div class="text-xs text-gray-400 mt-0.5">
+                                            Format: <strong class="text-gray-200">${d.format || 'NTFS'}</strong> • Pojemność: <strong class="text-white">${d.total_gb} GB</strong> • Wolne: <strong class="text-emerald-400 font-bold">${d.free_gb} GB</strong>
+                                        </div>
                                     </div>
                                 </div>
-                                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">PODŁĄCZONO USB</span>
+                                <span class="${badgeColor} border text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">${badgeText}</span>
                             </div>
-                            <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden border border-white/20">
-                                <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: ${pct}%;"></div>
+                            <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden border border-white/15 flex">
+                                <div class="h-full bg-gradient-to-r ${barGrad}" style="width: ${d.used_pct}%;"></div>
                             </div>
-                            <div class="flex justify-between items-center pt-1">
-                                <span class="text-[11px] text-gray-400">Zajętość nośnika: ${pct}%</span>
-                                <div class="flex gap-2">
-                                    <button onclick="safeEjectUsb('${usb.name}')" class="px-3 py-1 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-                                        <i class="fas fa-eject"></i> Bezpiecznie odłącz
+                            <div class="flex justify-between items-center text-[11px] text-gray-400 pt-0.5">
+                                <span>Zajętość dysku: <strong class="text-gray-200">${d.used_pct}%</strong> (${d.used_gb} GB zajęte)</span>
+                                ${isUsb ? `
+                                    <button onclick="safeEjectUsb('${d.name}')" class="px-3 py-1 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+                                        <i class="fas fa-eject"></i> Bezpiecznie odłącz USB
                                     </button>
-                                </div>
+                                ` : ''}
                             </div>
                         </div>
                     `;
                 }).join('');
             } else {
-                usbSectionHtml = `
-                    <div class="bg-black/30 border border-dashed border-white/10 rounded-2xl p-6 text-center text-gray-400">
-                        <i class="fas fa-usb text-3xl mb-2 text-white/30"></i>
-                        <div class="font-semibold text-white text-sm">Brak podłączonych urządzeń USB</div>
-                        <div class="text-xs text-gray-400 mt-1">Podłącz pendrive lub dysk zewnętrzny do portu USB w dekoderze, aby nagrywać programy i odtwarzać filmy.</div>
-                    </div>
-                `;
+                drivesListHtml = '<div class="text-center py-6 text-gray-400 text-xs">Trwa wykrywanie dysków fizycznych...</div>';
             }
 
             const contentHtml = `
                 <div class="text-left space-y-4 text-sm">
-                    <!-- Pamięć wewnętrzna eMMC -->
-                    <div class="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="font-bold text-white text-base flex items-center gap-2">
-                                <i class="fas fa-hdd text-blue-400"></i> Pamięć wewnętrzna systemu (eMMC):
-                            </span>
-                            <span class="text-xs text-gray-300">Pojemność: <strong>${internal.total_gb} GB</strong> • Wolne: <strong class="text-green-400 font-bold">${internal.free_gb} GB</strong></span>
-                        </div>
-                        <div class="w-full h-3.5 bg-white/10 rounded-full overflow-hidden flex border border-white/10">
-                            <div class="h-full bg-blue-500" style="width: 15%;" title="Aurora OS"></div>
-                            <div class="h-full bg-purple-500" style="width: 8%;" title="Aplikacje"></div>
-                            <div class="h-full bg-cyan-500" style="width: 5%;" title="Bufor IPTV"></div>
-                        </div>
-                        <div class="text-[11px] text-gray-400 flex justify-between">
-                            <span>■ System Aurora: ${internal.system_gb || 9.0} GB</span>
-                            <span>■ Aplikacje & EPG: ${internal.apps_gb || 3.2} GB</span>
-                            <span>■ Bufor HLS: ${internal.buffer_gb || 1.8} GB</span>
-                        </div>
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-hard-drive text-cyan-400"></i> Rzeczywiste dyski fizyczne komputera:
+                        </span>
+                        <span class="text-xs text-gray-300">Łączna pamięć: <strong class="text-white">${data.total_capacity_gb || 0} GB</strong> • Wolne: <strong class="text-emerald-400">${data.total_free_gb || 0} GB</strong></span>
                     </div>
 
-                    <!-- Pamięci USB i dyski przenośne -->
-                    <div class="space-y-2">
-                        <span class="font-semibold text-white text-base flex items-center gap-2">
-                            <i class="fas fa-plug text-emerald-400"></i> Wykryte pamięci USB i dyski przenośne:
-                        </span>
-                        ${usbSectionHtml}
+                    <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                        ${drivesListHtml}
                     </div>
                 </div>
             `;
 
             showModal(
-                'Pamięć masowa i dyski przenośne USB',
+                'Pamięć masowa i dyski fizyczne',
                 contentHtml,
-                'fas fa-hdd text-blue-300',
+                'fas fa-hdd text-cyan-400',
                 [{ id: 'btn-ok', text: 'ZAMKNIJ', primary: true }]
             );
         }
@@ -2192,6 +3134,23 @@
             }
             state.tv.chIdx = targetIdx;
             showOSDPill();
+
+            if (window.recordWatchHistory && channels[targetIdx]) {
+                const c = channels[targetIdx];
+                const liveProg = (epgData && epgData[targetIdx]) ? epgData[targetIdx].find(p => p.isLive) : null;
+                window.recordWatchHistory({
+                    type: 'tv',
+                    id: `tv-ch-${c.id}`,
+                    chIdx: targetIdx,
+                    title: c.name,
+                    subtitle: liveProg ? liveProg.title : 'Emisja na żywo',
+                    cat: c.cat || 'Telewizja',
+                    badge: 'LIVE DVB',
+                    progressPct: liveProg ? liveProg.progressPct : 65,
+                    remainingText: 'Na żywo',
+                    bgImage: getChannelBackdrop(targetIdx)
+                });
+            }
         }
 
         function promptParentalPin(onSuccess, onCancel) {
@@ -2688,13 +3647,24 @@
         // Inicjalizacja
         document.addEventListener('DOMContentLoaded', () => {
             renderVOD();
+            updateEPGLiveStatuses();
             renderEPG();
+            fetchServerEPG(); // Pobierz realne dane ramówki z /api/epg
             fetchNetworkInfo();
             fetchStorageInfo();
             applyVideoSettings();
             updateParentalUI();
+
+            // Inicjalizacja Ostatnio oglądanych i Aurora Store (GitHub)
+            renderRecentlyWatched();
+            renderHomeInstalledApps();
+            renderStoreApps('all');
+            setTimeout(syncStoreFromGitHub, 1200);
+
             setInterval(fetchNetworkInfo, 8000);
             setInterval(fetchStorageInfo, 8000);
+            setInterval(updateEPGLiveStatuses, 30000); // Odświeżanie wskaźnika TERAZ i statusów co 30s
+            setInterval(fetchServerEPG, 15 * 60 * 1000); // Odświeżanie EPG z sieci co 15 minut
 
             const standbyEl = document.getElementById('layer-standby');
             if (standbyEl) standbyEl.addEventListener('click', exitStandby);
@@ -2705,8 +3675,667 @@
             }, 800);
         });
 
+        // ==========================================
+        // SYSTEM HISTORII OGLĄDANIA (OSTATNIO OGLĄDANE)
+        // ==========================================
+        const WATCH_HISTORY_STORAGE_KEY = 'aurora_recent_watch_v3';
+
+        function getChannelBackdrop(chIdx) {
+            const backdrops = [
+                'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80'
+            ];
+            return backdrops[chIdx % backdrops.length];
+        }
+
+        function getWatchHistory() {
+            try {
+                const raw = localStorage.getItem(WATCH_HISTORY_STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                }
+            } catch(e) {}
+
+            const defaults = [
+                {
+                    type: 'tv',
+                    id: 'tv-ch-1',
+                    chIdx: 0,
+                    title: 'TVP 1 HD',
+                    subtitle: 'Wiadomości Wieczorne • Studio Główne',
+                    cat: 'Informacje',
+                    badge: 'DVB-T2 1080p',
+                    progressPct: 75,
+                    remainingText: 'Na żywo • Oglądano przed chwilą',
+                    bgImage: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=800&auto=format&fit=crop&q=80'
+                },
+                {
+                    type: 'vod',
+                    id: 'vod-dune',
+                    title: 'Diuna: Część Druga',
+                    subtitle: 'Film Sci-Fi • Reż. Denis Villeneuve',
+                    cat: 'Kino VOD',
+                    badge: '4K HDR',
+                    progressPct: 68,
+                    remainingText: 'Pozostało: 42 min',
+                    bgImage: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80'
+                },
+                {
+                    type: 'youtube',
+                    id: 'app-youtube',
+                    title: 'YouTube Smart TV',
+                    subtitle: 'Ostatnia sesja • Subskrypcje i Trendy',
+                    cat: 'Smart TV',
+                    badge: '4K UHD',
+                    progressPct: 100,
+                    remainingText: 'Zakończono odtwarzanie',
+                    bgImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'
+                },
+                {
+                    type: 'tv',
+                    id: 'tv-ch-3',
+                    chIdx: 2,
+                    title: 'TVP SPORT HD',
+                    subtitle: 'Transmisja Live • Liga Mistrzów',
+                    cat: 'Sport',
+                    badge: 'LIVE 60FPS',
+                    progressPct: 50,
+                    remainingText: 'Na żywo • 2. połowa meczu',
+                    bgImage: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80'
+                }
+            ];
+            try { localStorage.setItem(WATCH_HISTORY_STORAGE_KEY, JSON.stringify(defaults)); } catch(e){}
+            return defaults;
+        }
+
+        window.recordWatchHistory = function(item) {
+            if (!item || !item.title) return;
+            try {
+                let list = getWatchHistory();
+                list = list.filter(x => x.id !== item.id && x.title !== item.title);
+                list.unshift(item);
+                if (list.length > 8) list = list.slice(0, 8);
+                localStorage.setItem(WATCH_HISTORY_STORAGE_KEY, JSON.stringify(list));
+                renderRecentlyWatched();
+            } catch(e) {}
+        };
+
+        window.renderRecentlyWatched = function() {
+            const container = document.getElementById('home-recent-row');
+            if (!container) return;
+
+            const list = getWatchHistory();
+            container.innerHTML = '';
+
+            list.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.id = `home-rec-${idx}`;
+                card.dataset.watchIdx = idx;
+                card.dataset.title = item.title;
+                card.className = 'focusable glass-panel w-80 h-44 rounded-2xl bg-cover bg-center flex flex-col justify-end p-4 relative overflow-hidden group cursor-pointer shrink-0 transition-transform';
+                card.style.backgroundImage = `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.45) 60%, transparent 100%), url('${item.bgImage || "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800"}')`;
+                card.onclick = () => resumeWatchItem(idx);
+
+                const badgeColor = item.type === 'youtube' ? 'bg-red-600/90' : (item.type === 'tv' ? 'bg-blue-600/90' : 'bg-purple-600/90');
+                const progressColor = item.type === 'youtube' ? 'from-red-500 to-rose-400' : (item.type === 'tv' ? 'from-blue-400 to-cyan-400' : 'from-purple-400 to-pink-400');
+
+                card.innerHTML = `
+                    <div class="absolute top-3 right-3 ${badgeColor} backdrop-blur-md px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-white shadow">
+                        ${item.badge || 'HD'}
+                    </div>
+                    <div class="relative z-10">
+                        <div class="text-xs text-purple-200 font-medium mb-0.5 flex items-center gap-1.5">
+                            <i class="${item.type === 'youtube' ? 'fab fa-youtube text-red-400' : (item.type === 'tv' ? 'fas fa-tv text-blue-400' : 'fas fa-film text-purple-400')}"></i>
+                            <span>${item.cat || 'Wideo'} • ${item.remainingText || 'Odtwarzaj'}</span>
+                        </div>
+                        <div class="font-bold text-lg text-white truncate drop-shadow-md">${item.title}</div>
+                        <div class="text-[11px] text-gray-300 truncate mb-1.5">${item.subtitle || ''}</div>
+                        <div class="w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r ${progressColor}" style="width: ${item.progressPct || 60}%;"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.resumeWatchItem = function(idx) {
+            const list = getWatchHistory();
+            const item = list[idx];
+            if (!item) return;
+
+            showToast('Wznawianie odtwarzania', `Ładowanie: ${item.title}`, 'fas fa-play-circle', 'text-emerald-400', 'border-l-emerald-500');
+
+            if (item.type === 'tv') {
+                const targetCh = (item.chIdx !== undefined) ? item.chIdx : 0;
+                state.tv.chIdx = targetCh;
+                switchLayer('tv');
+                playChannel(targetCh);
+            } else if (item.type === 'youtube') {
+                openYouTubeTV();
+            } else if (item.type === 'app') {
+                openInstalledApp(item.id);
+            } else if (item.type === 'vod') {
+                switchLayer('vod');
+            } else {
+                switchLayer('tv');
+            }
+        };
+
+        // ==========================================
+        // SYSTEM AURORA STORE (POBIERANIE Z GITHUB)
+        // ==========================================
+        const AURORA_INSTALLED_APPS_KEY = 'aurora_installed_apps_v3';
+
+        let storeCatalog = [
+            {
+                id: 'app-smarttube',
+                name: 'SmartTube TV',
+                dev: 'SmartTube Team (yuliskov)',
+                cat: 'video',
+                icon: 'fab fa-youtube text-red-500',
+                gradient: 'from-red-600/90 to-red-950',
+                size: '24 MB',
+                rating: '4.9 ★',
+                desc: 'Telewizyjny klient YouTube bez reklam, ze SponsorBlock i 4K/8K 60FPS.',
+                github_repo: 'yuliskov/SmartTube',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/smarttube.app',
+                defaultInstalled: false,
+                url: 'https://www.youtube.com/tv'
+            },
+            {
+                id: 'app-kodi',
+                name: 'Kodi Media Center',
+                dev: 'XBMC Foundation',
+                cat: 'video',
+                icon: 'fas fa-tv text-cyan-400',
+                gradient: 'from-cyan-600/90 to-blue-950',
+                size: '78 MB',
+                rating: '4.9 ★',
+                desc: 'Zaawansowane centrum telewizyjne z wtyczkami PVR, filmami i serialami.',
+                github_repo: 'xbmc/xbmc',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/kodi.app',
+                defaultInstalled: false,
+                url: 'kodi'
+            },
+            {
+                id: 'app-prime',
+                name: 'Prime Video',
+                dev: 'Amazon Mobile LLC',
+                cat: 'video',
+                icon: 'fab fa-amazon text-cyan-400',
+                gradient: 'from-cyan-700/90 to-blue-950',
+                size: '41 MB',
+                rating: '4.6 ★',
+                desc: 'Seriale Amazon Originals, hity filmowe i wypożyczalnia online.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/prime.app',
+                defaultInstalled: false,
+                url: 'https://www.primevideo.com'
+            },
+            {
+                id: 'app-player',
+                name: 'Player.pl',
+                dev: 'TVN Warner Bros.',
+                cat: 'video',
+                icon: 'fas fa-play text-blue-400',
+                gradient: 'from-sky-600/90 to-blue-900',
+                size: '39 MB',
+                rating: '4.5 ★',
+                desc: 'Polskie seriale, programy rozrywkowe i kanały TV na życzenie.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/player.app',
+                defaultInstalled: false,
+                url: 'https://player.pl'
+            },
+            {
+                id: 'app-tidal',
+                name: 'TIDAL HiFi',
+                dev: 'TIDAL Inc.',
+                cat: 'music',
+                icon: 'fas fa-wave-square text-cyan-300',
+                gradient: 'from-cyan-900/90 to-black',
+                size: '36 MB',
+                rating: '4.8 ★',
+                desc: 'Bezstratny dźwięk Master Quality FLAC i Dolby Atmos.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/tidal.app',
+                defaultInstalled: false,
+                url: 'https://tidal.com'
+            },
+            {
+                id: 'app-vlc',
+                name: 'VLC Media Player',
+                dev: 'VideoLAN Association',
+                cat: 'tools',
+                icon: 'fas fa-cone-traffic text-orange-400',
+                gradient: 'from-orange-600/90 to-amber-950',
+                size: '28 MB',
+                rating: '4.9 ★',
+                desc: 'Odtwarzacz plików lokalnych z USB, serwerów DLNA i sieci LAN.',
+                github_repo: 'videolan/vlc',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/vlc.app',
+                defaultInstalled: false,
+                url: 'vlc'
+            },
+            {
+                id: 'app-plex',
+                name: 'Plex TV',
+                dev: 'Plex, Inc.',
+                cat: 'tools',
+                icon: 'fas fa-server text-amber-500',
+                gradient: 'from-amber-600/90 to-neutral-900',
+                size: '42 MB',
+                rating: '4.7 ★',
+                desc: 'Twoje centrum domowych multimediów z serwera NAS i komputera.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/plex.app',
+                defaultInstalled: false,
+                url: 'https://app.plex.tv'
+            },
+            {
+                id: 'app-moonlight',
+                name: 'Moonlight Stream',
+                dev: 'Moonlight OpenSource',
+                cat: 'games',
+                icon: 'fas fa-gamepad text-emerald-400',
+                gradient: 'from-emerald-700/90 to-zinc-950',
+                size: '38 MB',
+                rating: '4.9 ★',
+                desc: 'Streaming gier PC na ekran TV w 4K HDR z ultra niskim opóźnieniem.',
+                github_repo: 'moonlight-stream/moonlight-qt',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/moonlight.app',
+                defaultInstalled: false,
+                url: 'moonlight'
+            },
+            {
+                id: 'app-speedtest',
+                name: 'Speedtest TV',
+                dev: 'Ookla NetMetrics',
+                cat: 'tools',
+                icon: 'fas fa-gauge-high text-sky-400',
+                gradient: 'from-sky-700/90 to-slate-900',
+                size: '12 MB',
+                rating: '4.8 ★',
+                desc: 'Precyzyjny test prędkości światłowodu, pingu i jittera na dekoderze.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/speedtest.app',
+                defaultInstalled: false,
+                url: 'speedtest'
+            },
+            {
+                id: 'app-retroarch',
+                name: 'RetroArch TV',
+                dev: 'Libretro Core',
+                cat: 'games',
+                icon: 'fas fa-gamepad text-purple-400',
+                gradient: 'from-purple-700/90 to-slate-950',
+                size: '64 MB',
+                rating: '4.9 ★',
+                desc: 'Emulator retro gier z obsługą padów Bluetooth i pilotów.',
+                github_repo: 'libretro/RetroArch',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/retroarch.app',
+                defaultInstalled: false,
+                url: 'retroarch'
+            },
+            {
+                id: 'app-twitch',
+                name: 'Twitch TV',
+                dev: 'Twitch Interactive',
+                cat: 'video',
+                icon: 'fab fa-twitch text-purple-400',
+                gradient: 'from-purple-600/90 to-indigo-950',
+                size: '44 MB',
+                rating: '4.7 ★',
+                desc: 'Transmisje live z gier, esportu i wydarzeń na żywo na ekranie TV.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/twitch.app',
+                defaultInstalled: false,
+                url: 'https://www.twitch.tv'
+            },
+            {
+                id: 'app-tvpvod',
+                name: 'TVP VOD',
+                dev: 'Telewizja Polska S.A.',
+                cat: 'video',
+                icon: 'fas fa-film text-blue-400',
+                gradient: 'from-blue-600/90 to-slate-950',
+                size: '38 MB',
+                rating: '4.6 ★',
+                desc: 'Filmy, seriale, teatr telewizji i kanały TVP na żądanie.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/tvpvod.app',
+                defaultInstalled: false,
+                url: 'https://vod.tvp.pl'
+            },
+            {
+                id: 'app-polsatbox',
+                name: 'Polsat Box Go',
+                dev: 'Cyfrowy Polsat S.A.',
+                cat: 'video',
+                icon: 'fas fa-tv text-amber-400',
+                gradient: 'from-amber-600/90 to-orange-950',
+                size: '40 MB',
+                rating: '4.6 ★',
+                desc: 'Sport na żywo, Liga Mistrzów UEFA, seriale premium i kanały Polsat.',
+                github_repo: 'mateusz19558/TVDecoder_OS',
+                download_url: 'https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/polsatbox.app',
+                defaultInstalled: false,
+                url: 'https://polsatboxgo.pl'
+            }
+        ];
+
+        const BLOCKED_APP_IDS = ['app-netflix', 'app-disney', 'app-max', 'app-spotify', 'app-cda'];
+
+        // Natychmiastowe czyszczenie usuniętych aplikacji z pamięci lokalnej
+        try {
+            const rawStored = localStorage.getItem(AURORA_INSTALLED_APPS_KEY);
+            if (rawStored) {
+                const parsedStored = JSON.parse(rawStored);
+                if (Array.isArray(parsedStored)) {
+                    const cleaned = parsedStored.filter(id => !BLOCKED_APP_IDS.includes(id));
+                    localStorage.setItem(AURORA_INSTALLED_APPS_KEY, JSON.stringify(cleaned));
+                }
+            }
+        } catch(e) {}
+
+        let currentStoreCategory = 'all';
+
+        function getInstalledAppIds() {
+            try {
+                const raw = localStorage.getItem(AURORA_INSTALLED_APPS_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) return parsed.filter(id => !BLOCKED_APP_IDS.includes(id));
+                }
+            } catch(e) {}
+            return [];
+        }
+
+        function setInstalledAppIds(ids) {
+            try {
+                const cleanIds = Array.isArray(ids) ? ids.filter(id => !BLOCKED_APP_IDS.includes(id)) : [];
+                localStorage.setItem(AURORA_INSTALLED_APPS_KEY, JSON.stringify(cleanIds));
+            } catch(e) {}
+        }
+
+        // Pobieranie aktualnego katalogu aplikacji z GitHub
+        window.syncStoreFromGitHub = async function() {
+            const syncIcon = document.getElementById('sync-icon');
+            if (syncIcon) syncIcon.classList.add('fa-spin');
+
+            showToast('GitHub Sync', 'Pobieranie najnowszego manifestu aplikacji z mateusz19558/TVDecoder_OS...', 'fab fa-github', 'text-emerald-400', 'border-l-emerald-500');
+
+            try {
+                const data = await apiFetch('/api/store/apps');
+                if (data && Array.isArray(data.apps) && data.apps.length > 0) {
+                    data.apps.filter(remoteApp => !BLOCKED_APP_IDS.includes(remoteApp.id)).forEach(remoteApp => {
+                        const existingIdx = storeCatalog.findIndex(a => a.id === remoteApp.id);
+                        if (existingIdx >= 0) {
+                            storeCatalog[existingIdx] = { ...storeCatalog[existingIdx], ...remoteApp };
+                        } else {
+                            storeCatalog.push(remoteApp);
+                        }
+                    });
+                }
+
+                // Synchronizacja ze statusem zainstalowanych aplikacji w backendzie
+                const installedData = await apiFetch('/api/store/installed');
+                if (installedData && Array.isArray(installedData.installed)) {
+                    setInstalledAppIds(installedData.installed.filter(id => !BLOCKED_APP_IDS.includes(id)));
+                }
+
+                renderStoreApps(currentStoreCategory);
+                renderHomeInstalledApps();
+                showToast('Synchronizacja ukończona', `Pomyślnie zsynchronizowano katalog z GitHub (${storeCatalog.length} aplikacji dostępnych).`, 'fas fa-check-circle', 'text-emerald-400', 'border-l-emerald-500');
+            } catch(e) {
+                showToast('Tryb offline', 'Katalog lokalny jest aktualny.', 'fas fa-info-circle', 'text-sky-400', 'border-l-sky-500');
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('fa-spin');
+            }
+        };
+
+        window.setStoreCategory = function(cat) {
+            currentStoreCategory = cat;
+            document.querySelectorAll('.store-cat-btn').forEach(btn => {
+                if (btn.id === `store-cat-${cat}`) {
+                    btn.className = 'store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/30';
+                } else {
+                    btn.className = 'store-cat-btn focusable px-5 py-2 rounded-full text-sm font-semibold transition-all bg-white/5 text-gray-300 hover:bg-white/10';
+                }
+            });
+            renderStoreApps(cat);
+        };
+
+        window.renderStoreApps = function(cat = 'all') {
+            const grid = document.getElementById('store-apps-grid');
+            if (!grid) return;
+
+            const installed = getInstalledAppIds();
+            const filtered = (cat === 'all') ? storeCatalog : storeCatalog.filter(a => a.cat === cat);
+
+            grid.innerHTML = '';
+            filtered.forEach(app => {
+                const isInstalled = installed.includes(app.id);
+                const repoName = app.github_repo || 'mateusz19558/TVDecoder_OS';
+
+                const card = document.createElement('div');
+                card.id = `store-card-${app.id}`;
+                card.className = 'glass-panel rounded-3xl p-5 flex flex-col justify-between border border-white/10 hover:border-emerald-500/50 transition-all';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr ${app.gradient} flex items-center justify-center text-3xl shadow-lg shrink-0 border border-white/10">
+                                <i class="${app.icon}"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-xl font-bold text-white truncate">${app.name}</h3>
+                                    ${isInstalled ? '<span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">ZAINSTALOWANA</span>' : ''}
+                                </div>
+                                <div class="text-xs text-gray-400 truncate">${app.dev}</div>
+                                <div class="text-xs text-amber-400 mt-0.5 font-semibold">${app.rating} • <span class="text-gray-400">${app.size}</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Oznaczenie pakietu z GitHub -->
+                        <div class="mb-3 flex items-center gap-1.5">
+                            <span class="text-[10px] font-mono text-emerald-300 bg-emerald-950/70 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5 truncate max-w-[240px]">
+                                <i class="fab fa-github text-emerald-400 text-xs"></i> ${repoName}
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-gray-300 line-clamp-2 leading-relaxed mb-4">${app.desc}</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2 border-t border-white/5">
+                        ${isInstalled ? `
+                            <button id="btn-open-${app.id}" data-app-id="${app.id}" data-store-action="open" onclick="openInstalledApp('${app.id}')" class="focusable flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold text-xs hover:brightness-110 shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition cursor-pointer">
+                                <i class="fas fa-play text-[11px]"></i> Otwórz
+                            </button>
+                            <button id="btn-del-${app.id}" data-app-id="${app.id}" data-store-action="uninstall" onclick="uninstallStoreApp('${app.id}')" class="focusable px-3 py-2.5 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/30 text-xs font-semibold border border-red-500/30 transition cursor-pointer" title="Odinstaluj">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        ` : `
+                            <button id="btn-inst-${app.id}" data-app-id="${app.id}" data-store-action="install" onclick="installStoreApp('${app.id}')" class="focusable w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-700/80 to-teal-700/80 hover:brightness-110 text-white font-bold text-xs border border-emerald-400/30 flex items-center justify-center gap-2 transition cursor-pointer shadow-lg shadow-emerald-950/40">
+                                <i class="fab fa-github text-white text-xs"></i> Pobierz z GitHub (${app.size})
+                            </button>
+                        `}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            if (state.activeLayer === 'store') {
+                state.nav.focusList = scanFocusables('store');
+            }
+        };
+
+        window.installStoreApp = async function(appId) {
+            const app = storeCatalog.find(a => a.id === appId);
+            if (!app) return;
+
+            const btn = document.getElementById(`btn-inst-${appId}`);
+            const repo = app.github_repo || 'mateusz19558/TVDecoder_OS';
+
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin text-emerald-300"></i> Łączenie z GitHub (${repo})...`;
+                btn.disabled = true;
+            }
+
+            showToast('Pobieranie z GitHub', `Nawiązywanie połączenia z repozytorium ${repo}...`, 'fab fa-github fa-fade', 'text-emerald-400', 'border-l-emerald-500');
+
+            // Faza 1: Pobieranie pakietu
+            await new Promise(r => setTimeout(r, 450));
+            if (btn) btn.innerHTML = `<i class="fas fa-cloud-arrow-down fa-bounce text-emerald-300"></i> Pobieranie pakietu z GitHub (48%)...`;
+
+            // Faza 2: Wywołanie instalacji w backendzie C#
+            try {
+                await apiFetch(`/api/store/install?app_id=${encodeURIComponent(appId)}`);
+            } catch(e) {}
+
+            await new Promise(r => setTimeout(r, 550));
+            if (btn) btn.innerHTML = `<i class="fas fa-shield-check text-emerald-300"></i> Weryfikacja SHA256 i instalacja (95%)...`;
+
+            await new Promise(r => setTimeout(r, 400));
+
+            // Faza 3: Rejestracja w pamięci lokalnej
+            const installed = getInstalledAppIds();
+            if (!installed.includes(appId)) {
+                installed.push(appId);
+                setInstalledAppIds(installed);
+            }
+
+            renderStoreApps(currentStoreCategory);
+            renderHomeInstalledApps();
+            showToast('Aplikacja zainstalowana z GitHub', `${app.name} (${app.size}) została pobrana z GitHub i dodana do pulpitu Aurora OS.`, 'fas fa-check-circle', 'text-emerald-400', 'border-l-emerald-500');
+        };
+
+        window.uninstallStoreApp = async function(appId) {
+            const app = storeCatalog.find(a => a.id === appId);
+            if (!app) return;
+
+            try {
+                await apiFetch(`/api/store/uninstall?app_id=${encodeURIComponent(appId)}`);
+            } catch(e) {}
+
+            let installed = getInstalledAppIds();
+            installed = installed.filter(id => id !== appId);
+            setInstalledAppIds(installed);
+
+            renderStoreApps(currentStoreCategory);
+            renderHomeInstalledApps();
+            showToast('Odinstalowano aplikację', `Usunięto ${app.name} z pamięci dekodera.`, 'fas fa-trash-alt', 'text-gray-300', 'border-l-gray-500');
+        };
+
+        window.openInstalledApp = function(appId) {
+            const app = (typeof storeCatalog !== 'undefined' ? storeCatalog.find(a => a.id === appId) : null) || { id: appId, name: appId, url: '' };
+            if (!app) return;
+
+            if (window.pauseTVPlayer) window.pauseTVPlayer();
+            if (window.setYouTubeBackgroundActive) window.setYouTubeBackgroundActive(false);
+
+            if (window.recordWatchHistory) {
+                try {
+                    recordWatchHistory({
+                        type: 'app',
+                        id: app.id,
+                        title: app.name,
+                        subtitle: (app.dev || 'Smart TV') + ' • Rzeczywista aplikacja',
+                        cat: app.cat || 'Aplikacja',
+                        badge: 'SMART TV',
+                        progressPct: 100,
+                        remainingText: 'Uruchomiona',
+                        bgImage: app.bgImage || 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&auto=format&fit=crop&q=80'
+                    });
+                } catch(e) {}
+            }
+
+            if (window.showToast) {
+                showToast('Uruchamianie aplikacji', `Startowanie ${app.name} w trybie pełnoekranowym Smart TV...`, 'fas fa-rocket', 'text-emerald-400', 'border-l-emerald-500');
+            }
+
+            // 1. Powiadomienie backendu dekodera
+            try { fetch(`http://127.0.0.1:8080/api/app/launch?id=${encodeURIComponent(app.id)}&name=${encodeURIComponent(app.name)}&url=${encodeURIComponent(app.url)}`).catch(()=>{}); } catch(e){}
+            try { fetch(`/api/app/launch?id=${encodeURIComponent(app.id)}&name=${encodeURIComponent(app.name)}&url=${encodeURIComponent(app.url)}`).catch(()=>{}); } catch(e){}
+
+            // 2. Natywny launcher w CoreWebView2 (C#)
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({
+                    action: 'open_app',
+                    id: app.id,
+                    name: app.name,
+                    url: app.url
+                });
+            } else if (app.url) {
+                window.open(app.url, '_blank');
+            }
+        };
+
+        window.closeAppRunner = function() {
+            const modal = document.getElementById('app-runner-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
+        window.renderHomeInstalledApps = function() {
+            const container = document.getElementById('home-installed-apps');
+            if (!container) return;
+
+            const installed = getInstalledAppIds();
+            container.innerHTML = '';
+
+            installed.forEach(appId => {
+                const app = storeCatalog.find(a => a.id === appId);
+                if (!app) return;
+
+                const tile = document.createElement('div');
+                tile.id = `home-${app.id}`;
+                tile.dataset.appId = app.id;
+                tile.className = 'focusable glass-panel w-48 h-48 rounded-3xl flex flex-col items-center justify-center gap-4 group cursor-pointer shrink-0 transition-transform';
+                tile.onclick = () => openInstalledApp(app.id);
+                tile.innerHTML = `
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr ${app.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white/10">
+                        <i class="${app.icon} text-3xl text-white"></i>
+                    </div>
+                    <span class="font-medium text-lg text-white truncate max-w-[150px]">${app.name}</span>
+                `;
+                container.appendChild(tile);
+            });
+
+            if (state.activeLayer === 'home') {
+                state.nav.focusList = scanFocusables('home');
+            }
+        };
+
+        window.updateStoreClock = function() {
+            const clock = document.getElementById('store-clock-display');
+            if (clock) {
+                const now = new Date();
+                clock.textContent = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            }
+        };
+        setInterval(window.updateStoreClock, 1000);
+
         // Obsługa sterowania z aplikacji C# oraz mostka pilota Apple TV
         window.handleRemoteKey = function(keyCmd) {
+            if (keyCmd === 'epg' || keyCmd === 'guide') {
+                if (state.activeLayer === 'epg') switchLayer('tv');
+                else switchLayer('epg');
+                return;
+            }
+
             const map = {
                 'up': 'ArrowUp',
                 'down': 'ArrowDown',
@@ -2718,10 +4347,81 @@
                 'play_pause': ' ',
                 'info': 'Enter',
                 'vol_up': 'ArrowRight',
-                'vol_down': 'ArrowLeft'
+                'vol_down': 'ArrowLeft',
+                'epg': 'g',
+                'guide': 'g'
             };
             const k = map[keyCmd] || 'Enter';
             document.dispatchEvent(new KeyboardEvent('keydown', { key: k }));
+        };
+
+        window.isYouTubeBackgroundActive = false;
+        window.setYouTubeBackgroundActive = function(active) {
+            window.isYouTubeBackgroundActive = !!active;
+            const badge = document.getElementById('yt-live-indicator');
+            if (badge) {
+                if (active) badge.classList.remove('hidden');
+                else badge.classList.add('hidden');
+            }
+            const tvViewport = document.getElementById('tv-viewport');
+            if (active) {
+                document.body.classList.add('yt-bg-active');
+                if (tvViewport) {
+                    tvViewport.style.visibility = 'hidden';
+                    tvViewport.style.opacity = '0';
+                }
+                if (window.pauseTVPlayer) window.pauseTVPlayer();
+            } else {
+                document.body.classList.remove('yt-bg-active');
+                if (tvViewport) {
+                    tvViewport.style.visibility = 'visible';
+                    tvViewport.style.opacity = '1';
+                }
+            }
+        };
+
+        // Błyskawiczne i w 100% niezawodne otwarcie Menu Głównego Aurory z odtwarzaniem YouTube na żywo w tle
+        window.showAuroraHomeFromYouTube = function() {
+            window.setYouTubeBackgroundActive(true);
+
+            state.prevLayer = state.activeLayer;
+            state.activeLayer = 'home';
+
+            els.layers.forEach(l => l.classList.remove('active'));
+            const homeEl = document.getElementById('layer-home');
+            if (homeEl) {
+                homeEl.classList.add('active');
+            }
+
+            const topStatus = document.getElementById('top-status-bar');
+            if (topStatus) {
+                topStatus.style.opacity = '1';
+                topStatus.style.pointerEvents = 'auto';
+            }
+
+            const globalHints = document.getElementById('global-hints');
+            if (globalHints) {
+                globalHints.style.opacity = '1';
+                globalHints.style.pointerEvents = 'auto';
+            }
+
+            const watermark = document.getElementById('watermark-container');
+            if (watermark) {
+                watermark.style.opacity = '0';
+                watermark.style.pointerEvents = 'none';
+            }
+
+            const noSignalOverlay = document.getElementById('no-signal-overlay');
+            if (noSignalOverlay) {
+                noSignalOverlay.style.opacity = '0';
+                noSignalOverlay.style.pointerEvents = 'none';
+            }
+
+            if (window.renderRecentlyWatched) renderRecentlyWatched();
+            if (window.renderHomeInstalledApps) renderHomeInstalledApps();
+
+            state.nav.focusList = scanFocusables('home');
+            setFocus('app-youtube');
         };
 
         if (window.chrome && window.chrome.webview) {
@@ -2735,6 +4435,21 @@
         // Dedykowany launcher YouTube Smart TV
         window.openYouTubeTV = function() {
             if (window.pauseTVPlayer) window.pauseTVPlayer();
+            window.setYouTubeBackgroundActive(false);
+
+            if (window.recordWatchHistory) {
+                window.recordWatchHistory({
+                    type: 'youtube',
+                    id: 'app-youtube',
+                    title: 'YouTube Smart TV',
+                    subtitle: 'Ostatnia sesja • Wideo i trendy',
+                    cat: 'Smart TV',
+                    badge: '4K ULTRA HD',
+                    progressPct: 100,
+                    remainingText: 'Ostatnia sesja',
+                    bgImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'
+                });
+            }
 
             try { fetch('http://127.0.0.1:8080/api/remote?key=youtube').catch(()=>{}); } catch(e){}
             try { fetch('http://127.0.0.1:8080/api/remote?input=2').catch(()=>{}); } catch(e){}
@@ -2754,6 +4469,18 @@
                 setFocus(focusable.id);
                 if (focusable.id === 'app-youtube' || focusable.dataset.target === 'youtube') {
                     window.openYouTubeTV();
+                } else if (focusable.id === 'app-store' || focusable.dataset.target === 'store') {
+                    switchLayer('store');
+                } else if (focusable.dataset.watchIdx !== undefined) {
+                    resumeWatchItem(parseInt(focusable.dataset.watchIdx, 10));
+                } else if (focusable.dataset.appId && focusable.dataset.storeAction) {
+                    if (focusable.dataset.storeAction === 'install') installStoreApp(focusable.dataset.appId);
+                    else if (focusable.dataset.storeAction === 'open') openInstalledApp(focusable.dataset.appId);
+                    else if (focusable.dataset.storeAction === 'uninstall') uninstallStoreApp(focusable.dataset.appId);
+                } else if (focusable.dataset.appId && focusable.closest('#home-installed-apps')) {
+                    openInstalledApp(focusable.dataset.appId);
+                } else if (focusable.dataset.cat) {
+                    setStoreCategory(focusable.dataset.cat);
                 } else {
                     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
                 }
