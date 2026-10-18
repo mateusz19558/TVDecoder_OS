@@ -145,20 +145,6 @@
       "url": "retroarch"
     },
     {
-      "id": "app-twitch",
-      "name": "Twitch TV",
-      "dev": "Twitch Interactive",
-      "cat": "video",
-      "icon": "fab fa-twitch text-purple-400",
-      "gradient": "from-purple-600/90 to-indigo-950",
-      "size": "44 MB",
-      "rating": "4.7 ★",
-      "desc": "Transmisje live z gier, esportu i wydarzeń na żywo na ekranie TV.",
-      "github_repo": "mateusz19558/TVDecoder_OS",
-      "download_url": "https://raw.githubusercontent.com/mateusz19558/TVDecoder_OS/main/apps_store/packages/twitch.app",
-      "url": "https://www.twitch.tv"
-    },
-    {
       "id": "app-tvpvod",
       "name": "TVP VOD",
       "dev": "Telewizja Polska S.A.",
