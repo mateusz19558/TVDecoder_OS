@@ -59,9 +59,10 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + lekki menedżer okien Openbox + dedykowany silnik Kiosk Appliance (Aurora OS)
+# Serwer graficzny X11 + lekki menedżer okien Openbox + środowisko Wine dla aplikacji Visual Basic (WPF)
 apt-get install -y --no-install-recommends \
-    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium python3-tk feh plymouth plymouth-themes
+    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
+    wine wine64 libwine
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \
@@ -102,6 +103,7 @@ cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_VB.exe" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_VB" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 

@@ -68,40 +68,17 @@ def main():
         except Exception as e:
             print(f"[TVDecoder] Ostrzeżenie: Mostek Apple: {e}", flush=True)
 
-    # 3. Uruchomienie interfejsu Aurora OS w dedykowanym trybie Kiosk STB
-    gui_url = "http://127.0.0.1:8080/"
-
-    # Sprawdzenie dostępnych silników wyświetlania w systemie Linux
-    browser_cmd = None
-    for cand in ["chromium", "chromium-browser", "google-chrome"]:
-        if subprocess.run(["which", cand], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-            browser_cmd = cand
-            break
-
-    if browser_cmd:
-        flags = [
-            browser_cmd,
-            "--kiosk",
-            "--app=" + gui_url,
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--disable-infobars",
-            "--disable-translate",
-            "--disable-features=Translate",
-            "--disable-pinch",
-            "--overscroll-history-navigation=0",
-            "--autoplay-policy=no-user-gesture-required",
-            "--disable-web-security",
-            "--allow-running-insecure-content",
-            "--enable-gpu-rasterization",
-            "--enable-zero-copy",
-            "--ignore-gpu-blocklist",
-            "--check-for-update-interval=31536000",
-            "--user-data-dir=/home/tvuser/.config/tvdecoder_profile"
-        ]
-        p_gui = subprocess.Popen(flags)
-        subprocesses.append(p_gui)
-        p_gui.wait()
+    # 3. Uruchomienie skompilowanej aplikacji Visual Basic (TVDecoder_VB)
+    vb_exe = os.path.join(APP_DIR, "TVDecoder_VB.exe")
+    if os.path.exists(vb_exe):
+        print("[TVDecoder] Startowanie aplikacji Visual Basic (TVDecoder_VB.exe)...", flush=True)
+        env = os.environ.copy()
+        env["WINEDEBUG"] = "-all"
+        p_vb = subprocess.Popen(["wine", vb_exe], env=env)
+        subprocesses.append(p_vb)
+        p_vb.wait()
+    else:
+        print("[TVDecoder] Ostrzeżenie: Brak pliku TVDecoder_VB.exe!", flush=True)
 
     cleanup()
 

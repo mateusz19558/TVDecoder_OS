@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora OS • Canal+ RxPlayer Host</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+        }
+        #videoElement {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            display: block;
+            background-color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <video id="videoElement" autoplay playsinline></video>
+
+    <!-- Canal+ RxPlayer Library -->
+    <script src="rx-player.js"></script>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        let player = null;
+        let isNativeFallback = false;
+
+        function notifyHost(msg) {
+            try {
+                if (window.chrome && window.chrome.webview) {
+                    window.chrome.webview.postMessage(JSON.stringify(msg));
+                }
+            } catch (e) {
+                console.warn("[RxPlayer Host] Błąd wysyłania do hosta:", e);
+            }
+        }
+
+        // Inicjalizacja Canal+ RxPlayer
+        try {
+            if (window.RxPlayer) {
+                player = new RxPlayer({
+                    videoElement: videoElement,
+                    baseBandwidth: 6000000,
+                    wantedBufferAhead: 30,
+                    maxBufferAhead: 60,
+                    maxBufferBehind: 30
+                });
+
+                player.addEventListener('playerStateChange', (state) => {
+                    console.log("[RxPlayer] Stan:", state);
+                    switch (state) {
+                        case "PLAYING":
+                            notifyHost({ event: "playing" });
+                            break;
+                        case "BUFFERING":
+                            notifyHost({ event: "buffering", cache: 60 });
+                            break;
+                        case "LOADED":
+                            notifyHost({ event: "loaded" });
+                            break;
+                        case "STOPPED":
+                            notifyHost({ event: "stopped" });
+                            break;
+                        case "ENDED":
+                            notifyHost({ event: "ended" });
+                            break;
+                    }
+                });
+
+                player.addEventListener('error', (err) => {
+                    console.error("[RxPlayer] Błąd:", err);
+                    notifyHost({ event: "error", message: err.message || (err.code ? ("Błąd " + err.code) : "Błąd odtwarzania") });
+                });
+
+                player.addEventListener('warning', (warn) => {
+                    console.warn("[RxPlayer] Ostrzeżenie:", warn);
+                });
+            } else {
+                console.error("[RxPlayer] Brak zdefiniowanego obiektu window.RxPlayer!");
+            }
+        } catch (e) {
+            console.error("[RxPlayer] Wyjątek podczas inicjalizacji:", e);
+        }
+
+        // Zdarzenia natywnego tagu video jako dodatkowe zabezpieczenie
+        videoElement.addEventListener('playing', () => {
+            notifyHost({ event: "playing" });
+        });
+        videoElement.addEventListener('waiting', () => {
+            notifyHost({ event: "buffering", cache: 35 });
+        });
+        videoElement.addEventListener('error', (e) => {
+            if (isNativeFallback) {
+                notifyHost({ event: "error", message: "Błąd źródła wideo (HTML5 Native)" });
+            }
+        });
+
+        // =========================================================================
+        // PUBLICZNE API KONTROLNE DLA VISUAL BASIC (WPF)
+        // =========================================================================
+        window.playChannel = function(url) {
+            if (!url) {
+                window.stopChannel();
+                return;
+            }
+
+            console.log("[RxPlayer Host] Rozpoczynam odtwarzanie strumienia:", url);
+            isNativeFallback = false;
+
+            try {
+                if (player) {
+                    let transport = "directfile";
+                    const lowerUrl = url.toLowerCase();
+
+                    if (lowerUrl.includes(".mpd")) {
+                        transport = "dash";
+                    } else if (lowerUrl.includes(".isml") || lowerUrl.includes("/manifest")) {
+                        transport = "smooth";
+                    } else if (lowerUrl.includes(".m3u8")) {
+                        // Dla HLS w Chromium próbujemy directfile (RxPlayer directfile)
+                        transport = "directfile";
+                    } else {
+                        transport = "directfile";
+                    }
+
+                    player.loadVideo({
+                        url: url,
+                        transport: transport,
+                        autoPlay: true
+                    });
+                    return;
+                }
+            } catch (err) {
+                console.warn("[RxPlayer] Błąd loadVideo, próba fallbacku natywnego:", err);
+            }
+
+            // Fallback: bezpośredni element HTML5 Video
+            try {
+                isNativeFallback = true;
+                if (player) {
+                    try { player.stop(); } catch(e) {}
+                }
+                videoElement.src = url;
+                videoElement.play().catch(e => {
+                    console.warn("[RxPlayer Host] play() catch:", e);
+                });
+            } catch (e2) {
+                notifyHost({ event: "error", message: e2.message });
+            }
+        };
+
+        window.stopChannel = function() {
+            try {
+                if (player) {
+                    player.stop();
+                }
+            } catch(e) {}
+            try {
+                videoElement.pause();
+                videoElement.removeAttribute('src');
+                videoElement.load();
+            } catch(e) {}
+            notifyHost({ event: "stopped" });
+        };
+
+        window.setVolume = function(volPercent) {
+            const v = Math.max(0, Math.min(100, volPercent)) / 100.0;
+            try {
+                if (player) {
+                    player.setVolume(v);
+                }
+            } catch(e) {}
+            try {
+                videoElement.volume = v;
+                videoElement.muted = (v === 0);
+            } catch(e) {}
+        };
+
+        window.setMute = function(isMuted) {
+            try {
+                if (player) {
+                    if (isMuted) player.mute(); else player.unMute();
+                }
+            } catch(e) {}
+            try {
+                videoElement.muted = isMuted;
+            } catch(e) {}
+        };
+
+        // Gotowość hosta do pracy
+        notifyHost({ event: "ready" });
+    </script>
+</body>
+</html>
