@@ -102,6 +102,7 @@ cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_VB" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 
 # Instalacja usługi systemd

@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="rx-player.js"></script>
     
     <style>
         :root {
@@ -1066,6 +1067,36 @@
             }, 5000);
             
             try {
+                if (window.RxPlayer && (ch.url.includes('.mpd') || ch.url.includes('.isml') || ch.url.includes('/manifest'))) {
+                    if (window.hlsInstance) {
+                        window.hlsInstance.destroy();
+                        window.hlsInstance = null;
+                    }
+                    if (!window.rxPlayerInstance) {
+                        window.rxPlayerInstance = new RxPlayer({
+                            videoElement: video,
+                            baseBandwidth: 6000000,
+                            wantedBufferAhead: 30,
+                            maxBufferAhead: 60,
+                            maxBufferBehind: 30
+                        });
+                        window.rxPlayerInstance.addEventListener('playerStateChange', (st) => {
+                            if (st === 'PLAYING') hideNoSignal();
+                        });
+                        window.rxPlayerInstance.addEventListener('error', (err) => {
+                            if (state.activeLayer === 'tv') {
+                                showNoSignal('Błąd odtwarzacza Canal+ RxPlayer: ' + (err.message || err.code), 'E-500 (RX_ERROR)');
+                            }
+                        });
+                    }
+                    const transport = ch.url.includes('.mpd') ? 'dash' : 'smooth';
+                    window.rxPlayerInstance.loadVideo({ url: ch.url, transport: transport, autoPlay: true });
+                    return;
+                }
+                if (window.rxPlayerInstance) {
+                    try { window.rxPlayerInstance.stop(); } catch(e) {}
+                }
+
                 if (ch.url.includes('.m3u8') && window.Hls && Hls.isSupported()) {
                     if (window.hlsInstance) {
                         window.hlsInstance.destroy();
@@ -1515,9 +1546,18 @@
             buttons.forEach((btn, i) => {
                 const btnEl = document.createElement('div');
                 btnEl.id = `modal-btn-${i}`;
-                btnEl.className = `focusable tv-focus-sm px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center ${btn.primary ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.4)]' : 'glass-panel text-white hover:bg-white/10'}`;
+                btnEl.className = `focusable tv-focus-sm px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center cursor-pointer ${btn.primary ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.4)]' : 'glass-panel text-white hover:bg-white/10'}`;
                 btnEl.textContent = btn.text;
                 btnEl.dataset.action = btn.id;
+                btnEl.dataset.isPrimary = btn.primary ? '1' : '0';
+                btnEl.onclick = () => {
+                    if (btn.primary || btn.id === 'btn-ok' || btn.id === 'btn-confirm' || btn.id === 'btn-ota-start' || btn.id === 'btn-force-update') {
+                        if (state.modal.onConfirm) state.modal.onConfirm(btn.id);
+                        else closeModal();
+                    } else {
+                        closeModal();
+                    }
+                };
                 btnContainer.appendChild(btnEl);
                 state.modal.focusList.push(btnEl.id);
             });
@@ -1653,6 +1693,9 @@
                 }
                 
                 handleFocusCallback(newId);
+                try {
+                    next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                } catch(e) {}
             }
         }
 
@@ -1745,18 +1788,23 @@
                     return null;
                 }
 
-                if (recElements.includes(state.nav.currentId)) {
+                const isRec = recElements.includes(state.nav.currentId) || (state.nav.currentId && state.nav.currentId.startsWith('home-rec-'));
+                const isApp = appElements.includes(state.nav.currentId) || (state.nav.currentId && state.nav.currentId.startsWith('app-'));
+
+                if (isRec) {
                     const idx = recElements.indexOf(state.nav.currentId);
-                    if (dir === 'Right' && idx < recElements.length - 1) return recElements[idx + 1];
-                    if (dir === 'Left' && idx > 0) return recElements[idx - 1];
+                    const safeIdx = idx >= 0 ? idx : 0;
+                    if (dir === 'Right' && safeIdx < recElements.length - 1) return recElements[safeIdx + 1];
+                    if (dir === 'Left' && safeIdx > 0) return recElements[safeIdx - 1];
                     if (dir === 'Up') return 'home-btn-store';
-                    if (dir === 'Down') return appElements[Math.min(idx, appElements.length - 1)];
-                } else if (appElements.includes(state.nav.currentId)) {
+                    if (dir === 'Down') return appElements.length > 0 ? appElements[Math.min(safeIdx, appElements.length - 1)] : 'app-tv';
+                } else if (isApp) {
                     const idx = appElements.indexOf(state.nav.currentId);
-                    if (dir === 'Right' && idx < appElements.length - 1) return appElements[idx + 1];
-                    if (dir === 'Left' && idx > 0) return appElements[idx - 1];
+                    const safeIdx = idx >= 0 ? idx : 0;
+                    if (dir === 'Right' && safeIdx < appElements.length - 1) return appElements[safeIdx + 1];
+                    if (dir === 'Left' && safeIdx > 0) return appElements[safeIdx - 1];
                     if (dir === 'Up') {
-                        return recElements.length > 0 ? recElements[Math.min(idx, recElements.length - 1)] : 'home-btn-store';
+                        return recElements.length > 0 ? recElements[Math.min(safeIdx, recElements.length - 1)] : 'home-btn-store';
                     }
                 }
             }
@@ -2358,8 +2406,8 @@
                         el.style.transform = 'scale(0.95)';
                         setTimeout(() => el.style.transform = '', 150);
                         
-                        if (el.dataset.action === 'btn-ok' || el.dataset.action === 'btn-confirm') {
-                            if (state.modal.onConfirm) state.modal.onConfirm();
+                        if (el.dataset.isPrimary === '1' || el.dataset.action === 'btn-ok' || el.dataset.action === 'btn-confirm' || el.dataset.action === 'btn-ota-start' || el.dataset.action === 'btn-force-update') {
+                            if (state.modal.onConfirm) state.modal.onConfirm(el.dataset.action);
                             else closeModal();
                         } else {
                             closeModal();
@@ -2372,12 +2420,9 @@
                 return; // Przerwij dalszą obsługę klawiszy systemowych
             }
 
-            // Klawisz M = Przełącznik Home (Dashboard) lub powrót do YouTube jeśli gra w tle
+            // Klawisz M = Przełącznik Home (Dashboard)
             if (key.toLowerCase() === 'm') {
-                if (window.isYouTubeBackgroundActive) {
-                    window.openYouTubeTV();
-                    return;
-                }
+                closeModal();
                 if (state.activeLayer === 'home') switchLayer('tv');
                 else switchLayer('home');
                 return;
@@ -2554,7 +2599,7 @@
                                 'Pilot Apple TV • Centrum Sterowania iOS',
                                 '<div class="flex gap-6 items-center text-left">' +
                                 '<div class="flex-1">' +
-                                '<p class="mb-3 font-medium">1. Upewnij się, że iPhone i dekoder są w tej samej sieci Wi-Fi (Domowy_Router_5G).</p>' +
+                                '<p class="mb-3 font-medium">1. Upewnij się, że iPhone jest połączony z siecią Wi-Fi tego samego domowego routera (dekoder połączony przewodowo Ethernet).</p>' +
                                 '<p class="mb-3 font-medium">2. Na iPhone otwórz aplikację <strong>Dom (Apple Home)</strong>.</p>' +
                                 '<p class="mb-3 font-medium">3. Kliknij <strong>+</strong> ➔ <strong>Dodaj akcesorium</strong> i skieruj aparat na kod po prawej stronie.</p>' +
                                 '<p class="mb-2 font-medium">4. Jeśli parujesz ręcznie, wpisz kod PIN:</p>' +
@@ -2612,29 +2657,124 @@
             }
         });
 
-        // --- FUNKCJE DLA AKTUALIZACJI OTA (PS4 STYLE) ---
-        function openPS4OTAUpdateModal() {
+        // --- FUNKCJE DLA AKTUALIZACJI OTA (PS4 STYLE Z PEŁNĄ INTEGRACJĄ GITHUB I LINUX) ---
+        let otaPollingInterval = null;
+
+        async function openPS4OTAUpdateModal() {
+            // 1. Ekran ładowania - sprawdzanie aktualizacji w czasie rzeczywistym
+            showModal(
+                'Wyszukiwanie aktualizacji',
+                '<div class="text-center py-6 space-y-4">' +
+                '<div class="relative w-16 h-16 mx-auto">' +
+                '<i class="fas fa-circle-notch fa-spin text-4xl text-sky-400 absolute inset-0 m-auto"></i>' +
+                '<i class="fab fa-github text-xl text-white absolute inset-0 m-auto"></i>' +
+                '</div>' +
+                '<div class="text-lg font-bold text-white">Sprawdzanie aktualizacji systemu...</div>' +
+                '<div class="text-xs text-sky-300 font-mono">Odpytywanie GitHub API (mateusz19558/TVDecoder_OS)</div>' +
+                '<div class="text-xs text-gray-400">Trwa weryfikacja najnowszego commita i pakietów Linux.</div>' +
+                '</div>',
+                'fas fa-sync-alt text-sky-400',
+                [{id: 'btn-cancel', text: 'ANULUJ', primary: false}]
+            );
+
+            // 2. Zapytanie do backendu
+            const otaData = await apiFetch('/api/ota/check');
+
+            if (!otaData || otaData.status === 'error') {
+                showModal(
+                    'Aktualizacja oprogramowania systemu',
+                    '<div class="text-center py-4 space-y-3">' +
+                    '<div class="w-16 h-16 mx-auto rounded-full bg-red-950/60 border border-red-500/40 flex items-center justify-center text-red-400 text-3xl">' +
+                    '<i class="fas fa-wifi-slash"></i>' +
+                    '</div>' +
+                    '<div class="text-lg font-bold text-white">Brak połączenia z serwerem aktualizacji</div>' +
+                    '<div class="text-xs text-gray-300">Nie udało się połączyć z repozytorium GitHub. Upewnij się, że dekoder jest podłączony do sieci Internet.</div>' +
+                    '</div>',
+                    'fas fa-exclamation-triangle text-amber-400',
+                    [{id: 'btn-ok', text: 'ZAMKNIJ', primary: true}]
+                );
+                return;
+            }
+
+            // 3. Przypadek: System jest w pełni aktualny
+            if (otaData.update_available === false) {
+                const currentSha = otaData.current_commit || '6c591e2';
+                const curVer = otaData.current_version || 'v3.2.0';
+                showModal(
+                    'Aktualizacja oprogramowania systemu',
+                    '<div class="text-left space-y-4">' +
+                    '<div class="bg-gradient-to-r from-emerald-950/70 to-teal-950/60 border border-emerald-500/40 rounded-2xl p-4 flex justify-between items-center">' +
+                    '<div>' +
+                    '<div class="text-xs text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">' +
+                    '<i class="fas fa-check-circle text-emerald-400"></i> Oprogramowanie jest aktualne' +
+                    '</div>' +
+                    '<div class="text-2xl font-bold text-white mt-1">' + curVer + '</div>' +
+                    '<div class="text-xs text-gray-300 mt-1">Zainstalowany commit: <span class="font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">' + currentSha + '</span></div>' +
+                    '</div>' +
+                    '<div class="text-right">' +
+                    '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-xs font-bold px-3 py-1 rounded-full">SYSTEM AKTUALNY</span>' +
+                    '<div class="text-xs text-gray-400 mt-2 font-mono">Brak nowych wydań</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="bg-black/30 border border-white/5 rounded-xl p-3 text-xs text-gray-300 space-y-2">' +
+                    '<div class="flex items-center gap-2"><i class="fab fa-linux text-yellow-400 text-sm"></i> Pakiety systemowe Linux (Debian 12 Bookworm) i jądro są w najnowszej wersji.</div>' +
+                    '<div class="flex items-center gap-2"><i class="fas fa-shield-alt text-emerald-400 text-sm"></i> Wszystkie poprawki bezpieczeństwa i odtwarzacz Canal+ RxPlayer są zainstalowane.</div>' +
+                    '</div>' +
+                    '<div id="ps4-ota-progress-wrap" class="hidden mt-4">' +
+                    '<div class="flex justify-between text-xs text-sky-200 mb-1"><span id="ps4-ota-status-lbl">Pobieranie pakietu OTA...</span><span id="ps4-ota-pct-lbl" class="font-bold">0%</span></div>' +
+                    '<div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden border border-white/20">' +
+                    '<div id="ps4-ota-bar" class="h-full bg-gradient-to-r from-emerald-500 to-sky-400 w-0 transition-all duration-300"></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>',
+                    'fas fa-shield-check text-emerald-400',
+                    [
+                        {id: 'btn-ok', text: 'ZAMKNIJ', primary: true},
+                        {id: 'btn-force-update', text: 'Wymuś reinstalację (OTA)', primary: false}
+                    ],
+                    (action) => {
+                        if (action === 'btn-force-update') {
+                            startOTAProcess(otaData);
+                        } else {
+                            closeModal();
+                        }
+                    }
+                );
+                return;
+            }
+
+            // 4. Przypadek: Dostępna jest rzeczywista nowa aktualizacja!
+            const latestVer = otaData.latest_version || 'Aurora OS (OTA)';
+            const releaseDate = otaData.release_date || '2026-10-21';
+            const changelogList = (Array.isArray(otaData.changelog) && otaData.changelog.length > 0)
+                ? otaData.changelog.map(item => '<li class="flex items-start gap-2 leading-relaxed"><i class="fas fa-check text-sky-400 text-[10px] mt-1 shrink-0"></i> <span>' + item + '</span></li>').join('')
+                : '<li class="flex items-center gap-2"><i class="fas fa-check text-sky-400 text-[10px]"></i> Poprawki stabilności i optymalizacja odtwarzacza.</li>';
+
             showModal(
                 'Aktualizacja oprogramowania systemu',
                 '<div class="text-left space-y-4">' +
-                '<div class="bg-blue-950/60 border border-blue-500/40 rounded-2xl p-4 flex justify-between items-center">' +
+                '<div class="bg-blue-950/70 border border-blue-500/40 rounded-2xl p-4 flex justify-between items-center shadow-lg">' +
                 '<div>' +
-                '<div class="text-xs text-sky-300 font-bold uppercase">Nowa Wersja Dostępna</div>' +
-                '<div class="text-2xl font-bold text-white">Aurora OS v3.1.5 (OTA)</div>' +
+                '<div class="text-xs text-sky-300 font-bold uppercase tracking-wider flex items-center gap-1.5">' +
+                '<span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Nowa Wersja Dostępna' +
+                '</div>' +
+                '<div class="text-2xl font-bold text-white mt-1">' + latestVer + '</div>' +
                 '<div class="text-xs text-gray-300 mt-1">Repozytorium: <span class="font-mono text-sky-300">mateusz19558/TVDecoder_OS</span></div>' +
                 '</div>' +
                 '<div class="text-right">' +
-                '<span class="bg-green-500/20 text-green-300 border border-green-400/40 text-xs font-bold px-3 py-1 rounded-full">GOTOWE DO POBRANIA</span>' +
-                '<div class="text-xs text-gray-400 mt-2 font-mono">Rozmiar: 24.8 MB</div>' +
+                '<span class="bg-green-500/20 text-green-300 border border-green-400/40 text-xs font-bold px-3 py-1 rounded-full">WYDANIE GITHUB</span>' +
+                '<div class="text-xs text-gray-400 mt-2 font-mono">Data: ' + releaseDate + '</div>' +
                 '</div>' +
                 '</div>' +
-                '<div class="text-sm font-semibold text-gray-200">Główne ulepszenia w tej aktualizacji (Changelog):</div>' +
-                '<ul class="text-xs text-gray-300 space-y-2 bg-black/30 rounded-xl p-3 border border-white/5">' +
-                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>Ostatnio oglądane:</strong> Wzbogacono o polecane hity kinowe i seriale 4K HDR.</li>' +
-                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>YouTube Smart TV:</strong> Automatyczne wstrzymywanie i wyciszanie TV po otwarciu YT.</li>' +
-                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>Nawigacja YT:</strong> Bezpośredni przycisk powrotu do Menu Głównego (M).</li>' +
-                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>Ustawienia:</strong> Nowy, elegancki interfejs w stylu PlayStation 4 (PS4).</li>' +
-                '<li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-[10px]"></i> <strong>OTA Linux & Windows:</strong> Automatyczne pobieranie najnowszych aktualizacji z GitHub.</li>' +
+                '<div class="bg-black/40 border border-sky-500/20 rounded-xl p-3 flex items-center gap-3">' +
+                '<i class="fab fa-linux text-2xl text-yellow-400 shrink-0"></i>' +
+                '<div class="text-xs text-gray-200">' +
+                '<strong>Aktualizacja Linuksa:</strong> Podczas instalacji system automatycznie zaktualizuje pakiety Debiana (<code class="text-sky-300 font-mono">apt-get upgrade</code>) oraz moduły sprzętowe.' +
+                '</div>' +
+                '</div>' +
+                '<div class="text-sm font-semibold text-gray-200">Rzeczywiste zmiany z repozytorium GitHub:</div>' +
+                '<ul class="text-xs text-gray-300 space-y-2 bg-black/30 rounded-xl p-3 border border-white/5 max-h-36 overflow-y-auto pr-1">' +
+                changelogList +
                 '</ul>' +
                 '<div id="ps4-ota-progress-wrap" class="hidden mt-4">' +
                 '<div class="flex justify-between text-xs text-sky-200 mb-1"><span id="ps4-ota-status-lbl">Pobieranie pakietu OTA...</span><span id="ps4-ota-pct-lbl" class="font-bold">0%</span></div>' +
@@ -2646,15 +2786,19 @@
                 'fas fa-cloud-download-alt text-sky-400',
                 [
                     {id: 'btn-ota-cancel', text: 'Zainstaluj później', primary: false},
-                    {id: 'btn-ota-start', text: 'Zaktualizuj teraz (OTA)', primary: true}
+                    {id: 'btn-ota-start', text: 'Zaktualizuj teraz (OTA + Linux)', primary: true}
                 ],
-                () => {
-                    startOTAProcess();
+                (action) => {
+                    if (action === 'btn-ota-start' || !action) {
+                        startOTAProcess(otaData);
+                    } else {
+                        closeModal();
+                    }
                 }
             );
         }
 
-        function startOTAProcess() {
+        async function startOTAProcess(otaData) {
             const wrap = document.getElementById('ps4-ota-progress-wrap');
             const bar = document.getElementById('ps4-ota-bar');
             const lbl = document.getElementById('ps4-ota-status-lbl');
@@ -2662,34 +2806,56 @@
             const btnContainer = document.getElementById('modal-buttons');
 
             if (wrap) wrap.classList.remove('hidden');
-            if (btnContainer) btnContainer.innerHTML = '<span class="text-xs text-sky-300 font-bold animate-pulse">Trwa aktualizacja OTA... Nie wyłączaj zasilania dekodera.</span>';
+            if (btnContainer) {
+                btnContainer.innerHTML = '<span class="text-xs text-sky-300 font-bold animate-pulse flex items-center gap-2"><i class="fas fa-cog fa-spin"></i> Trwa instalacja aktualizacji OTA oraz aktualizacja pakietów Linux... Nie odłączaj zasilania dekodera.</span>';
+            }
 
-            try { fetch('http://127.0.0.1:8080/api/ota/apply').catch(()=>{}); } catch(e){}
-            try { fetch('/api/ota/apply').catch(()=>{}); } catch(e){}
+            if (otaPollingInterval) {
+                clearInterval(otaPollingInterval);
+                otaPollingInterval = null;
+            }
 
-            let current = 0;
-            const interval = setInterval(() => {
-                current += Math.floor(Math.random() * 15) + 12;
-                if (current >= 100) {
-                    current = 100;
-                    clearInterval(interval);
+            // Rozpoczęcie procesu w backendzie
+            try { await apiFetch('/api/ota/apply'); } catch(e){}
+
+            // Prawdziwe odpytywanie statusu co 700ms
+            otaPollingInterval = setInterval(async () => {
+                const status = await apiFetch('/api/ota/status');
+                if (!status) return;
+
+                const percent = typeof status.percent === 'number' ? status.percent : 10;
+                const desc = status.description || 'Przetwarzanie aktualizacji...';
+
+                if (bar) bar.style.width = percent + '%';
+                if (pct) pct.textContent = percent + '%';
+                if (lbl) lbl.textContent = desc;
+
+                if (status.completed === true || percent >= 100) {
+                    clearInterval(otaPollingInterval);
+                    otaPollingInterval = null;
                     if (bar) bar.style.width = '100%';
                     if (pct) pct.textContent = '100%';
                     if (lbl) lbl.textContent = 'Aktualizacja zakończona sukcesem!';
+                    
+                    showToast('Aktualizacja OTA', 'System Aurora OS oraz pakiety Linux zostały pomyślnie zaktualizowane!', 'fas fa-check-circle', 'text-green-400', 'border-l-green-500');
+
                     setTimeout(() => {
                         closeModal();
-                        showToast('Aktualizacja OTA', 'System Aurora OS v3.1.5 został pomyślnie zaktualizowany!', 'fas fa-check-circle', 'text-green-400', 'border-l-green-500');
-                    }, 1200);
-                } else {
-                    if (bar) bar.style.width = current + '%';
-                    if (pct) pct.textContent = current + '%';
-                    if (lbl) {
-                        if (current > 70) lbl.textContent = 'Instalowanie plików systemowych Aurora...';
-                        else if (current > 40) lbl.textContent = 'Weryfikacja pakietu OTA z GitHub...';
-                        else lbl.textContent = 'Pobieranie plików aktualizacji...';
+                        showToast('Ponowne uruchamianie', 'Przeładowywanie interfejsu dekodera...', 'fas fa-redo fa-spin', 'text-sky-400', 'border-l-sky-500');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }, 1800);
+                } else if (status.error === true) {
+                    clearInterval(otaPollingInterval);
+                    otaPollingInterval = null;
+                    if (bar) bar.className = 'h-full bg-red-500 w-full';
+                    if (lbl) lbl.textContent = 'BŁĄD: ' + desc;
+                    if (btnContainer) {
+                        btnContainer.innerHTML = '<button onclick="closeModal()" class="px-6 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm">ZAMKNIJ</button>';
                     }
                 }
-            }, 350);
+            }, 700);
         }
 
         // --- SYSTEM WYKRYWANIA SIECI (ETHERNET / WI-FI) ORAZ NOŚNIKÓW USB ---

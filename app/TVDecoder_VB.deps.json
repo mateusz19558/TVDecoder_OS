@@ -1,0 +1,68 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0/linux-x64",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {},
+    ".NETCoreApp,Version=v10.0/linux-x64": {
+      "TVDecoder_VB/1.0.0": {
+        "dependencies": {
+          "Microsoft.Web.WebView2.Core": "1.0.4258.31",
+          "Microsoft.Web.WebView2.WinForms": "1.0.4258.31",
+          "Microsoft.Web.WebView2.Wpf": "1.0.4258.31"
+        },
+        "runtime": {
+          "TVDecoder_VB.dll": {}
+        }
+      },
+      "Microsoft.Web.WebView2.Core/1.0.4258.31": {
+        "runtime": {
+          "Microsoft.Web.WebView2.Core.dll": {
+            "assemblyVersion": "1.0.4258.31",
+            "fileVersion": "1.0.4258.31"
+          }
+        }
+      },
+      "Microsoft.Web.WebView2.WinForms/1.0.4258.31": {
+        "runtime": {
+          "Microsoft.Web.WebView2.WinForms.dll": {
+            "assemblyVersion": "1.0.4258.31",
+            "fileVersion": "1.0.4258.31"
+          }
+        }
+      },
+      "Microsoft.Web.WebView2.Wpf/1.0.4258.31": {
+        "runtime": {
+          "Microsoft.Web.WebView2.Wpf.dll": {
+            "assemblyVersion": "1.0.4258.31",
+            "fileVersion": "1.0.4258.31"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TVDecoder_VB/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Web.WebView2.Core/1.0.4258.31": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Web.WebView2.WinForms/1.0.4258.31": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Web.WebView2.Wpf/1.0.4258.31": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

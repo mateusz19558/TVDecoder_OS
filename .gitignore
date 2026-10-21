@@ -1,3 +1,6 @@
 *.iso
 *.tmp
 /tmp/
+__pycache__/
+*.pyc
+*.pdb
