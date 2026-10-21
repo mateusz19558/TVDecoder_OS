@@ -3,14 +3,20 @@
 # TVDecoder OS - Kiosk Session Launcher
 # ==============================================================================
 
-# 1. Wyłączenie wygaszacza ekranu i zarządzania energią DPMS (telewizor nigdy nie gaśnie)
-xset -dpms
-xset s off
-xset s noblank
+# 0. Wyciszenie konsoli i ustawienie ciemnego tła ekranu
+clear > /dev/tty1 2>/dev/null || true
+if command -v xsetroot >/dev/null 2>&1; then
+    xsetroot -solid "#080d1a" 2>/dev/null || true
+fi
 
-# 2. Ukrywanie kursora myszy (pilotem lub po 1 sek. bezczynności)
+# 1. Wyłączenie wygaszacza ekranu i zarządzania energią DPMS (telewizor nigdy nie gaśnie)
+xset -dpms 2>/dev/null || true
+xset s off 2>/dev/null || true
+xset s noblank 2>/dev/null || true
+
+# 2. Ukrywanie kursora myszy (pilotem lub natychmiast)
 if command -v unclutter >/dev/null 2>&1; then
-    unclutter -idle 1 -root &
+    unclutter -idle 0.1 -root &
 fi
 
 # 3. Odciszenie i ustawienie głośności audio (HDMI / wyjście domyślne)
@@ -24,7 +30,12 @@ fi
 
 # 3b. Uruchomienie menedżera okien Openbox (dla obsługi skrótów pilota, YouTube TV i trybu fullscreen)
 openbox --config-file /opt/tvdecoder/config/rc.xml &
-sleep 0.5
+sleep 0.2
+
+# 3c. Natychmiastowy pełnoekranowy ekran ładowania Aurora OS (Splash Screen)
+if [ -f "/opt/tvdecoder/app/aurora_splash.py" ]; then
+    python3 /opt/tvdecoder/app/aurora_splash.py &
+fi
 
 # 4. Sprawdzenie, czy wybrano tryb instalacji z menu bootloadera
 if grep -q "install_mode=1" /proc/cmdline; then

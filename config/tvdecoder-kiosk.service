@@ -11,11 +11,16 @@ PAMName=login
 WorkingDirectory=/home/tvuser
 Environment=DISPLAY=:0
 Environment=XDG_SESSION_TYPE=x11
-ExecStart=/usr/bin/xinit /opt/tvdecoder/config/kiosk.sh -- :0 vt1 -nocursor -keeptty
+ExecStartPre=/bin/sh -c 'clear > /dev/tty1 2>/dev/null || true'
+ExecStart=/usr/bin/xinit /opt/tvdecoder/config/kiosk.sh -- :0 vt1 -nocursor -keeptty -quiet -novtswitch
 Restart=always
 RestartSec=2
-StandardInput=tty
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
 TTYPath=/dev/tty1
+TTYReset=yes
+TTYVTDisallocate=yes
 
 [Install]
 WantedBy=graphical.target

@@ -916,13 +916,20 @@
         </div>
     </div>
     
-    <!-- Ekran bootowania (do symulacji twardego resetu) -->
-    <div id="boot-screen" class="absolute inset-0 bg-black z-[500] flex flex-col items-center justify-center transition-opacity duration-1000 opacity-0 pointer-events-none">
-        <i class="fas fa-satellite-dish text-6xl text-white/20 mb-6 animate-pulse"></i>
-        <h1 class="text-4xl font-light tracking-widest text-white/50 mb-8">AURORA <span class="font-bold text-white">OS</span></h1>
-        <div class="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div id="boot-progress" class="h-full bg-purple-500 w-0"></div>
+    <!-- Pełnoekranowy ekran ładowania Aurora OS (Splash Screen) -->
+    <div id="boot-screen" class="fixed inset-0 bg-[#080d1a] z-[999] flex flex-col items-center justify-center transition-opacity duration-700 opacity-100">
+        <div class="relative flex items-center justify-center mb-6">
+            <div class="w-24 h-24 rounded-full bg-blue-500/10 border border-sky-400/30 flex items-center justify-center shadow-[0_0_50px_rgba(56,189,248,0.25)]">
+                <i class="fas fa-satellite-dish text-4xl text-sky-400 animate-pulse"></i>
+            </div>
+            <div class="absolute -inset-2 rounded-full border border-sky-400/20 animate-ping pointer-events-none"></div>
         </div>
+        <h1 class="text-4xl font-black tracking-widest text-white mb-2">AURORA <span class="bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">OS</span></h1>
+        <div class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-8">Dekoder Telewizji Cyfrowej & Smart TV</div>
+        <div class="w-80 h-1.5 bg-white/10 rounded-full overflow-hidden border border-white/10">
+            <div id="boot-progress" class="h-full bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-400 w-[25%] transition-all duration-500"></div>
+        </div>
+        <span id="boot-text" class="text-xs text-sky-300 font-mono tracking-wider mt-3">Uruchamianie systemu Aurora OS...</span>
     </div>
 
     <!-- Warstwa Trybu Czuwania (Standby Mode) -->
@@ -3835,10 +3842,24 @@
             const standbyEl = document.getElementById('layer-standby');
             if (standbyEl) standbyEl.addEventListener('click', exitStandby);
 
-            // Pokaż UI początkowe
+            // Płynne ukrycie ekranu ładowania (Splash Screen) Aurora OS po załadowaniu systemu
+            const bootScreen = document.getElementById('boot-screen');
+            const bootProgress = document.getElementById('boot-progress');
+            const bootText = document.getElementById('boot-text');
+
+            if (bootProgress) bootProgress.style.width = '65%';
+            if (bootText) bootText.textContent = 'Inicjalizacja odtwarzacza Canal+ RxPlayer...';
+
             setTimeout(() => {
-                showOSDPill();
-            }, 800);
+                if (bootProgress) bootProgress.style.width = '100%';
+                if (bootText) bootText.textContent = 'System gotowy. Uruchamianie TV...';
+                setTimeout(() => {
+                    if (bootScreen) {
+                        bootScreen.classList.add('opacity-0', 'pointer-events-none');
+                    }
+                    showOSDPill();
+                }, 500);
+            }, 900);
         });
 
         // ==========================================

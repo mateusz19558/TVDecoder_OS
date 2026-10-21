@@ -61,7 +61,7 @@ apt-get install -y --no-install-recommends \
 
 # Serwer graficzny X11 + lekki menedżer okien Openbox + dedykowany silnik Kiosk Appliance (Aurora OS)
 apt-get install -y --no-install-recommends \
-    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium
+    xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils chromium python3-tk feh plymouth plymouth-themes
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \
