@@ -45,17 +45,17 @@ if grep -q "install_mode=1" /proc/cmdline; then
     exit 0
 fi
 
-# 5. Konfiguracja środowiska graficznego i Wine
+# 5. Konfiguracja środowiska graficznego (Zero Wine)
 export DISPLAY=":0"
 export XDG_SESSION_TYPE="x11"
-export WINEPREFIX="/home/tvuser/.wine"
-export WINEDEBUG="-all"
 
 APP_DIR="/opt/tvdecoder/app"
-VB_RUNNER="$APP_DIR/TVDecoder_VB.exe"
+export LD_LIBRARY_PATH="$APP_DIR:$LD_LIBRARY_PATH"
+export WEBKIT_FORCE_COMPOSITING_MODE=1
+export WEBKIT_DISABLE_COMPOSITING_MODE=0
 
 # Uprawnienia do wykonywania
-chmod +x "$APP_DIR/tvdecoder-linux" "$APP_DIR/TVDecoder_VB" "$APP_DIR"/*.exe "$APP_DIR"/*.py 2>/dev/null || true
+chmod +x "$APP_DIR/TVDecoder_Linux" "$APP_DIR/tvdecoder-linux" "$APP_DIR"/*.py 2>/dev/null || true
 
 cd "$APP_DIR" || exit 1
 
@@ -69,14 +69,17 @@ if [ -f "$APP_DIR/tvdecoder_server.py" ]; then
     python3 "$APP_DIR/tvdecoder_server.py" &
 fi
 
-# 6. Pętla Watchdoga dla aplikacji Visual Basic (TVDecoder_VB)
-echo "=== Start TVDecoder Visual Basic Edition ==="
+# 6. Pętla Watchdoga dla natywnej aplikacji Linux (Zero Wine)
+echo "=== Start TVDecoder Linux Native Edition (Zero Wine) ==="
 while true; do
-    echo "[$(date)] Uruchamianie aplikacji Visual Basic (TVDecoder_VB.exe)..."
-    if [ -f "$VB_RUNNER" ]; then
-        wine "$VB_RUNNER"
-    else
+    echo "[$(date)] Uruchamianie natywnej aplikacji TVDecoder_Linux..."
+    if [ -x "$APP_DIR/TVDecoder_Linux" ]; then
+        "$APP_DIR/TVDecoder_Linux"
+    elif [ -x "$APP_DIR/tvdecoder-linux" ]; then
         "$APP_DIR/tvdecoder-linux"
+    else
+        echo "[BLAD] Brak pliku wykonywalnego TVDecoder_Linux!"
+        sleep 5
     fi
     
     EXIT_CODE=$?

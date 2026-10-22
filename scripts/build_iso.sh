@@ -59,10 +59,11 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + lekki menedżer okien Openbox + środowisko Wine dla aplikacji Visual Basic (WPF)
+# Serwer graficzny X11 + lekki menedżer okien Openbox + natywne biblioteki WebKitGTK / GTK3 (Zero Wine)
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
-    wine wine64 libwine
+    libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 \
+    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \
@@ -102,9 +103,8 @@ cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 
 chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_Linux" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
-chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_VB.exe" 2>/dev/null || true
-chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_VB" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 
 # Instalacja usługi systemd
