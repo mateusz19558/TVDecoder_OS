@@ -116,11 +116,23 @@ chroot "$CHROOT_DIR" chown -R tvuser:tvuser /opt/tvdecoder
 
 # Kopiowanie kernela i initrd do struktury ISO
 echo "⏳ [5/7] Przygotowywanie jądra i initrd dla nośnika Live..."
-VMLINUZ=$(ls -1 "$CHROOT_DIR/boot"/vmlinuz-* | sort -V | tail -n 1)
-INITRD=$(ls -1 "$CHROOT_DIR/boot"/initrd.img-* | sort -V | tail -n 1)
+VMLINUZ=$(ls -1 "$CHROOT_DIR/boot"/vmlinuz-* 2>/dev/null | sort -V | tail -n 1)
+INITRD=$(ls -1 "$CHROOT_DIR/boot"/initrd.img-* 2>/dev/null | sort -V | tail -n 1)
 
-cp "$VMLINUZ" "$ISO_DIR/live/vmlinuz"
-cp "$INITRD" "$ISO_DIR/live/initrd.img"
+if [ -z "$VMLINUZ" ] || [ ! -f "$VMLINUZ" ]; then
+    echo "❌ Błąd: Nie znaleziono pliku jądra w $CHROOT_DIR/boot/vmlinuz-*!"
+    exit 1
+fi
+
+if [ -z "$INITRD" ] || [ ! -f "$INITRD" ]; then
+    echo "❌ Błąd: Nie znaleziono pliku initrd w $CHROOT_DIR/boot/initrd.img-*!"
+    exit 1
+fi
+
+echo "   Jądro: $VMLINUZ"
+echo "   Initrd: $INITRD"
+cp -L "$VMLINUZ" "$ISO_DIR/live/vmlinuz"
+cp -L "$INITRD" "$ISO_DIR/live/initrd.img"
 
 # 6. Kompresja systemu plików do SquashFS
 echo "⏳ [6/7] Kompresja systemu do filesystem.squashfs..."
@@ -138,7 +150,9 @@ mkfs.vfat "$ISO_DIR/boot/grub/efi.img"
 mkdir -p /mnt/efi_tmp
 mount "$ISO_DIR/boot/grub/efi.img" /mnt/efi_tmp
 mkdir -p /mnt/efi_tmp/EFI/BOOT
-grub-mkstandalone -O x86_64-efi -o /mnt/efi_tmp/EFI/BOOT/BOOTX64.EFI "boot/grub/grub.cfg=$PROJECT_ROOT/config/grub.cfg"
+grub-mkstandalone -O x86_64-efi -o /mnt/efi_tmp/EFI/BOOT/BOOTX64.EFI \
+    --modules="part_gpt part_msdos fat iso9660 ntfs ext2 normal test linux search search_fs_file search_label efi_gop efi_uga font gfxterm echo video" \
+    "boot/grub/grub.cfg=$PROJECT_ROOT/config/grub.cfg"
 umount /mnt/efi_tmp
 rmdir /mnt/efi_tmp
 
