@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# TVDecoder OS - Kiosk Session Launcher
+# Aurora OS - Kiosk Session Launcher
+# Natywny Kiosk TV • Zero Wine • .NET 10 / WebKitGTK / Mesa VA-API
 # ==============================================================================
 
 # 0. Wyciszenie konsoli i ustawienie ciemnego tła ekranu
@@ -55,35 +56,36 @@ export WEBKIT_FORCE_COMPOSITING_MODE=1
 export WEBKIT_DISABLE_COMPOSITING_MODE=0
 
 # Uprawnienia do wykonywania
-chmod +x "$APP_DIR/TVDecoder_Linux" "$APP_DIR/tvdecoder-linux" "$APP_DIR"/*.py 2>/dev/null || true
+chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR/tvdecoder-linux" "$APP_DIR"/*.py 2>/dev/null || true
 
 cd "$APP_DIR" || exit 1
 
-# Uruchomienie mostka pilota Apple TV w tle
-if [ -f "$APP_DIR/apple_tv_bridge.py" ]; then
+# Uruchomienie mostka pilota Apple TV w tle (jeśli nie jest już aktywny)
+if [ -f "$APP_DIR/apple_tv_bridge.py" ] && ! pgrep -f "apple_tv_bridge.py" >/dev/null 2>&1; then
     python3 "$APP_DIR/apple_tv_bridge.py" &
 fi
 
-# Uruchomienie wbudowanego serwera API (dla sterowania i OTA)
-if [ -f "$APP_DIR/tvdecoder_server.py" ]; then
+# Uruchomienie wbudowanego serwera API (jeśli nie jest już aktywny)
+if [ -f "$APP_DIR/tvdecoder_server.py" ] && ! pgrep -f "tvdecoder_server.py" >/dev/null 2>&1; then
     python3 "$APP_DIR/tvdecoder_server.py" &
 fi
 
 # 6. Pętla Watchdoga dla natywnej aplikacji Linux (Zero Wine)
-echo "=== Start TVDecoder Linux Native Edition (Zero Wine) ==="
+echo "=== Start Aurora OS Linux Native Edition (Zero Wine) ==="
 while true; do
-    echo "[$(date)] Uruchamianie natywnej aplikacji TVDecoder_Linux..."
-    if [ -x "$APP_DIR/TVDecoder_Linux" ]; then
+    echo "[$(date)] Uruchamianie natywnej aplikacji Aurora OS..."
+    if [ -x "$APP_DIR/AuroraOS" ]; then
+        "$APP_DIR/AuroraOS"
+    elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
         "$APP_DIR/TVDecoder_Linux"
     elif [ -x "$APP_DIR/tvdecoder-linux" ]; then
         "$APP_DIR/tvdecoder-linux"
     else
-        echo "[BLAD] Brak pliku wykonywalnego TVDecoder_Linux!"
+        echo "[BLAD] Brak pliku wykonywalnego AuroraOS / TVDecoder_Linux!"
         sleep 5
     fi
     
     EXIT_CODE=$?
-    echo "[$(date)] TVDecoder zakończył działanie z kodem: $EXIT_CODE"
+    echo "[$(date)] Aurora OS zakończył działanie z kodem: $EXIT_CODE"
     sleep 2
 done
-

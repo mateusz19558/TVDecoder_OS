@@ -66,11 +66,12 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + lekki menedżer okien Openbox + natywne biblioteki WebKitGTK / GTK3 (Zero Wine)
+# Serwer graficzny X11 + lekki menedżer okien Openbox + natywne biblioteki WebKitGTK / GTK3 (Zero Wine) + Chromium fallback
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
     libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 \
-    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi
+    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi \
+    chromium chromium-common || true
 
 # Konfiguracja uprawnień Xorg dla użytkownika kiosku
 mkdir -p /etc/X11
@@ -78,6 +79,7 @@ cat <<'XWRAPPER' > /etc/X11/Xwrapper.config
 allowed_users=anybody
 needs_root_rights=yes
 XWRAPPER
+chmod u+s /usr/lib/xorg/Xorg.wrap 2>/dev/null || true
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
 apt-get install -y --no-install-recommends \
@@ -124,6 +126,7 @@ cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 
 chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
 chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app/AuroraOS" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_Linux" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
@@ -208,8 +211,10 @@ xorriso -as mkisofs \
     -output "$OUTPUT_ISO" \
     "$ISO_DIR"
 
+cp -f "$OUTPUT_ISO" "$PROJECT_ROOT/AuroraOS.iso" 2>/dev/null || true
+
 echo "================================================================================"
 echo " 🎉 SUKCES! Bootowalny obraz ISO został wygenerowany:"
-echo " 📁 $OUTPUT_ISO"
+echo " 📁 $OUTPUT_ISO oraz $PROJECT_ROOT/AuroraOS.iso"
 echo " Możesz go nagrać na pendrive programem Rufus lub Ventoy!"
 echo "================================================================================"

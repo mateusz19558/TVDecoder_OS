@@ -84,6 +84,8 @@ if [ -d "$EXTRACTED_DIR/scripts" ]; then
 fi
 
 # Nadanie uprawnień wykonywalnych
+chmod +x "$TARGET_DIR/app/AuroraOS" 2>/dev/null || true
+chmod +x "$TARGET_DIR/app/TVDecoder_Linux" 2>/dev/null || true
 chmod +x "$TARGET_DIR/app/tvdecoder-linux" 2>/dev/null || true
 chmod +x "$TARGET_DIR/app/TVDecoder_VB.exe" 2>/dev/null || true
 chmod +x "$TARGET_DIR/app/TVDecoder_VB" 2>/dev/null || true

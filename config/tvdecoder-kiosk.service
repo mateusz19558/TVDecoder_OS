@@ -1,5 +1,5 @@
 [Unit]
-Description=TVDecoder OS Fullscreen Kiosk Session
+Description=Aurora OS Fullscreen Kiosk Session
 After=systemd-user-sessions.service sound.target network.target
 Wants=sound.target
 
