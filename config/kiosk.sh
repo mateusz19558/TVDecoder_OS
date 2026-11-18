@@ -46,6 +46,19 @@ if grep -q "install_mode=1" /proc/cmdline; then
     exit 0
 fi
 
+# 4b. Wybór powłoki systemowej (Opcja B - Wayland Cage, Opcja C - WPE Direct DRM, lub klasyczny X11)
+if grep -q "ui_mode=wpe" /proc/cmdline && [ -f "/opt/tvdecoder/scripts/start_wpe_drm.sh" ]; then
+    echo "=== Start Aurora OS: Tryb WPE WebKit Direct DRM (Opcja C) ==="
+    chmod +x /opt/tvdecoder/scripts/start_wpe_drm.sh
+    exec /opt/tvdecoder/scripts/start_wpe_drm.sh
+fi
+
+if grep -q "ui_mode=wayland" /proc/cmdline && [ -f "/opt/tvdecoder/scripts/start_wayland.sh" ]; then
+    echo "=== Start Aurora OS: Tryb Wayland Kiosk Cage (Opcja B) ==="
+    chmod +x /opt/tvdecoder/scripts/start_wayland.sh
+    exec /opt/tvdecoder/scripts/start_wayland.sh
+fi
+
 # 5. Konfiguracja środowiska graficznego (Zero Wine)
 export DISPLAY=":0"
 export XDG_SESSION_TYPE="x11"
