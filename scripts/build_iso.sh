@@ -179,7 +179,7 @@ mkdir -p /mnt/efi_tmp
 mount "$ISO_DIR/boot/grub/efi.img" /mnt/efi_tmp
 mkdir -p /mnt/efi_tmp/EFI/BOOT
 grub-mkstandalone -O x86_64-efi -o /mnt/efi_tmp/EFI/BOOT/BOOTX64.EFI \
-    --modules="part_gpt part_msdos fat iso9660 ntfs ext2 normal test linux search search_fs_file search_label efi_gop efi_uga font gfxterm echo video" \
+    --modules="part_gpt part_msdos fat iso9660 ntfs ext2 normal test linux search search_fs_file search_label efi_gop all_video font gfxterm echo video" \
     "boot/grub/grub.cfg=$PROJECT_ROOT/config/grub.cfg"
 umount /mnt/efi_tmp
 rmdir /mnt/efi_tmp
