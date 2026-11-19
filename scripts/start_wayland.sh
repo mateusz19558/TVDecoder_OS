@@ -5,8 +5,17 @@
 # ==============================================================================
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+# Zamknięcie splash screena Plymouth
+plymouth --quit 2>/dev/null || true
+
+BASE_DIR="/opt/tvdecoder"
+APP_DIR="$BASE_DIR/app"
+
+if [ ! -d "$APP_DIR" ]; then
+    APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../app" && pwd)"
+fi
+
+cd "$APP_DIR" || exit 1
 
 echo "=================================================================="
 echo " 🚀 Aurora OS • Wayland Kiosk Compositor (Cage / Zero X11)       "
@@ -26,42 +35,50 @@ export QT_QPA_PLATFORM="wayland"
 export SDL_VIDEODRIVER="wayland"
 export WEBKIT_FORCE_COMPOSITING_MODE=1
 export WEBKIT_DISABLE_COMPOSITING_MODE=0
-export LD_LIBRARY_PATH="$SCRIPT_DIR:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$APP_DIR:$LD_LIBRARY_PATH"
 
-# Uprawnienia
-chmod +x ./AuroraOS ./TVDecoder_Linux 2>/dev/null || true
-chmod +x ./app/*.py 2>/dev/null || true
+# Uprawnienia wykonywalne
+chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR"/*.py 2>/dev/null || true
 
 # 2. Uruchomienie mostka i serwera API w tle (jeśli nie działają)
 PORT=8080
-if [ -f "./app/tvdecoder_server.py" ] && ! pgrep -f "tvdecoder_server.py" >/dev/null 2>&1; then
-    python3 "./app/tvdecoder_server.py" "$PORT" &
+if [ -f "$APP_DIR/tvdecoder_server.py" ] && ! pgrep -f "tvdecoder_server.py" >/dev/null 2>&1; then
+    python3 "$APP_DIR/tvdecoder_server.py" "$PORT" &
 fi
-if [ -f "./app/apple_tv_bridge.py" ] && ! pgrep -f "apple_tv_bridge.py" >/dev/null 2>&1; then
-    python3 "./app/apple_tv_bridge.py" &
+if [ -f "$APP_DIR/apple_tv_bridge.py" ] && ! pgrep -f "apple_tv_bridge.py" >/dev/null 2>&1; then
+    python3 "$APP_DIR/apple_tv_bridge.py" &
 fi
 
-# 3. Sprawdzenie obecności kompozytora Cage
+SERVER_URL="http://127.0.0.1:${PORT}/"
+
+# 3. Oczekiwanie na serwer API
+echo "[Wayland] Oczekiwanie na gotowość serwera: $SERVER_URL..."
+for i in {1..30}; do
+    if curl -s -o /dev/null -w "%{http_code}" "$SERVER_URL" 2>/dev/null | grep -q "200\|404"; then
+        break
+    fi
+    sleep 0.1
+done
+
+# 4. Sprawdzenie obecności kompozytora Cage
 if ! command -v cage >/dev/null 2>&1; then
-    echo "❌ Nie znaleziono kompozytora Cage!"
-    echo "👉 Zainstaluj go poleceniem: sudo apt install cage"
-    echo "Uruchamianie w trybie awaryjnym bezpośrednim..."
-    if [ -x "./AuroraOS" ]; then
-        exec ./AuroraOS
-    else
-        exec ./TVDecoder_Linux
+    echo "❌ Nie znaleziono kompozytora Cage, uruchamianie bezpośrednie..."
+    if [ -x "$APP_DIR/AuroraOS" ]; then
+        exec "$APP_DIR/AuroraOS"
+    elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
+        exec "$APP_DIR/TVDecoder_Linux"
     fi
 fi
 
-# 4. Uruchomienie Kiosku Wayland za pomocą Cage (-s ukrywa kursor)
+# 5. Uruchomienie Kiosku Wayland za pomocą Cage (-s ukrywa kursor)
 echo "[Wayland] Startowanie Kiosku Cage z aplikacją Aurora OS..."
-if [ -x "./AuroraOS" ]; then
-    exec cage -s -- ./AuroraOS
-elif [ -x "./TVDecoder_Linux" ]; then
-    exec cage -s -- ./TVDecoder_Linux
+if [ -x "$APP_DIR/AuroraOS" ]; then
+    exec cage -s -- "$APP_DIR/AuroraOS"
+elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
+    exec cage -s -- "$APP_DIR/TVDecoder_Linux"
 elif command -v chromium >/dev/null 2>&1; then
-    echo "[Wayland] Uruchamianie Chromium w natywnym trybie Ozone Wayland..."
-    exec cage -s -- chromium --ozone-platform=wayland --kiosk --app="http://127.0.0.1:8080/" \
+    echo "[Wayland] Uruchamianie Chromium w trybie Ozone Wayland..."
+    exec cage -s -- chromium --ozone-platform=wayland --kiosk --app="$SERVER_URL" \
         --no-first-run --autoplay-policy=no-user-gesture-required --disable-web-security \
         --enable-gpu-rasterization --enable-zero-copy --user-data-dir="/tmp/aurora_wayland_profile"
 else

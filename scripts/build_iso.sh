@@ -61,9 +61,9 @@ apt-get update -y
 apt-get install -y --no-install-recommends \
     linux-image-amd64 live-boot live-config systemd-sysv
 
-# Sterowniki GPU, sprzętu i Firmware (pełna akceleracja sprzętowa VA-API/Vulkan/OpenGL)
+# Sterowniki GPU, sprzętu i Firmware (pełna akceleracja sprzętowa VA-API/Vulkan/OpenGL + VMware/VBox)
 apt-get install -y --no-install-recommends \
-    firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all \
+    firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
 # Serwer graficzny X11 + Wayland Kiosk (Cage) + WPE WebKit Direct DRM (Cog)
