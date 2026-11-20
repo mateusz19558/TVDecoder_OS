@@ -96,6 +96,9 @@ start_chromium_kiosk() {
         "--no-default-browser-check"
         "--disable-infobars"
         "--disable-session-crashed-bubble"
+        "--disable-features=Translate"
+        "--disable-translate"
+        "--lang=pl-PL"
         "--autoplay-policy=no-user-gesture-required"
         "--disable-web-security"
         "--allow-running-insecure-content"
@@ -117,54 +120,28 @@ start_chromium_kiosk() {
 
     while true; do
         "$CHROMIUM_BIN" "${FLAGS[@]}"
-        echo "[AuroraOS] Restart sesji Chromium Kiosk..."
+        echo "[AuroraOS] Restart sesji awaryjnej Kiosk..."
         sleep 1
     done
 }
 
-# 9. Start interfejsu graficznego z automatycznym i natychmiastowym fallbackiem
-echo "=== Start Aurora OS Kiosk Shell ==="
+# 9. Start natywnego skompilowanego programu Aurora OS (.NET 10 Linux x64)
+echo "=== Start Skompilowanego Programu Aurora OS (Natywna Aplikacja Linux) ==="
 
-# Jeśli jesteśmy w maszynie wirtualnej (VMware / VirtualBox) -> bezpośrednio uruchom Chromium Kiosk
-if [ "$IS_VIRTUAL_MACHINE" -eq 1 ] && command -v chromium >/dev/null 2>&1; then
-    echo "[AuroraOS] Maszyna wirtualna: Bezpośredni start Chromium Kiosk (100% płynności bez crashów WebKit)."
-    start_chromium_kiosk
-    exit 0
-fi
-
-# Na fizycznym sprzęcie: próba uruchomienia natywnej aplikacji AuroraOS (.NET 10)
-PREFER_NATIVE=0
-if [ -x "$APP_DIR/AuroraOS" ]; then
-    PREFER_NATIVE=1
-    APP_EXEC="$APP_DIR/AuroraOS"
-elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
-    PREFER_NATIVE=1
+APP_EXEC="$APP_DIR/AuroraOS"
+if [ ! -x "$APP_EXEC" ] && [ -x "$APP_DIR/TVDecoder_Linux" ]; then
     APP_EXEC="$APP_DIR/TVDecoder_Linux"
 fi
 
-if [ "$PREFER_NATIVE" -eq 1 ]; then
-    echo "[$(date)] Próba uruchomienia natywnej aplikacji: $APP_EXEC"
-    START_T=$(date +%s)
-    "$APP_EXEC" >> /tmp/auroraos_native.log 2>&1
-    EXIT_CODE=$?
-    END_T=$(date +%s)
-    ELAPSED=$((END_T - START_T))
-
-    echo "[$(date)] Natywna aplikacja zakończyła działanie po ${ELAPSED}s z kodem: $EXIT_CODE"
-
-    # Jeśli natywna aplikacja crashnęła w mniej niż 4 sekundy, natychmiast przełączamy na Chromium
-    if [ "$ELAPSED" -lt 4 ]; then
-        echo "[AuroraOS] Silnik natywny nie zdołał utrzymać okna (${ELAPSED}s). Natychmiastowe przełączenie na Chromium Kiosk!"
-        start_chromium_kiosk
-        exit 0
-    else
-        # Jeśli aplikacja działała normalnie i została zamknięta, restartujemy ją
-        while true; do
-            "$APP_EXEC"
-            sleep 2
-        done
-    fi
+if [ -x "$APP_EXEC" ]; then
+    echo "[$(date)] Uruchamianie skompilowanej aplikacji Linux: $APP_EXEC"
+    while true; do
+        "$APP_EXEC"
+        EXIT_CODE=$?
+        echo "[$(date)] Aplikacja Aurora OS zakończyła działanie z kodem: $EXIT_CODE"
+        sleep 1
+    done
 else
-    # Jeśli brak pliku binarnego, od razu uruchamiamy Chromium Kiosk
+    echo "[AuroraOS] Ostrzeżenie: Brak skompilowanego pliku binarnego. Uruchamianie silnika zapasowego."
     start_chromium_kiosk
 fi
