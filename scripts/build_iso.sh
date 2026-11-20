@@ -66,14 +66,15 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + Wayland Kiosk (Cage) + WPE WebKit Direct DRM (Cog)
+# Serwer graficzny X11 + Wayland Kiosk (Cage) + WPE WebKit Direct DRM (Cog) + Pakiety Kiosk
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
     cage seatd libseat1 libwayland-client0 libwayland-server0 \
     cog libwpewebkit-1.1-0 libwpe-1.0-1 wpebackend-fdo-1.0-1 libinput10 \
-    libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 \
+    libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 libicu72 \
+    fonts-dejavu fonts-liberation libnss3 libnspr4 libasound2 \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi \
-    chromium chromium-common || true
+    chromium chromium-common chromium-sandbox
 
 # Konfiguracja uprawnień Xorg dla użytkownika kiosku
 mkdir -p /etc/X11

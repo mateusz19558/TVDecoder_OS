@@ -70,18 +70,36 @@ if ! command -v cage >/dev/null 2>&1; then
     fi
 fi
 
-# 5. Uruchomienie Kiosku Wayland za pomocą Cage (-s ukrywa kursor)
-echo "[Wayland] Startowanie Kiosku Cage z aplikacją Aurora OS..."
-if [ -x "$APP_DIR/AuroraOS" ]; then
-    exec cage -s -- "$APP_DIR/AuroraOS"
-elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
-    exec cage -s -- "$APP_DIR/TVDecoder_Linux"
-elif command -v chromium >/dev/null 2>&1; then
-    echo "[Wayland] Uruchamianie Chromium w trybie Ozone Wayland..."
+# 5. Uruchomienie Kiosku Wayland za pomocą Cage (-s ukrywa kursor) z bezpiecznym fallbackiem
+echo "[Wayland] Startowanie Kiosku Cage dla Aurora OS..."
+
+start_wayland_chromium() {
+    echo "[Wayland] Uruchamianie Chromium w trybie Ozone Wayland Kiosk..."
     exec cage -s -- chromium --ozone-platform=wayland --kiosk --app="$SERVER_URL" \
         --no-first-run --autoplay-policy=no-user-gesture-required --disable-web-security \
         --enable-gpu-rasterization --enable-zero-copy --user-data-dir="/tmp/aurora_wayland_profile"
+}
+
+# Na maszynach wirtualnych lub gdy brak natywnego pliku: bezpośrednio Chromium
+if command -v systemd-detect-virt >/dev/null 2>&1 && systemd-detect-virt -q; then
+    start_wayland_chromium
+fi
+
+if [ -x "$APP_DIR/AuroraOS" ]; then
+    START_T=$(date +%s)
+    cage -s -- "$APP_DIR/AuroraOS" || true
+    ELAPSED=$(( $(date +%s) - START_T ))
+    if [ "$ELAPSED" -lt 4 ]; then
+        echo "[Wayland] AuroraOS zakończył się po ${ELAPSED}s. Przełączanie na Chromium..."
+        start_wayland_chromium
+    fi
+elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
+    START_T=$(date +%s)
+    cage -s -- "$APP_DIR/TVDecoder_Linux" || true
+    ELAPSED=$(( $(date +%s) - START_T ))
+    if [ "$ELAPSED" -lt 4 ]; then
+        start_wayland_chromium
+    fi
 else
-    echo "❌ Brak aplikacji wykonywalnej Aurora OS ani Chromium!"
-    exit 1
+    start_wayland_chromium
 fi

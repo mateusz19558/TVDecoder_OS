@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Aurora OS - Kiosk Session Launcher (X11 Appliance Mode)
-# 100% kompatybilny ze wszystkimi GPU i maszynami wirtualnymi (VMware / VBox / PC)
+# Aurora OS - Pancerne Środowisko Kiosk Appliance (X11 Universal Mode)
+# 100% kompatybilny ze wszystkimi GPU, PC oraz maszynami wirtualnymi (VMware/VBox)
 # ==============================================================================
 
 # 0. Zamknięcie splash screena Plymouth i wyczyszczenie konsoli
 plymouth --quit 2>/dev/null || true
 clear > /dev/tty1 2>/dev/null || true
-
-if command -v xsetroot >/dev/null 2>&1; then
-    xsetroot -solid "#080d1a" 2>/dev/null || true
-fi
 
 # 1. Wyłączenie wygaszacza ekranu i zarządzania energią DPMS
 xset -dpms 2>/dev/null || true
@@ -37,65 +33,138 @@ export XDG_SESSION_TYPE="x11"
 export LD_LIBRARY_PATH="$APP_DIR:$LD_LIBRARY_PATH"
 
 # Wykrywanie maszyn wirtualnych (VMware, VirtualBox, QEMU)
-# W maszynach wirtualnych wyłączamy compositing WebKitGTK, aby uniknąć problemów ze sterownikiem vmwgfx
+IS_VIRTUAL_MACHINE=0
 if command -v systemd-detect-virt >/dev/null 2>&1 && systemd-detect-virt -q; then
-    echo "[AuroraOS] Wykryto maszynę wirtualną. Uruchamianie bezpiecznego renderowania."
+    IS_VIRTUAL_MACHINE=1
+    echo "[AuroraOS] Wykryto środowisko wirtualne (VMware / VirtualBox)."
     export WEBKIT_DISABLE_COMPOSITING_MODE=1
     export WEBKIT_DISABLE_DMABUF_RENDERER=1
     export LIBGL_ALWAYS_SOFTWARE=1
-else
-    export WEBKIT_FORCE_COMPOSITING_MODE=1
-    export WEBKIT_DISABLE_COMPOSITING_MODE=0
 fi
 
 # Uprawnienia do wykonywania
 chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR/tvdecoder-linux" "$APP_DIR"/*.py 2>/dev/null || true
 cd "$APP_DIR" || exit 1
 
-# 3b. Menedżer okien Openbox dla obsługi pełnego ekranu i pilota
+# 4. Menedżer okien Openbox dla obsługi pełnego ekranu i pilota
 openbox --config-file /opt/tvdecoder/config/rc.xml &
 sleep 0.2
 
-# 3c. Ekran ładowania Aurora OS
-if [ -f "$APP_DIR/aurora_splash.py" ]; then
-    python3 "$APP_DIR/aurora_splash.py" &
-fi
-
-# 4. Sprawdzenie trybu instalacji
+# 5. Sprawdzenie trybu instalacji na dysku
 if grep -q "install_mode=1" /proc/cmdline; then
     xterm -fullscreen -bg black -fg white -fa 'Monospace' -fs 14 -e "/opt/tvdecoder/scripts/installer.sh"
     reboot
     exit 0
 fi
 
-# 5. Uruchomienie mostka Apple TV w tle
+# 6. Uruchomienie mostka Apple TV w tle
 if [ -f "$APP_DIR/apple_tv_bridge.py" ] && ! pgrep -f "apple_tv_bridge.py" >/dev/null 2>&1; then
     python3 "$APP_DIR/apple_tv_bridge.py" &
 fi
 
-# 6. Uruchomienie wbudowanego serwera API
+# 7. Uruchomienie wbudowanego serwera API / Web
 if [ -f "$APP_DIR/tvdecoder_server.py" ] && ! pgrep -f "tvdecoder_server.py" >/dev/null 2>&1; then
     python3 "$APP_DIR/tvdecoder_server.py" 8080 &
 fi
 
-# 7. Pętla Watchdoga dla aplikacji Aurora OS
-echo "=== Start Aurora OS Linux Native Kiosk ==="
-while true; do
-    echo "[$(date)] Uruchamianie Aurora OS..."
-    if [ -x "$APP_DIR/AuroraOS" ]; then
-        "$APP_DIR/AuroraOS"
-    elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
-        "$APP_DIR/TVDecoder_Linux"
-    elif [ -x "$APP_DIR/tvdecoder-linux" ]; then
-        "$APP_DIR/tvdecoder-linux"
-    elif command -v chromium >/dev/null 2>&1; then
-        chromium --kiosk --app="http://127.0.0.1:8080/" --no-first-run --autoplay-policy=no-user-gesture-required
-    else
-        echo "[BLAD] Brak aplikacji wykonywalnej Aurora OS!"
-        sleep 5
+# 8. Oczekiwanie na gotowość serwera aplikacji (max 5 sekund)
+echo "[AuroraOS] Oczekiwanie na start serwera aplikacji na porcie 8080..."
+for i in $(seq 1 25); do
+    if curl -s -I "http://127.0.0.1:8080/" >/dev/null 2>&1; then
+        echo "[AuroraOS] Serwer HTTP aktywny i gotowy."
+        break
     fi
-    
-    EXIT_CODE=$?
-    echo "[$(date)] Aurora OS zakończył działanie z kodem: $EXIT_CODE"
-    sleep 2
+    sleep 0.2
 done
+
+# Funkcja uruchamiająca Chromium w dedykowanym trybie Kiosk Smart TV
+start_chromium_kiosk() {
+    echo "[AuroraOS] Uruchamianie sprawdzonego silnika Kiosk Chromium..."
+    CHROMIUM_BIN="chromium"
+    if ! command -v "$CHROMIUM_BIN" >/dev/null 2>&1; then
+        if command -v chromium-browser >/dev/null 2>&1; then
+            CHROMIUM_BIN="chromium-browser"
+        elif command -v google-chrome >/dev/null 2>&1; then
+            CHROMIUM_BIN="google-chrome"
+        fi
+    fi
+
+    FLAGS=(
+        "--kiosk"
+        "--app=http://127.0.0.1:8080/"
+        "--no-first-run"
+        "--no-default-browser-check"
+        "--disable-infobars"
+        "--disable-session-crashed-bubble"
+        "--autoplay-policy=no-user-gesture-required"
+        "--disable-web-security"
+        "--allow-running-insecure-content"
+        "--user-data-dir=/home/tvuser/.config/aurora_kiosk_profile"
+    )
+
+    if [ "$IS_VIRTUAL_MACHINE" -eq 1 ]; then
+        FLAGS+=(
+            "--disable-gpu-compositing"
+            "--disable-software-rasterizer"
+        )
+    else
+        FLAGS+=(
+            "--enable-gpu-rasterization"
+            "--enable-zero-copy"
+            "--ignore-gpu-blocklist"
+        )
+    fi
+
+    while true; do
+        "$CHROMIUM_BIN" "${FLAGS[@]}"
+        echo "[AuroraOS] Restart sesji Chromium Kiosk..."
+        sleep 1
+    done
+}
+
+# 9. Start interfejsu graficznego z automatycznym i natychmiastowym fallbackiem
+echo "=== Start Aurora OS Kiosk Shell ==="
+
+# Jeśli jesteśmy w maszynie wirtualnej (VMware / VirtualBox) -> bezpośrednio uruchom Chromium Kiosk
+if [ "$IS_VIRTUAL_MACHINE" -eq 1 ] && command -v chromium >/dev/null 2>&1; then
+    echo "[AuroraOS] Maszyna wirtualna: Bezpośredni start Chromium Kiosk (100% płynności bez crashów WebKit)."
+    start_chromium_kiosk
+    exit 0
+fi
+
+# Na fizycznym sprzęcie: próba uruchomienia natywnej aplikacji AuroraOS (.NET 10)
+PREFER_NATIVE=0
+if [ -x "$APP_DIR/AuroraOS" ]; then
+    PREFER_NATIVE=1
+    APP_EXEC="$APP_DIR/AuroraOS"
+elif [ -x "$APP_DIR/TVDecoder_Linux" ]; then
+    PREFER_NATIVE=1
+    APP_EXEC="$APP_DIR/TVDecoder_Linux"
+fi
+
+if [ "$PREFER_NATIVE" -eq 1 ]; then
+    echo "[$(date)] Próba uruchomienia natywnej aplikacji: $APP_EXEC"
+    START_T=$(date +%s)
+    "$APP_EXEC" >> /tmp/auroraos_native.log 2>&1
+    EXIT_CODE=$?
+    END_T=$(date +%s)
+    ELAPSED=$((END_T - START_T))
+
+    echo "[$(date)] Natywna aplikacja zakończyła działanie po ${ELAPSED}s z kodem: $EXIT_CODE"
+
+    # Jeśli natywna aplikacja crashnęła w mniej niż 4 sekundy, natychmiast przełączamy na Chromium
+    if [ "$ELAPSED" -lt 4 ]; then
+        echo "[AuroraOS] Silnik natywny nie zdołał utrzymać okna (${ELAPSED}s). Natychmiastowe przełączenie na Chromium Kiosk!"
+        start_chromium_kiosk
+        exit 0
+    else
+        # Jeśli aplikacja działała normalnie i została zamknięta, restartujemy ją
+        while true; do
+            "$APP_EXEC"
+            sleep 2
+        done
+    fi
+else
+    # Jeśli brak pliku binarnego, od razu uruchamiamy Chromium Kiosk
+    start_chromium_kiosk
+fi
