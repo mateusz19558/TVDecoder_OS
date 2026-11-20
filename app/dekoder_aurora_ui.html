@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dekoder TV - Aurora OS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Lokalne biblioteki i style dla 100% niezawodnego działania offline -->
+    <link rel="stylesheet" href="vendor/static_tailwind.css">
+    <link rel="stylesheet" href="vendor/fontawesome/all.min.css">
+    <script src="vendor/tailwindcss.js"></script>
+    <script src="vendor/hls.min.js"></script>
     <script src="rx-player.js"></script>
+    <!-- Zewnętrzne CDN z bezpiecznym fallbackiem (jeśli internet jest aktywny) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.onerror=null;">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" onerror="this.onerror=null;">
     
     <style>
         :root {
@@ -200,9 +204,47 @@
             color: #ffffff !important;
             transform: translateX(4px);
         }
+
+        /* Gwarantowane reguły dla pewnego działania ekranu i menu w trybie offline */
+        #boot-screen.dismissed,
+        .boot-screen-hidden {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        #layer-home.active {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: scale(1) !important;
+            z-index: 50 !important;
+            display: flex !important;
+        }
     </style>
 </head>
-<body>
+<body class="blurred-bg">
+    <!-- Błyskawiczny awaryjny watchdog startowy dla boot-screen i Home Menu -->
+    <script>
+        (function() {
+            function forceHomeMenu() {
+                var bs = document.getElementById('boot-screen');
+                if (bs) {
+                    bs.classList.add('dismissed');
+                    bs.style.display = 'none';
+                    try { bs.remove(); } catch(e){}
+                }
+                var home = document.getElementById('layer-home');
+                if (home) {
+                    home.classList.add('active');
+                    home.style.opacity = '1';
+                    home.style.pointerEvents = 'auto';
+                }
+            }
+            setTimeout(forceHomeMenu, 1200);
+            window.addEventListener('load', function() { setTimeout(forceHomeMenu, 500); });
+        })();
+    </script>
     <!-- Warstwa 0: Odtwarzacz Wideo Live HLS / IPTV -->
     <div id="tv-viewport">
         <video id="tv-video" class="absolute inset-0 w-full h-full object-cover z-0" autoplay playsinline></video>
@@ -374,8 +416,8 @@
         </div>
     </div>
 
-    <!-- LAYER: Home Dashboard (zastępuje Sidebar) -->
-    <div id="layer-home" class="layer">
+    <!-- LAYER: Home Dashboard (Domyślny ekran startowy Aurora OS) -->
+    <div id="layer-home" class="layer active">
         <div class="absolute inset-0 bg-black/20"></div> <!-- Lekkie przyciemnienie na wierzchu szkła -->
         
         <!-- Górna belka nawigacji w Dashboardzie Aurora OS -->
@@ -917,7 +959,7 @@
     </div>
     
     <!-- Pełnoekranowy ekran ładowania Aurora OS (Splash Screen) -->
-    <div id="boot-screen" class="fixed inset-0 bg-[#080d1a] z-[999] flex flex-col items-center justify-center transition-opacity duration-700 opacity-100">
+    <div id="boot-screen" style="position:fixed;inset:0;background:#080d1a;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;" class="fixed inset-0 bg-[#080d1a] z-[999] flex flex-col items-center justify-center transition-opacity duration-500 opacity-100">
         <div class="relative flex items-center justify-center mb-6">
             <div class="w-24 h-24 rounded-full bg-blue-500/10 border border-sky-400/30 flex items-center justify-center shadow-[0_0_50px_rgba(56,189,248,0.25)]">
                 <i class="fas fa-satellite-dish text-4xl text-sky-400 animate-pulse"></i>
@@ -1483,10 +1525,10 @@
             return false;
         }
 
-        // --- STAN APLIKACJI ---
+        // --- STAN APLIKACJI (Domyślny start do Home Menu Aurora OS) ---
         const state = {
-            activeLayer: 'tv', // tv, home, vod, epg, settings
-            prevLayer: 'tv',
+            activeLayer: 'home', // Domyślnie Home Dashboard (Smart TV Hub)
+            prevLayer: 'home',
             modal: {
                 isOpen: false,
                 focusList: [],
@@ -3847,19 +3889,21 @@
             const bootProgress = document.getElementById('boot-progress');
             const bootText = document.getElementById('boot-text');
 
-            if (bootProgress) bootProgress.style.width = '65%';
-            if (bootText) bootText.textContent = 'Inicjalizacja odtwarzacza Canal+ RxPlayer...';
+            if (bootProgress) bootProgress.style.width = '100%';
+            if (bootText) bootText.textContent = 'System gotowy.';
 
             setTimeout(() => {
-                if (bootProgress) bootProgress.style.width = '100%';
-                if (bootText) bootText.textContent = 'System gotowy. Uruchamianie TV...';
+                if (bootScreen) {
+                    bootScreen.classList.add('opacity-0', 'pointer-events-none', 'dismissed');
+                    setTimeout(() => {
+                        if (bootScreen && bootScreen.parentNode) bootScreen.remove();
+                    }, 400);
+                }
+                switchLayer('home', true);
                 setTimeout(() => {
-                    if (bootScreen) {
-                        bootScreen.classList.add('opacity-0', 'pointer-events-none');
-                    }
-                    showOSDPill();
-                }, 500);
-            }, 900);
+                    setFocus('app-tv');
+                }, 100);
+            }, 350);
         });
 
         // ==========================================

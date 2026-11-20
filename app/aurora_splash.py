@@ -107,28 +107,32 @@ def main():
         root.after(35, update_animation)
 
     def check_server_and_chromium():
-        # Czekaj na dostępność serwera aplikacji
+        # Czekaj na dostępność serwera aplikacji z bezpiecznym limitem czasu
         start_t = time.time()
-        server_ready = False
-        while time.time() - start_t < 15:
+        while time.time() - start_t < 4.0:
             try:
-                with urllib.request.urlopen("http://127.0.0.1:8080/", timeout=0.4) as resp:
+                with urllib.request.urlopen("http://127.0.0.1:8080/", timeout=0.3) as resp:
                     if resp.status == 200:
-                        server_ready = True
                         break
             except Exception:
-                time.sleep(0.2)
+                time.sleep(0.15)
 
-        # Daj Chromium moment na zmapowanie okna na pełnym ekranie
-        time.sleep(1.2)
+        # Daj moment na wyrenderowanie okna aplikacji
+        time.sleep(0.6)
         state["running"] = False
         try:
-            root.destroy()
+            root.after(0, root.destroy)
         except Exception:
-            pass
+            try:
+                root.destroy()
+            except Exception:
+                pass
 
     t = threading.Thread(target=check_server_and_chromium, daemon=True)
     t.start()
+
+    # Twardy watchdog startowy: bezpieczne zamknięcie splash screena po max 3.5 sekundy
+    root.after(3500, lambda: root.destroy())
 
     root.after(30, update_animation)
     root.mainloop()

@@ -28,3 +28,4 @@ fi
 echo "[SessionLauncher] Uruchamianie trybu X11 Kiosk..."
 chmod +x /opt/tvdecoder/config/kiosk.sh
 exec /usr/bin/xinit /opt/tvdecoder/config/kiosk.sh -- :0 vt1 -nocursor -keeptty -quiet
+
