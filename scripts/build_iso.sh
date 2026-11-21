@@ -73,6 +73,8 @@ apt-get install -y --no-install-recommends \
     cog libwpewebkit-1.1-0 libwpe-1.0-1 wpebackend-fdo-1.0-1 libinput10 \
     libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 libicu72 \
     fonts-dejavu fonts-liberation libnss3 libnspr4 libasound2 libkrb5-3 libssl3 \
+    libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxrandr2 libxi6 libxcursor1 libgl1 \
+    libvlc5 libvlc-dev vlc-plugin-base \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi \
     chromium chromium-common chromium-sandbox
 
