@@ -69,7 +69,7 @@ apt-get install -y --no-install-recommends \
 # Serwer graficzny X11 + LightDM Desktop Session + Sterowniki wejścia (mysz/klawiatura) + VMware Tools
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
-    xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev xserver-xorg-input-vmmouse \
+    xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev \
     open-vm-tools open-vm-tools-desktop udev libinput-bin \
     lightdm lightdm-gtk-greeter \
     cage seatd libseat1 libwayland-client0 libwayland-server0 \
