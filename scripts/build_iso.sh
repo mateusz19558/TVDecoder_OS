@@ -66,9 +66,10 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + Wayland Kiosk (Cage) + WPE WebKit Direct DRM (Cog) + Pakiety Kiosk
+# Serwer graficzny X11 + LightDM Desktop Session + Wayland Kiosk + Pakiety Kiosk
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
+    lightdm lightdm-gtk-greeter \
     cage seatd libseat1 libwayland-client0 libwayland-server0 \
     cog libwpewebkit-1.1-0 libwpe-1.0-1 wpebackend-fdo-1.0-1 libinput10 \
     libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 libicu72 \
@@ -101,8 +102,9 @@ apt-get install -y --no-install-recommends \
 # Instalacja HAP-python dla pilota Apple (iPhone) w Centrum Sterowania
 pip3 install --break-system-packages --no-cache-dir HAP-python[QRCode] || true
 
-# Tworzenie dedykowanego użytkownika dekodera 'tvuser'
-useradd -m -s /bin/bash -G audio,video,input,render,netdev,sudo,tty tvuser
+# Tworzenie dedykowanego użytkownika dekodera 'tvuser' z uprawnieniami autologin
+groupadd -r autologin 2>/dev/null || true
+useradd -m -s /bin/bash -G audio,video,input,render,netdev,sudo,tty,autologin tvuser
 echo "tvuser:tvuser" | chpasswd
 echo "tvuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tvuser
 
@@ -110,7 +112,7 @@ echo "tvuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tvuser
 mkdir -p /etc/live/config.conf.d
 cat <<'LIVECONF' > /etc/live/config.conf.d/tvdecoder.conf
 LIVE_USERNAME="tvuser"
-LIVE_USER_DEFAULT_GROUPS="audio,video,input,render,netdev,sudo,tty"
+LIVE_USER_DEFAULT_GROUPS="audio,video,input,render,netdev,sudo,tty,autologin"
 LIVECONF
 
 # Czyszczenie pamięci podręcznej pakietów
@@ -136,11 +138,17 @@ chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_Linux" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 
-# Instalacja usługi systemd, ustawienie domyślnego trybu graficznego i wyciszenie getty na tty1
-cp "$PROJECT_ROOT/config/tvdecoder-kiosk.service" "$CHROOT_DIR/etc/systemd/system/"
+# Rejestracja Aurora OS jako głównej sesji pulpitu (Desktop Session) w LightDM
+mkdir -p "$CHROOT_DIR/usr/share/xsessions"
+cp "$PROJECT_ROOT/config/aurora.desktop" "$CHROOT_DIR/usr/share/xsessions/"
+
+# Konfiguracja automatycznego logowania do sesji Aurora w LightDM
+mkdir -p "$CHROOT_DIR/etc/lightdm/lightdm.conf.d"
+cp "$PROJECT_ROOT/config/10-aurora-autologin.conf" "$CHROOT_DIR/etc/lightdm/lightdm.conf.d/"
+
+# Ustawienie domyślnego trybu graficznego oraz włączenie LightDM i NetworkManager
 chroot "$CHROOT_DIR" systemctl set-default graphical.target
-chroot "$CHROOT_DIR" systemctl mask getty@tty1.service
-chroot "$CHROOT_DIR" systemctl enable tvdecoder-kiosk.service NetworkManager.service
+chroot "$CHROOT_DIR" systemctl enable lightdm.service NetworkManager.service
 
 # Nadanie uprawnień do plików aplikacji
 chroot "$CHROOT_DIR" chown -R tvuser:tvuser /opt/tvdecoder

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Aurora OS
+Comment=Aurora OS Smart TV Desktop Session
+Exec=/opt/tvdecoder/config/kiosk.sh
+TryExec=/opt/tvdecoder/config/kiosk.sh
+Type=Application
+DesktopNames=AuroraOS
+Keywords=TV;Media;SmartTV;

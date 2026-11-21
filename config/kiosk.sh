@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Aurora OS - Pancerne Środowisko Kiosk Appliance (X11 Universal Mode)
-# 100% Natywny Skompilowany Dekoder TV (.NET 10 / Avalonia UI / Skia Mesa)
-# Zero Wine • Zero Chromium • Zero WebKit
+# Aurora OS - Natywna Sesja Pulpitu Smart TV (LightDM Desktop Session)
+# 100% Natywny Skompilowany Dekoder (.NET 10 / Avalonia UI / Skia Mesa)
 # ==============================================================================
 
-# 0. Zamknięcie splash screena Plymouth i wyczyszczenie konsoli
+# 0. Zamknięcie Plymouth i wyczyszczenie konsoli
 plymouth --quit 2>/dev/null || true
-clear > /dev/tty1 2>/dev/null || true
 
 # 1. Wyłączenie wygaszacza ekranu i zarządzania energią DPMS
 xset -dpms 2>/dev/null || true
 xset s off 2>/dev/null || true
 xset s noblank 2>/dev/null || true
 
-# 2. Ukrywanie kursora myszy
+# 2. Ukrywanie kursora myszy na pulpicie TV
 if command -v unclutter >/dev/null 2>&1; then
     unclutter -idle 0.1 -root &
 fi
@@ -29,17 +27,17 @@ if command -v pactl >/dev/null 2>&1; then
 fi
 
 APP_DIR="/opt/tvdecoder/app"
-export DISPLAY=":0"
-export XDG_SESSION_TYPE="x11"
 export LD_LIBRARY_PATH="$APP_DIR:$LD_LIBRARY_PATH"
 
 # Uprawnienia do wykonywania
 chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR"/*.py 2>/dev/null || true
 cd "$APP_DIR" || exit 1
 
-# 4. Menedżer okien Openbox dla obsługi pełnego ekranu i pilota
-openbox --config-file /opt/tvdecoder/config/rc.xml &
-sleep 0.3
+# 4. Uruchomienie menedżera okien Openbox (zarządzanie pełnym ekranem bez obramowania)
+if command -v openbox >/dev/null 2>&1; then
+    openbox --config-file /opt/tvdecoder/config/rc.xml &
+    sleep 0.2
+fi
 
 # 5. Sprawdzenie trybu instalacji na dysku
 if grep -q "install_mode=1" /proc/cmdline; then
@@ -53,9 +51,9 @@ if [ -f "$APP_DIR/apple_tv_bridge.py" ] && ! pgrep -f "apple_tv_bridge.py" >/dev
     python3 "$APP_DIR/apple_tv_bridge.py" &
 fi
 
-# 7. Start natywnego skompilowanego programu Aurora OS (.NET 10 Linux x64)
+# 7. Start aplikacji Aurora OS jako głównego pulpitu
 echo "=================================================================="
-echo " 🚀 Aurora OS • Start Natywnej Aplikacji Dekodera TV (Linux x64)   "
+echo " 🚀 Aurora OS • Główna Sesja Pulpitu Smart TV (Desktop Session)   "
 echo "=================================================================="
 
 APP_EXEC="$APP_DIR/AuroraOS"
@@ -65,10 +63,10 @@ fi
 
 if [ -x "$APP_EXEC" ]; then
     while true; do
-        echo "[$(date)] Uruchamianie skompilowanego dekodera: $APP_EXEC"
+        echo "[$(date)] Uruchamianie pulpitu Aurora OS: $APP_EXEC"
         "$APP_EXEC" >> /tmp/aurora_stdout.log 2>&1
         EXIT_CODE=$?
-        echo "[$(date)] Aplikacja zakończyła działanie (kod: $EXIT_CODE). Restart za 1s..."
+        echo "[$(date)] Pulpit Aurora OS zakończył działanie (kod: $EXIT_CODE). Restart za 1s..."
         sleep 1
     done
 else
