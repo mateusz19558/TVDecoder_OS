@@ -135,13 +135,23 @@ fi
 
 if [ -x "$APP_EXEC" ]; then
     echo "[$(date)] Uruchamianie skompilowanej aplikacji Linux: $APP_EXEC"
-    while true; do
-        "$APP_EXEC"
-        EXIT_CODE=$?
-        echo "[$(date)] Aplikacja Aurora OS zakończyła działanie z kodem: $EXIT_CODE"
-        sleep 1
-    done
+    START_T=$(date +%s)
+    "$APP_EXEC"
+    EXIT_CODE=$?
+    ELAPSED=$(( $(date +%s) - START_T ))
+    echo "[$(date)] Aplikacja Aurora OS zakończyła działanie po ${ELAPSED}s z kodem: $EXIT_CODE"
+
+    if [ "$ELAPSED" -ge 4 ]; then
+        while true; do
+            "$APP_EXEC"
+            sleep 1
+        done
+    else
+        echo "[AuroraOS] Silnik natywny nie zdołał utrzymać okna pod obecnym sterownikiem graficznym (${ELAPSED}s)."
+        echo "[AuroraOS] Uruchamianie wbudowanego trybu Kiosk Smart TV (czyste okno bez dymków i elementów przeglądarki)..."
+        start_chromium_kiosk
+    fi
 else
-    echo "[AuroraOS] Ostrzeżenie: Brak skompilowanego pliku binarnego. Uruchamianie silnika zapasowego."
+    echo "[AuroraOS] Ostrzeżenie: Brak skompilowanego pliku binarnego. Uruchamianie silnika Smart TV."
     start_chromium_kiosk
 fi
