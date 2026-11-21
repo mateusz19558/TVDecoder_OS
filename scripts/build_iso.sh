@@ -66,9 +66,11 @@ apt-get install -y --no-install-recommends \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
-# Serwer graficzny X11 + LightDM Desktop Session + Wayland Kiosk + Pakiety Kiosk
+# Serwer graficzny X11 + LightDM Desktop Session + Sterowniki wejścia (mysz/klawiatura) + VMware Tools
 apt-get install -y --no-install-recommends \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
+    xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev xserver-xorg-input-vmmouse \
+    open-vm-tools open-vm-tools-desktop udev libinput-bin \
     lightdm lightdm-gtk-greeter \
     cage seatd libseat1 libwayland-client0 libwayland-server0 \
     cog libwpewebkit-1.1-0 libwpe-1.0-1 wpebackend-fdo-1.0-1 libinput10 \
@@ -91,9 +93,10 @@ chmod u+s /usr/lib/xorg/Xorg.wrap 2>/dev/null || true
 apt-get install -y --no-install-recommends \
     alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils
 
-# Narzędzia sieciowe i instalatora
+# Narzędzia sieciowe, DHCP i instalatora
 apt-get install -y --no-install-recommends \
-    network-manager wpasupplicant parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl
+    network-manager wpasupplicant systemd-resolved isc-dhcp-client iproute2 net-tools \
+    parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl
 
 # Python 3 + biblioteki mostka Apple TV HomeKit i serwera aplikacji
 apt-get install -y --no-install-recommends \
@@ -146,9 +149,32 @@ cp "$PROJECT_ROOT/config/aurora.desktop" "$CHROOT_DIR/usr/share/xsessions/"
 mkdir -p "$CHROOT_DIR/etc/lightdm/lightdm.conf.d"
 cp "$PROJECT_ROOT/config/10-aurora-autologin.conf" "$CHROOT_DIR/etc/lightdm/lightdm.conf.d/"
 
-# Ustawienie domyślnego trybu graficznego oraz włączenie LightDM i NetworkManager
+# Konfiguracja automatycznego DHCP dla połączeń kablowych i VMware
+mkdir -p "$CHROOT_DIR/etc/systemd/network"
+cat <<'NETCONF' > "$CHROOT_DIR/etc/systemd/network/20-wired.network"
+[Match]
+Name=en* eth*
+
+[Network]
+DHCP=yes
+IPv6AcceptRA=yes
+NETCONF
+
+mkdir -p "$CHROOT_DIR/etc/NetworkManager"
+cat <<'NMCONF' > "$CHROOT_DIR/etc/NetworkManager/NetworkManager.conf"
+[main]
+plugins=ifupdown,keyfile
+
+[ifupdown]
+managed=true
+
+[device]
+wifi.scan-rand-mac-address=no
+NMCONF
+
+# Ustawienie domyślnego trybu graficznego oraz włączenie LightDM, NetworkManager, DHCP i VMware Tools
 chroot "$CHROOT_DIR" systemctl set-default graphical.target
-chroot "$CHROOT_DIR" systemctl enable lightdm.service NetworkManager.service
+chroot "$CHROOT_DIR" systemctl enable lightdm.service NetworkManager.service systemd-networkd.service systemd-resolved.service open-vm-tools.service 2>/dev/null || true
 
 # Nadanie uprawnień do plików aplikacji
 chroot "$CHROOT_DIR" chown -R tvuser:tvuser /opt/tvdecoder

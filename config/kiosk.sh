@@ -12,9 +12,9 @@ xset -dpms 2>/dev/null || true
 xset s off 2>/dev/null || true
 xset s noblank 2>/dev/null || true
 
-# 2. Ukrywanie kursora myszy na pulpicie TV
+# 2. Ukrywanie kursora myszy dopiero po bezczynności (umożliwia obsługę myszką)
 if command -v unclutter >/dev/null 2>&1; then
-    unclutter -idle 0.1 -root &
+    unclutter -idle 4 -root &
 fi
 
 # 3. Odciszenie i ustawienie głośności audio
@@ -24,6 +24,21 @@ fi
 if command -v pactl >/dev/null 2>&1; then
     pactl set-sink-volume @DEFAULT_SINK@ 100% >/dev/null 2>&1 || true
     pactl set-sink-mute @DEFAULT_SINK@ 0 >/dev/null 2>&1 || true
+fi
+
+# 3b. Integracja VMware Tools (automatyczne skalowanie rozdzielczości do pełnego ekranu i płynna mysz)
+if command -v vmware-user-suid-wrapper >/dev/null 2>&1; then
+    vmware-user-suid-wrapper &
+elif command -v vmtoolsd >/dev/null 2>&1; then
+    vmtoolsd -n vmusr &
+fi
+
+# Automatyczne ustawienie rozdzielczości (Full HD / natywna monitora)
+if command -v xrandr >/dev/null 2>&1; then
+    DISP=$(xrandr | grep " connected" | awk '{print $1}' | head -n 1)
+    if [ -n "$DISP" ]; then
+        xrandr --output "$DISP" --auto 2>/dev/null || true
+    fi
 fi
 
 APP_DIR="/opt/tvdecoder/app"
