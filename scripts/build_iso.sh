@@ -43,43 +43,68 @@ deb http://security.debian.org/debian-security bookworm-security main contrib no
 deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free non-free-firmware
 EOF
 
-# Konfiguracja nazwy hosta TVDecoder OS
+# Konfiguracja nazwy hosta TVDecoder OS i stabilnego DNS
 echo "tvdecoder" > "$CHROOT_DIR/etc/hostname"
 cat <<EOF > "$CHROOT_DIR/etc/hosts"
 127.0.0.1 localhost tvdecoder
 ::1       localhost ip6-localhost ip6-loopback
 EOF
 
+mkdir -p "$CHROOT_DIR/etc"
+cat <<EOF > "$CHROOT_DIR/etc/resolv.conf"
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+EOF
+
+mkdir -p "$CHROOT_DIR/etc/apt/apt.conf.d"
+cat <<EOF > "$CHROOT_DIR/etc/apt/apt.conf.d/99retries"
+Acquire::Retries "5";
+Acquire::http::Timeout "45";
+Acquire::https::Timeout "45";
+EOF
+
+cleanup_chroot() {
+    umount -lf "$CHROOT_DIR/dev/pts" 2>/dev/null || true
+    umount -lf "$CHROOT_DIR/dev" 2>/dev/null || true
+    umount -lf "$CHROOT_DIR/proc" 2>/dev/null || true
+    umount -lf "$CHROOT_DIR/sys" 2>/dev/null || true
+}
+trap cleanup_chroot EXIT
+
 cat <<'EOF' > "$CHROOT_DIR/tmp/setup.sh"
 #!/bin/bash
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update -y
+apt-get update -y || (sleep 3 && apt-get update -y)
+
+apt_install() {
+    apt-get install -y --fix-missing --no-install-recommends "$@" || (
+        echo "⚠️ Ponawianie pobierania pakietów..."
+        sleep 3
+        apt-get update -y --fix-missing
+        apt-get install -y --fix-missing --no-install-recommends "$@"
+    )
+}
 
 # Jądro Linux i moduły Live
-apt-get install -y --no-install-recommends \
-    linux-image-amd64 live-boot live-config systemd-sysv
+apt_install linux-image-amd64 live-boot live-config systemd-sysv
 
 # Sterowniki GPU, sprzętu i Firmware (pełna akceleracja sprzętowa VA-API/Vulkan/OpenGL + VMware/VBox)
-apt-get install -y --no-install-recommends \
+apt_install \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
 
 # Serwer graficzny X11 + LightDM Desktop Session + Sterowniki wejścia (mysz/klawiatura) + VMware Tools
-apt-get install -y --no-install-recommends \
+apt_install \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
     xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev \
     open-vm-tools open-vm-tools-desktop udev libinput-bin \
     lightdm lightdm-gtk-greeter \
-    cage seatd libseat1 libwayland-client0 libwayland-server0 \
-    cog libwpewebkit-1.1-0 libwpe-1.0-1 wpebackend-fdo-1.0-1 libinput10 \
-    libwebkit2gtk-4.1-0 libgtk-3-0 libnotify4 libglib2.0-0 libicu72 \
     fonts-dejavu fonts-liberation libnss3 libnspr4 libasound2 libkrb5-3 libssl3 \
     libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxrandr2 libxi6 libxcursor1 libgl1 \
     libvlc5 libvlc-dev vlc-plugin-base \
-    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-vaapi \
-    chromium chromium-common chromium-sandbox
+    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav
 
 # Konfiguracja uprawnień Xorg dla użytkownika kiosku
 mkdir -p /etc/X11
@@ -90,16 +115,16 @@ XWRAPPER
 chmod u+s /usr/lib/xorg/Xorg.wrap 2>/dev/null || true
 
 # Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
-apt-get install -y --no-install-recommends \
+apt_install \
     alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils
 
 # Narzędzia sieciowe, DHCP i instalatora
-apt-get install -y --no-install-recommends \
+apt_install \
     network-manager wpasupplicant systemd-resolved isc-dhcp-client iproute2 net-tools \
     parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl
 
 # Python 3 + biblioteki mostka Apple TV HomeKit i serwera aplikacji
-apt-get install -y --no-install-recommends \
+apt_install \
     python3 python3-pip python3-requests python3-qrcode python3-pil python3-cryptography python3-zeroconf
 
 # Instalacja HAP-python dla pilota Apple (iPhone) w Centrum Sterowania
@@ -122,6 +147,11 @@ LIVECONF
 apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/*
 EOF
+
+mount --bind /dev "$CHROOT_DIR/dev"
+mount --bind /dev/pts "$CHROOT_DIR/dev/pts"
+mount -t proc proc "$CHROOT_DIR/proc"
+mount -t sysfs sysfs "$CHROOT_DIR/sys"
 
 chmod +x "$CHROOT_DIR/tmp/setup.sh"
 chroot "$CHROOT_DIR" /tmp/setup.sh
@@ -178,6 +208,9 @@ chroot "$CHROOT_DIR" systemctl enable lightdm.service NetworkManager.service sys
 
 # Nadanie uprawnień do plików aplikacji
 chroot "$CHROOT_DIR" chown -R tvuser:tvuser /opt/tvdecoder
+
+# Odmontowanie tymczasowych systemów plików chroota przed pakowaniem SquashFS
+cleanup_chroot
 
 # Kopiowanie kernela i initrd do struktury ISO
 echo "⏳ [5/7] Przygotowywanie jądra i initrd dla nośnika Live..."
