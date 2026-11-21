@@ -39,7 +39,7 @@ cd "$APP_DIR" || exit 1
 
 # 4. Menedżer okien Openbox dla obsługi pełnego ekranu i pilota
 openbox --config-file /opt/tvdecoder/config/rc.xml &
-sleep 0.2
+sleep 0.3
 
 # 5. Sprawdzenie trybu instalacji na dysku
 if grep -q "install_mode=1" /proc/cmdline; then
@@ -66,7 +66,7 @@ fi
 if [ -x "$APP_EXEC" ]; then
     while true; do
         echo "[$(date)] Uruchamianie skompilowanego dekodera: $APP_EXEC"
-        "$APP_EXEC"
+        "$APP_EXEC" >> /tmp/aurora_stdout.log 2>&1
         EXIT_CODE=$?
         echo "[$(date)] Aplikacja zakończyła działanie (kod: $EXIT_CODE). Restart za 1s..."
         sleep 1
