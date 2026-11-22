@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ==============================================================================
 # Aurora OS - Natywna Sesja Pulpitu Smart TV (LightDM Desktop Session)
 # 100% Natywny Skompilowany Dekoder (.NET 10 / Avalonia UI / Skia Mesa)

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ==============================================================================
 # TVDecoder OS - Automatyczny skrypt budowania bootowalnego hybrydowego ISO
 # Baza: Debian 12 (Bookworm) Minimal + 100% Natywny Linux Kiosk Appliance (Zero Wine)
@@ -103,7 +103,7 @@ apt_install \
     linux-image-amd64 live-boot live-config systemd-sysv \
     firmware-linux-free firmware-misc-nonfree firmware-amd-graphics xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo \
-    xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
+    xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh chromium plymouth plymouth-themes \
     xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev \
     open-vm-tools open-vm-tools-desktop udev libinput-bin \
     lightdm lightdm-gtk-greeter \
