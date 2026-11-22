@@ -173,6 +173,14 @@ chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 mkdir -p "$CHROOT_DIR/usr/share/xsessions"
 cp "$PROJECT_ROOT/config/aurora.desktop" "$CHROOT_DIR/usr/share/xsessions/"
 
+# Instalacja dedykowanego motywu Plymouth Aurora OS z paskiem postępu
+if [ -d "$PROJECT_ROOT/config/plymouth/aurora" ]; then
+    echo "🎨 Instalacja motywu Plymouth Aurora OS z paskiem postępu..."
+    mkdir -p "$CHROOT_DIR/usr/share/plymouth/themes/aurora"
+    cp -r "$PROJECT_ROOT/config/plymouth/aurora/"* "$CHROOT_DIR/usr/share/plymouth/themes/aurora/"
+    chroot "$CHROOT_DIR" plymouth-set-default-theme aurora -R 2>/dev/null || true
+fi
+
 # Konfiguracja automatycznego logowania do sesji Aurora w LightDM
 mkdir -p "$CHROOT_DIR/etc/lightdm/lightdm.conf.d"
 cp "$PROJECT_ROOT/config/10-aurora-autologin.conf" "$CHROOT_DIR/etc/lightdm/lightdm.conf.d/"
