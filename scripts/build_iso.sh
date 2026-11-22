@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # TVDecoder OS - Automatyczny skrypt budowania bootowalnego hybrydowego ISO
 # Baza: Debian 12 (Bookworm) Minimal + 100% Natywny Linux Kiosk Appliance (Zero Wine)
@@ -11,7 +11,23 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -n "$GITHUB_WORKSPACE" ] && [ -d "$GITHUB_WORKSPACE/app" ]; then
+    PROJECT_ROOT="$GITHUB_WORKSPACE"
+elif [ -d "$(pwd)/app" ]; then
+    PROJECT_ROOT="$(pwd)"
+elif [ -n "${BASH_SOURCE[0]}" ] && [ -d "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null && pwd)/app" ]; then
+    PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+elif [ -d "$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)/app" ]; then
+    PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+else
+    PROJECT_ROOT="$(pwd)"
+fi
+
+echo "ℹ️ Weryfikacja katalogu projektu: PROJECT_ROOT=$PROJECT_ROOT"
+if [ ! -d "$PROJECT_ROOT/app" ]; then
+    echo "❌ Błąd: Nie znaleziono katalogu aplikacji w $PROJECT_ROOT/app!"
+    exit 1
+fi
 WORK_DIR="/tmp/tvdecoder_build"
 CHROOT_DIR="$WORK_DIR/chroot"
 ISO_DIR="$WORK_DIR/iso"
@@ -158,26 +174,27 @@ rm -f "$CHROOT_DIR/tmp/setup.sh"
 # 5. Kopiowanie aplikacji TVDecoder i konfiguracji
 echo "⏳ [4/7] Wdrażanie aplikacji TVDecoder i usługi Kiosk..."
 mkdir -p "$CHROOT_DIR/opt/tvdecoder/app" "$CHROOT_DIR/opt/tvdecoder/config" "$CHROOT_DIR/opt/tvdecoder/scripts"
-cp -r "$PROJECT_ROOT/app/"* "$CHROOT_DIR/opt/tvdecoder/app/"
-cp -r "$PROJECT_ROOT/config/"* "$CHROOT_DIR/opt/tvdecoder/config/"
-cp -r "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
+cp -a "$PROJECT_ROOT/app/." "$CHROOT_DIR/opt/tvdecoder/app/"
+cp -a "$PROJECT_ROOT/config/." "$CHROOT_DIR/opt/tvdecoder/config/"
+cp -a "$PROJECT_ROOT/scripts/installer.sh" "$CHROOT_DIR/opt/tvdecoder/scripts/"
 
-chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh
-chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh
+chmod +x "$CHROOT_DIR/opt/tvdecoder/config"/*.sh 2>/dev/null || true
+chmod +x "$CHROOT_DIR/opt/tvdecoder/scripts"/*.sh 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/AuroraOS" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/TVDecoder_Linux" 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app/tvdecoder-linux" 2>/dev/null || true
+chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.sh 2>/dev/null || true
 chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 
 # Rejestracja Aurora OS jako głównej sesji pulpitu (Desktop Session) w LightDM
 mkdir -p "$CHROOT_DIR/usr/share/xsessions"
-cp "$PROJECT_ROOT/config/aurora.desktop" "$CHROOT_DIR/usr/share/xsessions/"
+cp -f "$PROJECT_ROOT/config/aurora.desktop" "$CHROOT_DIR/usr/share/xsessions/"
 
 # Instalacja dedykowanego motywu Plymouth Aurora OS z paskiem postępu
 if [ -d "$PROJECT_ROOT/config/plymouth/aurora" ]; then
     echo "🎨 Instalacja motywu Plymouth Aurora OS z paskiem postępu..."
     mkdir -p "$CHROOT_DIR/usr/share/plymouth/themes/aurora"
-    cp -r "$PROJECT_ROOT/config/plymouth/aurora/"* "$CHROOT_DIR/usr/share/plymouth/themes/aurora/"
+    cp -a "$PROJECT_ROOT/config/plymouth/aurora/." "$CHROOT_DIR/usr/share/plymouth/themes/aurora/"
     chroot "$CHROOT_DIR" plymouth-set-default-theme aurora -R 2>/dev/null || true
 fi
 

@@ -15,7 +15,7 @@ jobs:
       - name: Uruchomienie skryptu budowania ISO
         run: |
           chmod +x scripts/build_iso.sh
-          sudo ./scripts/build_iso.sh
+          sudo GITHUB_WORKSPACE="$GITHUB_WORKSPACE" bash ./scripts/build_iso.sh
 
       - name: Publikacja pliku ISO jako artefakt
         uses: actions/upload-artifact@v4
