@@ -76,27 +76,33 @@ cat <<'EOF' > "$CHROOT_DIR/tmp/setup.sh"
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update -y || (sleep 3 && apt-get update -y)
+ensure_dns() {
+    rm -f /etc/resolv.conf
+    cat <<'DNS' > /etc/resolv.conf
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+DNS
+}
+
+ensure_dns
+apt-get update -y || (sleep 3 && ensure_dns && apt-get update -y)
 
 apt_install() {
+    ensure_dns
     apt-get install -y --fix-missing --no-install-recommends "$@" || (
         echo "⚠️ Ponawianie pobierania pakietów..."
         sleep 3
+        ensure_dns
         apt-get update -y --fix-missing
         apt-get install -y --fix-missing --no-install-recommends "$@"
     )
 }
 
-# Jądro Linux i moduły Live
-apt_install linux-image-amd64 live-boot live-config systemd-sysv
-
-# Sterowniki GPU, sprzętu i Firmware (pełna akceleracja sprzętowa VA-API/Vulkan/OpenGL + VMware/VBox)
+# Instalacja wszystkich wymaganych pakietów w jednej transakcji (zapobiega konfliktom i utracie DNS w trakcie)
 apt_install \
+    linux-image-amd64 live-boot live-config systemd-sysv \
     firmware-linux-free firmware-misc-nonfree xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
-    mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo
-
-# Serwer graficzny X11 + LightDM Desktop Session + Sterowniki wejścia (mysz/klawiatura) + VMware Tools
-apt_install \
+    mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo \
     xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh plymouth plymouth-themes \
     xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev \
     open-vm-tools open-vm-tools-desktop udev libinput-bin \
@@ -104,7 +110,11 @@ apt_install \
     fonts-dejavu fonts-liberation libnss3 libnspr4 libasound2 libkrb5-3 libssl3 \
     libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxrandr2 libxi6 libxcursor1 libgl1 \
     libvlc5 libvlc-dev vlc-plugin-base \
-    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav
+    gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav \
+    alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils \
+    network-manager wpasupplicant systemd-resolved isc-dhcp-client iproute2 net-tools \
+    parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl \
+    python3 python3-pip python3-requests python3-qrcode python3-pil python3-cryptography python3-zeroconf
 
 # Konfiguracja uprawnień Xorg dla użytkownika kiosku
 mkdir -p /etc/X11
@@ -114,20 +124,8 @@ needs_root_rights=yes
 XWRAPPER
 chmod u+s /usr/lib/xorg/Xorg.wrap 2>/dev/null || true
 
-# Dźwięk (ALSA + PipeWire dla HDMI i optycznego wyjścia)
-apt_install \
-    alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils
-
-# Narzędzia sieciowe, DHCP i instalatora
-apt_install \
-    network-manager wpasupplicant systemd-resolved isc-dhcp-client iproute2 net-tools \
-    parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl
-
-# Python 3 + biblioteki mostka Apple TV HomeKit i serwera aplikacji
-apt_install \
-    python3 python3-pip python3-requests python3-qrcode python3-pil python3-cryptography python3-zeroconf
-
 # Instalacja HAP-python dla pilota Apple (iPhone) w Centrum Sterowania
+ensure_dns
 pip3 install --break-system-packages --no-cache-dir HAP-python[QRCode] || true
 
 # Tworzenie dedykowanego użytkownika dekodera 'tvuser' z uprawnieniami autologin
