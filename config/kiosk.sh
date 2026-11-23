@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # Aurora OS - Natywna Sesja Pulpitu Smart TV (LightDM Desktop Session)
 # 100% Natywny Skompilowany Dekoder (.NET 10 / Avalonia UI / Skia Mesa)
@@ -45,7 +45,7 @@ APP_DIR="/opt/tvdecoder/app"
 export LD_LIBRARY_PATH="$APP_DIR:$LD_LIBRARY_PATH"
 
 # Uprawnienia do wykonywania
-chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR"/*.py 2>/dev/null || true
+chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR"/*.py "$APP_DIR"/*.sh 2>/dev/null || true
 cd "$APP_DIR" || exit 1
 
 # 4. Uruchomienie menedżera okien Openbox (zarządzanie pełnym ekranem bez obramowania)
