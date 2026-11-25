@@ -125,12 +125,16 @@ apt_install \
     lightdm lightdm-gtk-greeter \
     fonts-dejavu fonts-liberation libnss3 libnspr4 libasound2 libkrb5-3 libssl3 \
     libfontconfig1 libfreetype6 libx11-6 libx11-xcb1 libxrandr2 libxi6 libxcursor1 libgl1 \
+    libgtk-3-0 libice6 libsm6 libxext6 libxrender1 libxtst6 libxfixes3 libxdamage1 libxcomposite1 libxkbcommon0 libdbus-1-3 \
     libvlc5 libvlc-dev vlc-plugin-base \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav \
     alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils \
     network-manager wpasupplicant systemd-resolved isc-dhcp-client iproute2 net-tools \
     parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl \
     python3 python3-pip python3-requests python3-qrcode python3-pil python3-cryptography python3-zeroconf
+
+# Zależność WebKitGTK dla WebView.Avalonia (Debian 12 Bookworm)
+apt_install libwebkit2gtk-4.1-0 || apt_install libwebkit2gtk-4.0-37 || true
 
 # Konfiguracja uprawnień Xorg dla użytkownika kiosku
 mkdir -p /etc/X11
