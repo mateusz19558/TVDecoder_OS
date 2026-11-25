@@ -32,6 +32,7 @@ if command -v vmware-user-suid-wrapper >/dev/null 2>&1; then
 elif command -v vmtoolsd >/dev/null 2>&1; then
     vmtoolsd -n vmusr &
 fi
+sleep 0.8
 
 # Automatyczne ustawienie rozdzielczości (Full HD / natywna monitora)
 if command -v xrandr >/dev/null 2>&1; then
