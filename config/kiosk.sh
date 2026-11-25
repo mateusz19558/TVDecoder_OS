@@ -43,6 +43,8 @@ fi
 
 APP_DIR="/opt/tvdecoder/app"
 export LD_LIBRARY_PATH="$APP_DIR:$LD_LIBRARY_PATH"
+export DOTNET_BUNDLE_EXTRACT_BASE_DIR="/tmp/aurora_bundle"
+mkdir -p "$DOTNET_BUNDLE_EXTRACT_BASE_DIR" 2>/dev/null || true
 
 # Uprawnienia do wykonywania
 chmod +x "$APP_DIR/AuroraOS" "$APP_DIR/TVDecoder_Linux" "$APP_DIR"/*.py "$APP_DIR"/*.sh 2>/dev/null || true
