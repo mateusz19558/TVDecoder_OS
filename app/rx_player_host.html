@@ -28,12 +28,14 @@
 <body>
     <video id="videoElement" autoplay playsinline></video>
 
-    <!-- Canal+ RxPlayer Library -->
+    <!-- Canal+ RxPlayer Library + HLS.js (1080p-first progressive ABR) -->
     <script src="rx-player.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 
     <script>
         const videoElement = document.getElementById('videoElement');
         let player = null;
+        let hlsInstance = null;
         let isNativeFallback = false;
 
         function notifyHost(msg) {
@@ -51,9 +53,10 @@
             if (window.RxPlayer) {
                 player = new RxPlayer({
                     videoElement: videoElement,
-                    baseBandwidth: 6000000,
-                    wantedBufferAhead: 30,
-                    maxBufferAhead: 60,
+                    initialVideoBitrate: 12000000,
+                    baseBandwidth: 12000000,
+                    wantedBufferAhead: 20,
+                    maxBufferAhead: 45,
                     maxBufferBehind: 30
                 });
 
@@ -118,18 +121,64 @@
             console.log("[RxPlayer Host] Rozpoczynam odtwarzanie strumienia:", url);
             isNativeFallback = false;
 
+            if (hlsInstance) {
+                try { hlsInstance.destroy(); } catch (e) {}
+                hlsInstance = null;
+            }
+
+            const lowerUrl = url.toLowerCase();
+
+            // Dla strumieni HLS (.m3u8) używamy HLS.js z priorytetem 1080p i płynnym stopniowym obniżaniem ABR
+            if (lowerUrl.includes(".m3u8") && window.Hls && Hls.isSupported()) {
+                try {
+                    if (player) { try { player.stop(); } catch(e) {} }
+                    hlsInstance = new Hls({
+                        abrEwmaDefaultEstimate: 12000000,
+                        abrBandWidthFactor: 0.90,
+                        abrBandWidthUpFactor: 0.70,
+                        capLevelToPlayerSize: false,
+                        maxBufferLength: 30,
+                        maxMaxBufferLength: 60,
+                        manifestLoadingTimeOut: 12000,
+                        levelLoadingTimeOut: 12000,
+                        fragLoadingTimeOut: 15000
+                    });
+                    hlsInstance.loadSource(url);
+                    hlsInstance.attachMedia(videoElement);
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                        if (data && data.levels && data.levels.length > 0) {
+                            // Zacznij od najwyższej rozdzielczości (1080p) i pozwól ABR stopniowo obniżać w razie potrzeby
+                            let best1080 = data.levels.length - 1;
+                            for (let i = data.levels.length - 1; i >= 0; i--) {
+                                if (data.levels[i].height && data.levels[i].height <= 1080) {
+                                    best1080 = i;
+                                    break;
+                                }
+                            }
+                            hlsInstance.startLevel = best1080;
+                            hlsInstance.nextLevel = -1; // włącz płynny ABR po starcie od 1080p
+                        }
+                        videoElement.play().catch(() => {});
+                    });
+                    hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+                        if (data && data.fatal) {
+                            notifyHost({ event: "error", message: "HLS fatal: " + data.type });
+                        }
+                    });
+                    return;
+                } catch (eHls) {
+                    console.warn("[HLS.js] Błąd:", eHls);
+                }
+            }
+
             try {
                 if (player) {
                     let transport = "directfile";
-                    const lowerUrl = url.toLowerCase();
 
                     if (lowerUrl.includes(".mpd")) {
                         transport = "dash";
                     } else if (lowerUrl.includes(".isml") || lowerUrl.includes("/manifest")) {
                         transport = "smooth";
-                    } else if (lowerUrl.includes(".m3u8")) {
-                        // Dla HLS w Chromium próbujemy directfile (RxPlayer directfile)
-                        transport = "directfile";
                     } else {
                         transport = "directfile";
                     }
@@ -161,6 +210,10 @@
         };
 
         window.stopChannel = function() {
+            if (hlsInstance) {
+                try { hlsInstance.destroy(); } catch (e) {}
+                hlsInstance = null;
+            }
             try {
                 if (player) {
                     player.stop();
