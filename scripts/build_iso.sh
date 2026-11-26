@@ -119,7 +119,7 @@ apt_install \
     linux-image-amd64 live-boot live-config systemd-sysv \
     firmware-linux-free firmware-misc-nonfree firmware-amd-graphics xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo \
-    xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh chromium wmctrl \
+    xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh chromium wmctrl plymouth plymouth-themes \
     xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev \
     open-vm-tools open-vm-tools-desktop udev libinput-bin \
     lightdm lightdm-gtk-greeter \
@@ -193,6 +193,28 @@ chmod +x "$CHROOT_DIR/opt/tvdecoder/app"/*.py 2>/dev/null || true
 # Rejestracja Aurora OS jako głównej sesji pulpitu (Desktop Session) w LightDM
 mkdir -p "$CHROOT_DIR/usr/share/xsessions"
 cp -f "$PROJECT_ROOT/config/aurora.desktop" "$CHROOT_DIR/usr/share/xsessions/"
+
+# Włączenie framebuffera i sterowników KMS w initramfs + motyw Plymouth Aurora OS
+mkdir -p "$CHROOT_DIR/etc/initramfs-tools/conf.d"
+echo "FRAMEBUFFER=y" > "$CHROOT_DIR/etc/initramfs-tools/conf.d/splash"
+cat <<'MODS' >> "$CHROOT_DIR/etc/initramfs-tools/modules"
+drm
+vmwgfx
+bochs
+virtio_gpu
+fbcon
+MODS
+
+if [ -d "$PROJECT_ROOT/config/plymouth/aurora" ]; then
+    echo "🎨 Instalacja motywu Plymouth Aurora OS z logiem i paskiem postępu..."
+    mkdir -p "$CHROOT_DIR/usr/share/plymouth/themes/aurora"
+    cp -a "$PROJECT_ROOT/config/plymouth/aurora/." "$CHROOT_DIR/usr/share/plymouth/themes/aurora/"
+    sed -i 's/\r$//' "$CHROOT_DIR/usr/share/plymouth/themes/aurora/aurora.plymouth" 2>/dev/null || true
+    chroot "$CHROOT_DIR" plymouth-set-default-theme aurora -R 2>/dev/null || true
+fi
+
+# Ukrycie konsoli tekstowej (wiersza poleceń) na tty1 podczas startu Debiana
+chroot "$CHROOT_DIR" systemctl mask getty@tty1.service 2>/dev/null || true
 
 # Konfiguracja automatycznego logowania do sesji Aurora w LightDM
 mkdir -p "$CHROOT_DIR/etc/lightdm/lightdm.conf.d"
