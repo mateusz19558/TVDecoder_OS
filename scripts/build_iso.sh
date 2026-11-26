@@ -119,7 +119,7 @@ apt_install \
     linux-image-amd64 live-boot live-config systemd-sysv \
     firmware-linux-free firmware-misc-nonfree firmware-amd-graphics xserver-xorg-video-all xserver-xorg-video-vmware xserver-xorg-video-fbdev xserver-xorg-video-vesa \
     mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri vainfo \
-    xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh chromium \
+    xserver-xorg-core xserver-xorg-legacy xinit openbox unclutter xterm x11-xserver-utils python3-tk feh chromium wmctrl \
     xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-evdev \
     open-vm-tools open-vm-tools-desktop udev libinput-bin \
     lightdm lightdm-gtk-greeter \
@@ -128,7 +128,7 @@ apt_install \
     libgtk-3-0 libice6 libsm6 libxext6 libxrender1 libxtst6 libxfixes3 libxdamage1 libxcomposite1 libxkbcommon0 libdbus-1-3 \
     libvlc5 libvlc-dev vlc-plugin-base \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav \
-    alsa-utils pipewire wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils \
+    alsa-utils pipewire pipewire-pulse wireplumber pipewire-audio-client-libraries libspa-0.2-bluetooth pulseaudio-utils \
     network-manager wpasupplicant systemd-resolved isc-dhcp-client iproute2 net-tools \
     parted dosfstools e2fsprogs rsync dialog sudo ca-certificates curl \
     python3 python3-pip python3-requests python3-qrcode python3-pil python3-cryptography python3-zeroconf
